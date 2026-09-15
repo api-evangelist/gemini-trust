@@ -1,0 +1,52 @@
+aid: gemini-trust
+name: Gemini Trust Company
+description: Gemini Trust Company, LLC is a United States cryptocurrency exchange and custodian, founded
+  in 2014 and headquartered in New York, regulated as a New York trust company. It operates the Gemini
+  Exchange, offering REST and WebSocket APIs for market data, order management, account balances, clearing,
+  earn/staking and institutional capital accounts.
+url: https://raw.githubusercontent.com/api-evangelist/gemini-trust/refs/heads/main/apis.yml
+x-type: company
+x-source: split:gemini
+specificationVersion: '0.20'
+created: '2026-09-15'
+modified: '2026-09-15'
+tags:
+- Company
+- Cryptocurrency
+- Exchange
+- Trading
+- Market Data
+- Order Management
+- Clearing
+- Custody
+- Financial Services
+image: https://gemini.com/static/images/gemini-logomark.png
+apis:
+- name: Gemini Exchange API
+  description: REST and WebSocket APIs for the Gemini cryptocurrency exchange, providing market data,
+    order management, account balances, clearing, earn/staking, and institutional capital account operations.
+  image: https://gemini.com/static/images/gemini-logomark.png
+  humanURL: https://docs.gemini.com/
+  baseURL: https://api.gemini.com
+  tags:
+  - Cryptocurrency
+  - Exchange
+  - Trading
+  - Market Data
+  - Order Management
+  - Clearing
+  properties:
+  - type: Documentation
+    url: https://docs.gemini.com/rest-api/
+  - type: WebSocket
+    url: https://docs.gemini.com/websocket-api/
+  - type: GraphQL
+    url: graphql/gemini-graphql.md
+common:
+- type: Website
+  url: https://www.gemini.com
+maintainers:
+- FN: Kin Lane
+  email: kin@apievangelist.com
+- FN: APIs.json
+  email: info@apis.io

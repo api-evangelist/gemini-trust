@@ -1,15 +1,18 @@
 aid: gemini-trust
 name: Gemini Trust Company
-description: Gemini Trust Company, LLC is a United States cryptocurrency exchange and custodian, founded
-  in 2014 and headquartered in New York, regulated as a New York trust company. It operates the Gemini
-  Exchange, offering REST and WebSocket APIs for market data, order management, account balances, clearing,
-  earn/staking and institutional capital accounts.
+description: Gemini Trust Company, LLC is a United States cryptocurrency exchange and custodian, founded in 2014
+  and headquartered in New York, regulated as a New York State Department of Financial Services trust company. It
+  operates the Gemini Exchange and the Gemini Developer Platform, publishing OpenAPI 3.0.3 contracts for its Crypto
+  Trading REST API and Prediction Markets REST API, an AsyncAPI 3.0.0 contract for the wss://ws.gemini.com WebSocket
+  API, plus a FIX gateway. The platform covers spot, margin, perpetuals, prediction markets, staking, clearing,
+  custody and institutional fund management, with API-key HMAC-SHA384 signing and OAuth 2.0 authorization-code +
+  PKCE, including FDX-namespaced scopes.
 url: https://raw.githubusercontent.com/api-evangelist/gemini-trust/refs/heads/main/apis.yml
 x-type: company
 x-source: split:gemini
 specificationVersion: '0.20'
 created: '2026-09-15'
-modified: '2026-09-15'
+modified: '2026-09-18'
 tags:
 - Company
 - Cryptocurrency
@@ -20,6 +23,11 @@ tags:
 - Clearing
 - Custody
 - Financial-Services
+- Prediction Markets
+- Staking
+- Derivatives
+- WebSocket
+- FIX
 tags_raw:
 - Company
 - Cryptocurrency
@@ -30,13 +38,20 @@ tags_raw:
 - Clearing
 - Custody
 - Financial Services
+- Prediction Markets
+- Staking
+- Derivatives
+- WebSocket
+- FIX
 image: https://gemini.com/static/images/gemini-logomark.png
 apis:
-- name: Gemini Exchange API
-  description: REST and WebSocket APIs for the Gemini cryptocurrency exchange, providing market data,
-    order management, account balances, clearing, earn/staking, and institutional capital account operations.
+- name: Gemini Crypto Trading REST API
+  description: 'The Gemini Exchange REST API for spot, margin and perpetuals trading: market data, order placement
+    and cancellation, past trades, clearing, fund management, deposit addresses, withdrawals, sub-account administration,
+    roles, margin and staking. Authenticated with an API key plus a base64 X-GEMINI-PAYLOAD and a hex HMAC-SHA384
+    X-GEMINI-SIGNATURE; 74 operations across 74 paths.'
   image: https://gemini.com/static/images/gemini-logomark.png
-  humanURL: https://docs.gemini.com/
+  humanURL: https://developer.gemini.com/rest-api/rest-api
   baseURL: https://api.gemini.com
   tags:
   - Cryptocurrency
@@ -45,18 +60,196 @@ apis:
   - Market Data
   - Order Management
   - Clearing
+  - Custody
+  - Staking
+  - Derivatives
   properties:
+  - type: OpenAPI
+    url: openapi/gemini-trust-rest-openapi.yml
+  - type: OpenAPI
+    name: OpenAPI (provider-hosted)
+    url: https://developer.gemini.com/specs/openapi/rest.yaml
   - type: Documentation
-    url: https://docs.gemini.com/rest-api/
-  - type: WebSocket
-    url: https://docs.gemini.com/websocket-api/
-  - type: GraphQL
-    url: graphql/gemini-graphql.md
+    url: https://developer.gemini.com/rest-api/rest-api
+  - type: APIReference
+    url: https://developer.gemini.com/rest
+  - type: Overlay
+    url: overlays/gemini-trust-rest-overlay.yaml
+  - type: ErrorCatalog
+    url: errors/gemini-trust-problem-types.yml
+  - type: DataModel
+    url: data-model/gemini-trust-data-model.yml
+  - type: AgentSkill
+    url: skills/_index.yml
+- name: Gemini Prediction Markets REST API
+  description: 'The Gemini Prediction Markets REST API for event-contract trading: market and event discovery, contract
+    prices, order placement and management, positions, combos and RFQ, volume, terms and maker/taker reward programs.
+    31 operations across 30 paths, sharing the Gemini private-REST signing transport.'
+  image: https://gemini.com/static/images/gemini-logomark.png
+  humanURL: https://developer.gemini.com/rest-api/prediction-markets
+  baseURL: https://api.gemini.com
+  tags:
+  - Prediction Markets
+  - Trading
+  - Market Data
+  - Order Management
+  - Derivatives
+  properties:
+  - type: OpenAPI
+    url: openapi/gemini-trust-prediction-markets-openapi.yml
+  - type: OpenAPI
+    name: OpenAPI (provider-hosted)
+    url: https://developer.gemini.com/specs/openapi/prediction-markets.yaml
+  - type: Documentation
+    url: https://developer.gemini.com/rest-api/prediction-markets
+  - type: APIReference
+    url: https://developer.gemini.com/prediction-markets-spec
+  - type: Overlay
+    url: overlays/gemini-trust-prediction-markets-overlay.yaml
+- name: Gemini WebSocket API
+  description: 'The production Gemini WebSocket API at wss://ws.gemini.com: request/response methods, market data
+    streams (book ticker, partial and differential depth, trades), authenticated account streams for orders, balances
+    and positions, prediction-market contract lifecycle, and combo RFQ messages. Published as AsyncAPI 3.0.0 with
+    21 channels and 22 operations.'
+  image: https://gemini.com/static/images/gemini-logomark.png
+  humanURL: https://developer.gemini.com/websocket/introduction
+  baseURL: wss://ws.gemini.com
+  tags:
+  - WebSocket
+  - Market Data
+  - Streaming
+  - Trading
+  - Prediction Markets
+  properties:
+  - type: AsyncAPI
+    url: asyncapi/gemini-trust-websocket-asyncapi.yml
+  - type: AsyncAPI
+    name: AsyncAPI (provider-hosted)
+    url: https://developer.gemini.com/specs/asyncapi/websocket.yaml
+  - type: Documentation
+    url: https://developer.gemini.com/websocket/introduction
+- name: Gemini MCP Server
+  description: The official first-party Model Context Protocol server from the gemini/developer-platform monorepo,
+    exposing Gemini market data, orders, funds, account, margin, staking, prediction-market and native-OS alert
+    tools to MCP clients. Distributed as source in the monorepo and run over local stdio; there is no hosted remote
+    endpoint.
+  image: https://gemini.com/static/images/gemini-logomark.png
+  humanURL: https://developer.gemini.com/tools
+  baseURL: https://api.gemini.com
+  tags:
+  - MCP
+  - Agents
+  - Trading
+  - Market Data
+  properties:
+  - type: MCPServer
+    url: mcp/gemini-trust-mcp.yml
+  - type: ToolCrosswalk
+    url: mcp/gemini-trust-tool-crosswalk.yml
+  - type: Documentation
+    url: https://developer.gemini.com/tools
+  - type: SourceCode
+    url: https://github.com/gemini/developer-platform/tree/main/packages/mcp-server
 common:
 - type: Website
   url: https://www.gemini.com
+- type: DeveloperPortal
+  url: https://developer.gemini.com/developers
+- type: Documentation
+  url: https://developer.gemini.com/
+- type: APIReference
+  url: https://developer.gemini.com/api-reference
+- type: GettingStarted
+  url: https://developer.gemini.com/get-started/sandbox
+- type: Support
+  url: https://support.gemini.com
+- type: Blog
+  url: https://www.gemini.com/blog
+- type: GitHubOrganization
+  url: https://github.com/gemini
+- type: Pricing
+  url: https://www.gemini.com/fees
+- type: SignUp
+  url: https://exchange.gemini.com/register
+- type: Login
+  url: https://exchange.gemini.com/signin
+- type: TermsOfService
+  url: https://www.gemini.com/legal/user-agreement
+- type: PrivacyPolicy
+  url: https://www.gemini.com/legal/privacy-policy
+- type: StatusPage
+  url: https://status.gemini.com
+- type: ChangeLog
+  url: changelog/gemini-trust-changelog.yml
+- type: ChangeLog
+  name: Revision History (provider-hosted)
+  url: https://developer.gemini.com/changelog/revision-history
+- type: LLMsTxt
+  url: llms/gemini-trust-llms.txt
+- type: AgentCard
+  url: a2a/gemini-trust-a2a.yml
+- type: MCPServer
+  url: mcp/gemini-trust-mcp.yml
+- type: ToolCrosswalk
+  url: mcp/gemini-trust-tool-crosswalk.yml
+- type: AgentSkill
+  url: skills/_index.yml
+- type: Packages
+  url: packages/gemini-trust-packages.yml
+- type: SDKs
+  url: packages/gemini-trust-packages.yml
+- type: CLI
+  url: cli/gemini-trust-cli.yml
+- type: WellKnown
+  url: well-known/gemini-trust-well-known.yml
+- type: SecurityTxt
+  url: well-known/gemini-trust-security.txt
+- type: Authentication
+  url: authentication/gemini-trust-authentication.yml
+- type: OAuthScopes
+  url: scopes/gemini-trust-scopes.yml
+- type: Conventions
+  url: conventions/gemini-trust-conventions.yml
+- type: Idempotency
+  url: conventions/gemini-trust-conventions.yml
+- type: ErrorCatalog
+  url: errors/gemini-trust-problem-types.yml
+- type: ErrorCatalog
+  name: Error code registry
+  url: errors/gemini-trust-error-codes.yml
+- type: RateLimits
+  url: rate-limits/gemini-trust-rate-limits.yml
+- type: Plans
+  url: plans/gemini-trust-plans-pricing.yml
+- type: Lifecycle
+  url: lifecycle/gemini-trust-lifecycle.yml
+- type: Sandbox
+  url: sandbox/gemini-trust-sandbox.yml
+- type: Conformance
+  url: conformance/gemini-trust-conformance.yml
+- type: Compliance
+  url: conformance/gemini-trust-conformance.yml
+- type: TrustCenter
+  url: security/gemini-trust-trust-center.yml
+- type: Security
+  url: security/gemini-trust-vulnerability-disclosure.yml
+- type: VulnerabilityDisclosure
+  url: security/gemini-trust-vulnerability-disclosure.yml
+- type: DomainSecurity
+  url: security/gemini-trust-domain-security.yml
+- type: AsyncAPI
+  url: asyncapi/gemini-trust-websocket-asyncapi.yml
+- type: DataModel
+  url: data-model/gemini-trust-data-model.yml
+- type: Overlay
+  url: overlays/gemini-trust-rest-overlay.yaml
 maintainers:
 - FN: Kin Lane
   email: kin@apievangelist.com
 - FN: APIs.json
   email: info@apis.io
+x-enrichment:
+  date: '2026-09-18'
+  status: enriched
+  artifacts_added: 38
+  pass: local-v3

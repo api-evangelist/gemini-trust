@@ -1,0 +1,35 @@
+generated: '2026-09-18'
+method: searched
+source: https://developer.gemini.com/rate-limit
+limit_count: 5
+status_on_exhaustion: 429
+response_headers: []
+response_headers_note: 'Gemini publishes NO rate-limit response headers. No X-RateLimit-*, no RateLimit-* (RFC 9238
+  draft), and no Retry-After is documented anywhere in the rate-limit page, the error-codes page or either OpenAPI.
+  An agent gets a 429 and nothing else: it cannot read remaining budget, reset time, or a server-suggested backoff.
+  This is the single clearest runtime-signal gap in an otherwise strong contract.'
+burst: Five additional requests are queued (not rejected) above the rate; processing is delayed until the request
+  rate falls back under the limit. Beyond the burst, requests receive 429 immediately.
+rate_limits:
+- scope: per-key (public API entry points)
+  window: 1 minute
+  limit: 120
+  recommended: 1 request per second
+  burst: 5
+- scope: per-key (private API entry points)
+  window: 1 minute
+  limit: 600
+  recommended: 5 requests per second
+  burst: 5
+- scope: per-subaccount (POST /v1/transfers, POST /v2/transfers)
+  window: 5 seconds
+  limit: 1
+  note: Shares a rate-limiting bucket with POST /v1/custody/fee-transfers.
+- scope: per-subaccount (POST /v1/custody/fee-transfers)
+  window: 5 seconds
+  limit: 1
+  note: Shares a rate-limiting bucket with the past-transfers endpoints.
+- scope: per-subaccount (POST /v1/addresses)
+  window: 2 seconds
+  limit: 1
+legal: https://www.gemini.com/legal/api-agreement

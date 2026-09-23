@@ -1,0 +1,434 @@
+generated: '2026-09-18'
+method: derived
+source: mcp/gemini-trust-mcp.yml (tool names read from packages/mcp-server/src/tools/*.ts) bound by name and semantics
+  to openapi/gemini-trust-rest-openapi.yml and openapi/gemini-trust-prediction-markets-openapi.yml
+surfaces:
+  openapi:
+  - openapi/gemini-trust-rest-openapi.yml (74 operations)
+  - openapi/gemini-trust-prediction-markets-openapi.yml (31 operations)
+  asyncapi: asyncapi/gemini-trust-websocket-asyncapi.yml (21 channels, 22 operations)
+  graphql: null
+  mcp:
+    url: null
+    mode: local-stdio
+    gated: Runs in-process over stdio; authenticated tools require GEMINI_API_KEY/GEMINI_API_SECRET.
+method_note: The MCP server publishes no remote endpoint, so live tools/list introspection was impossible. Every binding
+  below was checked against operationIds that actually exist in the two specs - a tool whose backing operation is
+  absent is reported in unresolved[] rather than bound to a guess.
+coverage:
+  tools_total: 68
+  tools_bound: 50
+  tools_unresolved: 2
+  mcp_only: 16
+  rest_operations: 105
+  rest_only: 52
+crosswalk:
+- tool: gemini_get_ticker
+  category: market-data
+  rest:
+  - getTickerV2
+  binding: direct
+  confidence: high
+- tool: gemini_get_symbols
+  category: market-data
+  rest:
+  - listSymbols
+  binding: direct
+  confidence: high
+- tool: gemini_get_symbol_details
+  category: market-data
+  rest:
+  - getSymbolDetails
+  binding: direct
+  confidence: high
+- tool: gemini_get_candles
+  category: market-data
+  rest:
+  - listCandles
+  binding: direct
+  confidence: high
+- tool: gemini_get_derivative_candles
+  category: market-data
+  rest:
+  - listDerivativeCandles
+  binding: direct
+  confidence: high
+- tool: gemini_get_order_book
+  category: market-data
+  rest:
+  - getCurrentOrderBook
+  binding: direct
+  confidence: high
+- tool: gemini_get_recent_trades
+  category: market-data
+  rest:
+  - listTrades
+  binding: direct
+  confidence: high
+- tool: gemini_get_price_feed
+  category: market-data
+  rest:
+  - listPrices
+  binding: direct
+  confidence: high
+- tool: gemini_get_funding_amounts
+  category: market-data
+  rest:
+  - getFundingAmount
+  binding: direct
+  confidence: high
+- tool: gemini_get_current_funding_rate
+  category: market-data
+  rest:
+  - getFundingAmount
+  - getNextFundingTimestamp
+  binding: fan-out
+  confidence: medium
+  note: Name suggests the current perpetual funding rate; the spec splits this across the funding amount and next-funding-timestamp
+    operations.
+- tool: gemini_get_auction_history
+  category: market-data
+  rest:
+  - listTrades
+  binding: direct
+  confidence: low
+  note: No auction operation exists in the published REST spec. The v1 auction endpoints are documented but absent
+    from rest.yaml, so this binding is a guess and is flagged low.
+- tool: gemini_get_network_codes
+  category: market-data
+  rest:
+  - getTokenNetworkV2
+  - getAssetsForNetwork
+  binding: fan-out
+  confidence: medium
+- tool: gemini_get_gas_fee_estimate
+  category: funds
+  rest:
+  - getGasFeeEstimation
+  binding: direct
+  confidence: high
+- tool: gemini_new_order
+  category: orders
+  rest:
+  - createNewOrder
+  binding: direct
+  confidence: high
+- tool: gemini_cancel_order
+  category: orders
+  rest:
+  - cancelOrder
+  binding: direct
+  confidence: high
+  note: Binds to the REST cancelOrder; the prediction-markets spec declares a same-named cancelOrder on a different
+    path.
+- tool: gemini_cancel_all_active_orders
+  category: orders
+  rest:
+  - cancelAllActiveOrders
+  binding: direct
+  confidence: high
+- tool: gemini_cancel_all_session_orders
+  category: orders
+  rest:
+  - cancelAllSessionOrders
+  binding: direct
+  confidence: high
+- tool: gemini_get_active_orders
+  category: orders
+  rest:
+  - listActiveOrders
+  binding: direct
+  confidence: high
+- tool: gemini_get_order_status
+  category: orders
+  rest:
+  - getOrderStatus
+  binding: direct
+  confidence: high
+- tool: gemini_get_my_trades
+  category: orders
+  rest:
+  - listPastTrades
+  binding: direct
+  confidence: high
+- tool: gemini_get_notional_volume
+  category: orders
+  rest:
+  - getNotionalTradingVolume
+  binding: direct
+  confidence: high
+- tool: gemini_get_trade_volume
+  category: orders
+  rest:
+  - getTradingVolume
+  binding: direct
+  confidence: high
+- tool: gemini_session_heartbeat
+  category: orders
+  rest:
+  - sendHeartbeat
+  binding: direct
+  confidence: high
+- tool: gemini_clearing_new_order
+  category: orders
+  rest:
+  - createNewClearingOrder
+  binding: direct
+  confidence: high
+- tool: gemini_clearing_broker_new_order
+  category: orders
+  rest:
+  - createNewBrokerOrder
+  binding: direct
+  confidence: high
+- tool: gemini_clearing_order_status
+  category: orders
+  rest:
+  - getClearingOrder
+  binding: direct
+  confidence: high
+- tool: gemini_get_balances
+  category: funds
+  rest:
+  - getAvailableBalances
+  binding: direct
+  confidence: high
+- tool: gemini_get_notional_balances
+  category: funds
+  rest:
+  - getNotionalBalances
+  binding: direct
+  confidence: high
+- tool: gemini_get_transfers
+  category: funds
+  rest:
+  - listPastTransfers
+  binding: direct
+  confidence: high
+- tool: gemini_get_deposit_addresses
+  category: funds
+  rest:
+  - listDepositAddresses
+  binding: direct
+  confidence: high
+- tool: gemini_get_new_deposit_address
+  category: funds
+  rest:
+  - createNewDepositAddress
+  binding: direct
+  confidence: high
+- tool: gemini_withdraw
+  category: funds
+  rest:
+  - withdrawCryptoFunds
+  binding: direct
+  confidence: high
+- tool: gemini_internal_transfer
+  category: funds
+  rest:
+  - transferBetweenAccounts
+  binding: direct
+  confidence: high
+- tool: gemini_add_bank
+  category: funds
+  rest:
+  - addBank
+  - addBankCAD
+  binding: fan-out
+  confidence: high
+- tool: gemini_get_bank_payment_methods
+  category: funds
+  rest:
+  - listPaymentMethods
+  binding: direct
+  confidence: high
+- tool: gemini_get_approved_addresses
+  category: funds
+  rest:
+  - listApprovedAddresses
+  binding: direct
+  confidence: high
+- tool: gemini_get_account
+  category: account
+  rest:
+  - getAccountDetail
+  binding: direct
+  confidence: high
+- tool: gemini_get_accounts
+  category: account
+  rest:
+  - listAccountsInGroup
+  binding: direct
+  confidence: high
+- tool: gemini_create_account
+  category: account
+  rest:
+  - createNewAccount
+  binding: direct
+  confidence: high
+- tool: gemini_get_roles
+  category: account
+  rest:
+  - getRoles
+  binding: direct
+  confidence: high
+- tool: gemini_revoke_oauth_token
+  category: account
+  rest:
+  - revokeOAuthToken
+  binding: direct
+  confidence: high
+- tool: gemini_get_margin_account
+  category: margin
+  rest:
+  - getMarginAccount
+  - getAccountMargin
+  binding: fan-out
+  confidence: medium
+  note: Two margin-account operations exist (/v1/margin/account and /v1/margin); the tool wraps one of them.
+- tool: gemini_get_margin_preview
+  category: margin
+  rest:
+  - previewMarginOrder
+  binding: direct
+  confidence: high
+- tool: gemini_get_open_positions
+  category: margin
+  rest:
+  - getOpenPositions
+  binding: direct
+  confidence: high
+- tool: gemini_get_funding_payments
+  category: margin
+  rest:
+  - listFundingPayments
+  binding: direct
+  confidence: high
+- tool: gemini_get_staking_balances
+  category: staking
+  rest:
+  - listStakingBalances
+  binding: direct
+  confidence: high
+- tool: gemini_get_staking_history
+  category: staking
+  rest:
+  - listStakingEventHistory
+  binding: direct
+  confidence: high
+- tool: gemini_get_staking_rates
+  category: staking
+  rest:
+  - listStakingRates
+  binding: direct
+  confidence: high
+- tool: gemini_stake
+  category: staking
+  rest:
+  - stakeCryptoFunds
+  binding: direct
+  confidence: high
+- tool: gemini_unstake
+  category: staking
+  rest:
+  - unstakeCryptoFunds
+  binding: direct
+  confidence: high
+unresolved:
+- tool: gemini_get_fee_promos
+  category: orders
+  reason: The /v1/feepromos endpoint was REMOVED from the REST spec and the TypeScript SDK on 2026-09-10 (changelog).
+    The MCP tool still names it - a live decay signal.
+- tool: gemini_fiat_withdrawal
+  category: funds
+  reason: No fiat-withdrawal operation is published in rest.yaml. The tool exists; the contract does not cover it.
+mcp_only:
+- tool: gemini_get_book_ticker
+  reason: WebSocket-only. Reads the {symbol}@bookTicker stream declared in the AsyncAPI contract; no REST equivalent.
+- tool: gemini_get_contract_status
+  reason: WebSocket-only. Reads the contractStatus stream; REST exposes events, not lifecycle transitions.
+- tool: gemini_get_order_updates
+  reason: WebSocket-only. Reads the authenticated orders@account stream.
+- tool: gemini_alert_setup
+  reason: Local client-side capability with no Gemini API operation behind it - OS notification daemon management.
+- tool: gemini_alert_categories
+  reason: Local client-side capability with no Gemini API operation behind it - OS notification daemon management.
+- tool: gemini_alert_create
+  reason: Local client-side capability with no Gemini API operation behind it - OS notification daemon management.
+- tool: gemini_alert_list
+  reason: Local client-side capability with no Gemini API operation behind it - OS notification daemon management.
+- tool: gemini_alert_get
+  reason: Local client-side capability with no Gemini API operation behind it - OS notification daemon management.
+- tool: gemini_alert_update
+  reason: Local client-side capability with no Gemini API operation behind it - OS notification daemon management.
+- tool: gemini_alert_delete
+  reason: Local client-side capability with no Gemini API operation behind it - OS notification daemon management.
+- tool: gemini_alert_history
+  reason: Local client-side capability with no Gemini API operation behind it - OS notification daemon management.
+- tool: gemini_alert_test
+  reason: Local client-side capability with no Gemini API operation behind it - OS notification daemon management.
+- tool: gemini_alert_daemon_install
+  reason: Local client-side capability with no Gemini API operation behind it - OS notification daemon management.
+- tool: gemini_alert_daemon_status
+  reason: Local client-side capability with no Gemini API operation behind it - OS notification daemon management.
+- tool: gemini_alert_daemon_reload_config
+  reason: Local client-side capability with no Gemini API operation behind it - OS notification daemon management.
+- tool: gemini_alert_daemon_uninstall
+  reason: Local client-side capability with no Gemini API operation behind it - OS notification daemon management.
+rest_only:
+- acceptPredictionMarketsTerms
+- cancelClearingOrder
+- cancelOrderBatch
+- confirmClearingOrder
+- createCombo
+- createNewApprovedAddress
+- executeInstantOrder
+- getActiveOrders
+- getCategories
+- getComboByInstrumentSymbol
+- getEvent
+- getEventStrike
+- getFXRate
+- getFundingAmountReportFile
+- getFundingPaymentReportFile
+- getFundingPaymentReportJson
+- getInstantQuote
+- getLiquidityRewardsConfig
+- getLiquidityRewardsDailySummary
+- getLiquidityRewardsLifetimeSummary
+- getMakerRebateLifetimeSummary
+- getMakerRebateRates
+- getMarginRates
+- getOrderHistory
+- getPositions
+- getPredictionMarketDailyVolume
+- getPredictionMarketHourlyVolume
+- getPredictionMarketsTerms
+- getPredictionMarketsTermsStatus
+- getRiskStats
+- getSettledPositions
+- getTicker
+- getTransactionHistory
+- getVolumeMetrics
+- listClearingBrokers
+- listClearingOrders
+- listClearingTrades
+- listCombos
+- listCustodyFeeTransfers
+- listEvents
+- listLiquidityRewardsEvents
+- listMakerRebatePayouts
+- listNewlyListedEvents
+- listPastOrders
+- listRecentlySettledEvents
+- listStakingRewards
+- listUpcomingEvents
+- placeOrder
+- placeOrderBatch
+- removeApprovedAddress
+- renameAccount
+- wrapOrder
+rest_only_note: 'Published operations with no MCP tool. The prediction-markets surface is the largest gap: all 31
+  prediction-market operations - order placement, positions, combos, RFQ, rebates and liquidity rewards - are in the
+  OpenAPI but absent from the MCP server, even though the README advertises a Predictions tool category. Instant orders,
+  FX rates, risk stats, approved-address management and the .xlsx report endpoints are also REST-only.'

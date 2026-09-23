@@ -1,0 +1,109 @@
+generated: '2026-09-18'
+method: searched
+source: https://api.gemini.com/.well-known/oauth-authorization-server, https://developer.gemini.com/trading/fix/overview/dictionary/version,
+  https://developer.gemini.com/authentication/oauth, https://www.gemini.com/security, openapi/gemini-trust-rest-openapi.yml,
+  asyncapi/gemini-trust-websocket-asyncapi.yml
+conformance:
+- id: openapi-3.0.3
+  conforms: true
+  evidence: 'openapi/gemini-trust-rest-openapi.yml and openapi/gemini-trust-prediction-markets-openapi.yml both declare
+    openapi: 3.0.3; published at https://developer.gemini.com/specs/index.json'
+- id: asyncapi-3.0.0
+  conforms: true
+  evidence: 'asyncapi/gemini-trust-websocket-asyncapi.yml declares asyncapi: 3.0.0, version 0.10.7, 21 channels /
+    22 operations'
+- id: oauth2
+  conforms: true
+  evidence: https://api.gemini.com/.well-known/oauth-authorization-server - authorization_code + refresh_token grants,
+    33 scopes
+- id: rfc8414-authorization-server-metadata
+  conforms: true
+  evidence: https://api.gemini.com/.well-known/oauth-authorization-server returned 200 with issuer, authorization/token/revocation/introspection
+    endpoints
+- id: rfc7636-pkce
+  conforms: true
+  evidence: 'code_challenge_methods_supported: [S256] in the authorization-server metadata; required for public clients
+    per https://developer.gemini.com/authentication/oauth'
+- id: rfc7009-token-revocation
+  conforms: true
+  evidence: revocation_endpoint https://exchange.gemini.com/auth/token/revoke; also exposed as REST operation revokeOAuthToken
+- id: rfc7662-token-introspection
+  conforms: true
+  evidence: introspection_endpoint https://exchange.gemini.com/auth/token/introspect
+- id: oidc
+  conforms: true
+  evidence: https://api.gemini.com/.well-known/openid-configuration returned 200; issuer https://exchange.gemini.com,
+    RS256 id_tokens, private_key_jwt, scopes openid/email. Scoped to SSO, not the trading API.
+- id: rfc9116-security-txt
+  conforms: true
+  evidence: https://www.gemini.com/.well-known/security.txt returned 200, PGP-signed, with Contact/Encryption/Canonical/Preferred-Languages/Hiring
+    fields
+- id: rfc9457-problem-details
+  conforms: false
+  evidence: Neither spec returns application/problem+json. The error envelope is a proprietary {result, reason, message}
+    object - see errors/gemini-trust-problem-types.yml
+- id: rfc8594-sunset-header
+  conforms: false
+  evidence: No Sunset or Deprecation header is documented; https://developer.gemini.com/changelog/upcoming-changes
+    is a "TBD" placeholder
+- id: rfc9728-protected-resource-metadata
+  conforms: false
+  evidence: /.well-known/oauth-protected-resource returned 404 on api.gemini.com and api.sandbox.gemini.com
+- id: well-known-api-catalog
+  conforms: false
+  evidence: /.well-known/api-catalog returned 404 on every host; the spec catalog is served at the non-standard https://developer.gemini.com/specs/index.json
+- id: rate-limit-headers
+  conforms: false
+  evidence: No X-RateLimit-*, RateLimit-* or Retry-After header is documented at https://developer.gemini.com/rate-limit;
+    only a 429 status
+- id: a2a-agent-card
+  conforms: false
+  evidence: A card IS served at https://developer.gemini.com/.well-known/agent-card.json (200) but grades "flavored"
+    against A2A 1.0.0 - protocolVersion absent. See a2a/gemini-trust-a2a.yml
+- id: llms-txt
+  conforms: true
+  evidence: https://developer.gemini.com/llms.txt returned 200 with 44KB of structured link index, spec catalog and
+    agent guidance; llms-full.txt also published
+domain_standards:
+- id: fix-protocol
+  name: FIX 4.4
+  conforms: true
+  evidence: https://developer.gemini.com/trading/fix/overview/dictionary/version - "Gemini uses FIX 4.4 with the 20030618
+    errata", with a published dictionary deviation table (tag 234 StipulationValue)
+  surface: FIX order entry, market data and drop-copy sessions, documented under /trading/fix/*. Endpoints are provisioned
+    after connectivity onboarding rather than published.
+  note: fix-protocol is on the securities_market_data regime shortlist in scoring.yml. This is a contract-level declaration
+    with a stated errata level and a documented dictionary deviation - not a marketing claim.
+- id: fdx
+  name: Financial Data Exchange
+  conforms: true
+  evidence: 'https://api.gemini.com/.well-known/oauth-authorization-server publishes six FDX-namespaced scopes: fdx:accountbasic:read,
+    fdx:accountdetailed:read, fdx:customercontact:read, fdx:rewards:read, fdx:statements:read, fdx:transactions:read'
+  surface: OAuth 2.0 delegated access. The scope names map one-to-one onto the FDX API data clusters (Account Basic,
+    Account Detailed, Customer Contact, Rewards, Statements, Transactions).
+  note: Found in the CONTRACT (live RFC 8414 metadata), not in prose. Gemini does not advertise FDX anywhere in its
+    developer documentation, so this signature would be invisible to a docs-only reading. fdx is on the banking_open_finance
+    standards shortlist in scoring.yml; a crypto exchange publishing FDX scopes is what data aggregators need to consume
+    Gemini account data without a bespoke connector.
+- id: iso-20022
+  conforms: false
+  evidence: No ISO 20022 message types appear in either spec, the AsyncAPI, or the documentation index.
+- id: mifid-ii
+  conforms: false
+  evidence: No MiFID II transaction-reporting or RTS 27/28 surface found. Gemini Trust Company is US-regulated (NYDFS);
+    the UK/EU entities were not in scope of this probe.
+compliance_certifications:
+- name: SOC 1 Type 2
+  evidence: https://www.gemini.com/security - "the world's first SOC1 Type 2 and SOC 2 Type 2 certified crypto exchange
+    and custodian"
+- name: SOC 2 Type 2
+  evidence: https://www.gemini.com/security
+- name: ISO 27001
+  evidence: https://www.gemini.com/security - "third party security assessments, including our SOC2 Type 2, ISO 27001,
+    and annual penetration testing"
+regulatory_status:
+  entity: Gemini Trust Company, LLC
+  regulator: New York State Department of Financial Services (NYDFS)
+  form: New York limited purpose trust company
+  address: 600 Third Avenue, 2nd Floor, New York, NY 10016
+  evidence: https://developer.gemini.com/contact (address), https://www.gemini.com/about

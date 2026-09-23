@@ -1,0 +1,106 @@
+generated: '2026-09-18'
+method: probed
+source: live GET of the named /.well-known/ path list on every host this record knows
+hosts:
+- host: www.gemini.com
+  documents:
+  - path: /.well-known/security.txt
+    status: 200
+    file: gemini-trust-security.txt
+    note: RFC 9116, PGP-signed (SHA256). Contact psirt@gemini.com. Carries the full bug-bounty policy inline.
+  - path: /.well-known/openid-configuration
+    status: 404
+  - path: /.well-known/oauth-authorization-server
+    status: 404
+  - path: /.well-known/api-catalog
+    status: 404
+  - path: /.well-known/ai-plugin.json
+    status: 404
+  - path: /.well-known/agent-card.json
+    status: 404
+  - path: /.well-known/agent.json
+    status: 404
+- host: gemini.com
+  documents:
+  - path: /.well-known/security.txt
+    status: 200
+    file: gemini-trust-security.txt
+    note: 'Same document; the file declares Canonical: https://gemini.com/.well-known/security.txt'
+  - path: /.well-known/openid-configuration
+    status: 404
+  - path: /.well-known/oauth-authorization-server
+    status: 404
+  - path: /.well-known/api-catalog
+    status: 404
+- host: api.gemini.com
+  documents:
+  - path: /.well-known/openid-configuration
+    status: 200
+    file: gemini-trust-openid-configuration.json
+    note: SSO OIDC metadata; issuer https://exchange.gemini.com, private_key_jwt, PKCE S256, scopes openid/email.
+  - path: /.well-known/oauth-authorization-server
+    status: 200
+    file: gemini-trust-oauth-authorization-server.json
+    note: RFC 8414 metadata publishing 33 scopes including the FDX namespace. See scopes/gemini-trust-scopes.yml.
+  - path: /.well-known/oauth-protected-resource
+    status: 404
+  - path: /.well-known/security.txt
+    status: 404
+  - path: /.well-known/api-catalog
+    status: 404
+  - path: /.well-known/ai-plugin.json
+    status: 404
+  - path: /.well-known/agent-card.json
+    status: 404
+  - path: /.well-known/agent.json
+    status: 404
+- host: api.sandbox.gemini.com
+  documents:
+  - path: /.well-known/openid-configuration
+    status: 200
+    note: Sandbox OIDC metadata, issuer https://exchange.gemini.com. Not saved separately - same shape as production.
+  - path: /.well-known/oauth-authorization-server
+    status: 200
+    note: Sandbox RFC 8414 metadata, issuer https://exchange.sandbox.gemini.com.
+  - path: /.well-known/oauth-protected-resource
+    status: 404
+  - path: /.well-known/agent-card.json
+    status: 404
+- host: developer.gemini.com
+  documents:
+  - path: /.well-known/agent-card.json
+    status: 200
+    file: ../a2a/gemini-trust-agent-card.json
+    note: Real A2A-shaped agent card. Graded flavored - see a2a/gemini-trust-a2a.yml.
+  - path: /.well-known/agent-skills/index.json
+    status: 200
+    file: gemini-trust-agent-skills-index.json
+    note: Non-standard path Gemini advertises in agents.md; a JSON index of three published agent skills.
+  - path: /.well-known/agent.json
+    status: 404
+  - path: /.well-known/security.txt
+    status: 404
+  - path: /.well-known/openid-configuration
+    status: 404
+  - path: /.well-known/oauth-authorization-server
+    status: 404
+  - path: /.well-known/api-catalog
+    status: 404
+  - path: /.well-known/ai-plugin.json
+    status: 404
+- host: docs.gemini.com
+  documents:
+  - path: /.well-known/agent-card.json
+    status: 200
+    note: docs.gemini.com serves the same agent card; the host 301s to developer.gemini.com for page routes.
+  - path: /.well-known/agent.json
+    status: 404
+  - path: /.well-known/security.txt
+    status: 404
+  - path: /.well-known/api-catalog
+    status: 404
+findings:
+- No /.well-known/api-catalog on any host - the spec catalog lives at https://developer.gemini.com/specs/index.json
+  instead.
+- No /.well-known/oauth-protected-resource (RFC 9728) anywhere, although RFC 8414 authorization-server metadata is
+  served.

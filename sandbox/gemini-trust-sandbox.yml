@@ -1,0 +1,37 @@
+generated: '2026-09-18'
+method: searched
+source: https://developer.gemini.com/get-started/sandbox
+name: Gemini demo environment (sandbox)
+self_service: true
+endpoints:
+- service: Website
+  url: https://exchange.sandbox.gemini.com
+- service: REST API
+  url: https://api.sandbox.gemini.com
+- service: WebSocket feed
+  url: wss://ws.sandbox.gemini.com
+- service: Documentation
+  url: https://docs.sandbox.gemini.com
+parity: Full exchange functionality with test funds. Automated bots simulate order book activity and trading, so the
+  book is live rather than empty.
+test_balances:
+  auto_credited: true
+  amounts:
+  - $100,000 USD
+  - 1,000 BTC
+  - 20,000 ETH
+  - 20,000 BCH
+  - 20,000 ZEC
+  - 20,000 LTC
+  note: Credited automatically on new sandbox account registration.
+deposits_withdrawals: Bitcoin Testnet only. No other asset supports sandbox deposits or withdrawals.
+two_factor_bypass:
+  documented: true
+  method: Set the cookie or HTTP header GEMINI-SANDBOX-2FA=true, then enter 9999999 as the verification code.
+  note: Published verbatim by Gemini for automated testing; sandbox-only.
+limitations:
+- No email notifications are sent from sandbox - integrations that test email delivery must contact trading@gemini.com
+- Balance adjustments require contacting trading@gemini.com
+- OAuth applications can be registered immediately in sandbox; production apps are reviewed by Gemini before activation
+oauth_sandbox: https://exchange.sandbox.gemini.com/settings/api
+bug_bounty_scope: The sandbox domains are the in-scope target set for Gemini's bug bounty - see security/gemini-trust-vulnerability-disclosure.yml.

@@ -1,0 +1,27 @@
+{
+  "$schema": "https://a2a-specs.org/schemas/agent-skills-v1.json",
+  "version": "1.0.0",
+  "skills": [
+    {
+      "id": "gemini-api-docs",
+      "name": "Gemini API Documentation Discovery",
+      "description": "Discover and query Gemini REST, WebSocket, and FIX API contracts, endpoints, schemas, and usage examples.",
+      "whenToUse": "When you need to discover Gemini Exchange API endpoints, build API requests, or look up schema specifications.",
+      "documentation": "https://developer.gemini.com/api-reference"
+    },
+    {
+      "id": "gemini-mcp-server",
+      "name": "Gemini Model Context Protocol (MCP) Server",
+      "description": "Connect Claude, ChatGPT, or custom AI tools to Gemini market data and trading endpoints via MCP.",
+      "whenToUse": "When an agent needs real-time market data or authenticated execution capabilities via MCP tools.",
+      "repository": "https://github.com/gemini/developer-platform/tree/main/packages/mcp-server"
+    },
+    {
+      "id": "gemini-agent-skills",
+      "name": "Gemini Agent Skills for Claude Code & AI Assistants",
+      "description": "Integrate Gemini trading skills, candlestick charting, and market analysis into AI coding assistants.",
+      "whenToUse": "When assisting developers with Gemini API integrations, trading algorithms, or market analysis.",
+      "repository": "https://github.com/gemini/developer-platform/tree/main/skills"
+    }
+  ]
+}

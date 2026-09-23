@@ -1,0 +1,148 @@
+generated: '2026-09-18'
+method: searched
+source: https://developer.gemini.com/error-codes
+envelope:
+  fields:
+  - result (always "error")
+  - reason (machine-readable identifier)
+  - message (human-readable description)
+  format: proprietary JSON, not RFC 9457
+  content_type: application/json
+http_status_codes:
+- status: '200'
+  meaning: Request succeeded
+- status: 30x
+  meaning: API entry point moved. Check the `Location` header for redirect URL.
+- status: '400'
+  meaning: Market not open, malformed request, or invalid authentication headers
+- status: '403'
+  meaning: API key lacks the required role for this endpoint
+- status: '404'
+  meaning: Unknown endpoint or order not found
+- status: '406'
+  meaning: Insufficient funds
+- status: '429'
+  meaning: Rate limit exceeded
+- status: '500'
+  meaning: Server encountered an error
+- status: '502'
+  meaning: Technical issues prevented request fulfillment
+- status: '503'
+  meaning: Exchange is down for maintenance
+reason_count: 53
+reasons:
+- reason: ClientOrderIdTooLong
+  meaning: Client Order ID must not exceed 100 characters
+- reason: ClientOrderIdMustBeString
+  meaning: Client Order ID must be a string
+- reason: ConflictingOptions
+  meaning: Selected order execution options conflict with each other
+- reason: ConflictingAccountName
+  meaning: Specified name is already in use within the master group
+- reason: EndpointMismatch
+  meaning: Request path does not match the endpoint specified in payload
+- reason: EndpointNotFound
+  meaning: No endpoint specified
+- reason: GTSTradeIDMustBeString
+  meaning: Clearing ID must be a string
+- reason: InsufficientFunds
+  meaning: Order rejected due to insufficient funds
+- reason: InvalidJson
+  meaning: Request body contains invalid JSON
+- reason: InvalidNonce
+  meaning: Nonce is not strictly greater than previous nonce or falls outside +/- 30 seconds of server epoch
+- reason: InvalidOrderType
+  meaning: Unsupported or unknown order type
+- reason: InvalidPrice
+  meaning: Invalid price specified for order
+- reason: InvalidStopPrice
+  meaning: Invalid stop price specified for stop-limit order
+- reason: InvalidStopPriceSell
+  meaning: Stop price for stop-limit sell order was below the sell price
+- reason: InvalidStopPriceBuy
+  meaning: Stop price for stop-limit buy order was above the buy price
+- reason: InvalidStopPriceRatio
+  meaning: Stop price deviates more than 50% from the limit price
+- reason: InvalidQuantity
+  meaning: Invalid or negative order quantity specified
+- reason: InvalidSide
+  meaning: Invalid order side specified (must be `buy` or `sell`)
+- reason: InvalidSignature
+  meaning: Request signature did not match payload and API secret
+- reason: InvalidSymbol
+  meaning: Unknown or invalid symbol
+- reason: InvalidTimestampInPayload
+  meaning: Payload contains an unsupported `timestamp` value
+- reason: InvalidAccountName
+  meaning: Account name does not match any account in the master group
+- reason: InvalidAccountType
+  meaning: Account type must be `exchange` or `custody`
+- reason: InvalidFundTransfer
+  meaning: Internal fund transfer failed
+- reason: Maintenance
+  meaning: Exchange is down for scheduled maintenance
+- reason: MarketNotOpen
+  meaning: Market is currently not accepting new orders
+- reason: MissingAccountName
+  meaning: Required account name omitted
+- reason: MissingAccounts
+  meaning: Required `account` field omitted
+- reason: MissingApikeyHeader
+  meaning: Missing `X-GEMINI-APIKEY` HTTP header
+- reason: MissingOrderField
+  meaning: Required `order_id` field omitted
+- reason: MissingRole
+  meaning: API key lacks the required role for this endpoint
+- reason: MissingPayloadHeader
+  meaning: Missing `X-GEMINI-PAYLOAD` HTTP header
+- reason: MissingPayloadKey
+  meaning: Payload is missing a required parameter
+- reason: MissingSignatureHeader
+  meaning: Missing `X-GEMINI-SIGNATURE` HTTP header
+- reason: MissingName
+  meaning: Required `name` field omitted
+- reason: MissingNonce
+  meaning: Missing `nonce` in payload. See Private API Invocation.
+- reason: MoreThanOneAccount
+  meaning: Multiple accounts supplied to a single-account endpoint
+- reason: AccountClosed
+  meaning: Account is closed and cannot perform this operation
+- reason: AccountsOnGroupOnlyApi
+  meaning: Account parameter supplied to a group-level endpoint using a non-master key
+- reason: AccountLimitExceeded
+  meaning: Number of accounts exceeds the endpoint limit
+- reason: NoAccountOfTypeRequired
+  meaning: Specified accounts do not match the required account type
+- reason: AccountNotOfTypeRequired
+  meaning: Specified account does not match the required account type
+- reason: NotGroupApiCompatible
+  meaning: Master API key used on an account-only endpoint
+- reason: ExceededMaxAccountsInGroup
+  meaning: Cannot create account because master group reached its maximum limit
+- reason: NoSSL
+  meaning: HTTPS is required for all API requests
+- reason: OptionsMustBeArray
+  meaning: Parameter `options` must be an array
+- reason: OrderNotFound
+  meaning: Specified order does not exist
+- reason: RateLimit
+  meaning: Request rate exceeded. See Rate Limits.
+- reason: System
+  meaning: Internal server error
+- reason: UnsupportedOption
+  meaning: Specified order execution option is not supported
+- reason: HasNotAgreedToCustodyTerms
+  meaning: Master group has not accepted Custody terms. Review and accept at https://exchange.gemini.com/custody.
+- reason: BadAccountType
+  meaning: Parameter `type` must be `exchange` or `custody`
+- reason: RemoteAddressForbidden
+  meaning: Request originated from an IP address not on the group allowlist
+role_errors:
+  status: 403
+  reason: MissingRole
+  docs: https://developer.gemini.com/roles
+  note: 'Role-based access control: Administrator (Master keys only), Trader (default), plus Fund Manager and Auditor
+    roles configured per key.'
+note: 'A genuinely rich first-party error registry: every reason is a stable machine-readable identifier with a stated
+  meaning, which is what an agent needs to branch on. The gap is remediation - the table says what went wrong, not
+  what to do about it, and there is no per-error retry guidance.'

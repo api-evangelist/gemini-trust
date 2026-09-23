@@ -1,0 +1,34 @@
+generated: '2026-09-18'
+method: searched
+source: https://www.gemini.com/fees
+plan_count: 0
+model: transaction-fee, not subscription
+note: Gemini publishes NO API plans or tiers - there is no free/pro/enterprise ladder and no per-call price. API access
+  is free with a Gemini account; the company is paid through trading fees, which are volume-tiered on a 30-day notional
+  basis rather than sold as API plans. plan_count is 0 because that is the honest reading of the pricing surface,
+  not because pricing is hidden.
+pricing_pages:
+- name: Fees overview
+  url: https://www.gemini.com/fees
+  status: 200
+- name: ActiveTrader / API fee schedule
+  url: https://www.gemini.com/fees/api-fee-schedule
+  status: 200
+  note: Redirects to https://www.gemini.com/fees/activetrader-fee-schedule - the API and ActiveTrader surfaces share
+    one maker/taker schedule.
+incentive_programs:
+- name: Prediction Markets maker rebate
+  api: getMakerRebateRates, listMakerRebatePayouts, getMakerRebateLifetimeSummary
+  docs: https://developer.gemini.com/prediction-markets/maker-rebate-program
+- name: Prediction Markets liquidity rewards
+  api: getLiquidityRewardsConfig, listLiquidityRewardsEvents
+  docs: https://developer.gemini.com/prediction-markets/liquidity-rewards-program
+- name: Prediction Markets taker rewards
+  docs: https://developer.gemini.com/prediction-markets/taker-rewards-program
+- name: Maker fee-free trading promo
+  window: 2026-09-02 to 2026-12-31
+  docs: https://developer.gemini.com/prediction-markets/maker-fee-free-trading-promo
+programmatic_fee_reads:
+- getNotionalTradingVolume (POST /v1/notionalvolume) returns the account's current maker/taker rates, including symbol-specific
+  stablecoin promo tiers
+- getTradingVolume (POST /v1/tradevolume) returns 30-day volume that sets the tier

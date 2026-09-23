@@ -1,0 +1,56 @@
+{
+  "$schema": "https://a2a-specs.org/schemas/agent-card-v1.json",
+  "name": "Gemini Developer Platform Agent",
+  "description": "Official agent capability interface for the Gemini Exchange API, including Spot, Margin, Perpetuals, Prediction Markets, Staking, and Account Management.",
+  "version": "1.0.0",
+  "provider": {
+    "organization": "Gemini",
+    "url": "https://gemini.com"
+  },
+  "defaultInputModes": ["text"],
+  "defaultOutputModes": ["text"],
+  "supportedInterfaces": [
+    {
+      "type": "REST",
+      "url": "https://developer.gemini.com/rest-api/rest-api"
+    },
+    {
+      "type": "WebSocket",
+      "url": "https://developer.gemini.com/websocket/introduction"
+    }
+  ],
+  "capabilities": {
+    "streaming": true,
+    "pushNotifications": false
+  },
+  "skills": [
+    {
+      "id": "gemini-trading",
+      "name": "Spot & Derivatives Trading",
+      "description": "Place, inspect, amend, and cancel Spot, Margin, Perpetuals, and Prediction Market orders."
+    },
+    {
+      "id": "gemini-market-data",
+      "name": "Market Data & Tickers",
+      "description": "Stream or query order books, tickers, trade history, candles, and derivative funding rates."
+    },
+    {
+      "id": "gemini-account-management",
+      "name": "Fund & Account Management",
+      "description": "Check balances, generate deposit addresses, request crypto/fiat transfers, and manage subaccounts."
+    }
+  ],
+  "custom": {
+    "authentication": {
+      "types": ["apiKey", "oauth2", "pkce"],
+      "documentation": "https://developer.gemini.com/authentication/api-key"
+    },
+    "documentation": {
+      "url": "https://developer.gemini.com",
+      "llmsTxt": "https://developer.gemini.com/llms.txt",
+      "llmsFullTxt": "https://developer.gemini.com/llms-full.txt",
+      "specCatalog": "https://developer.gemini.com/specs/index.json"
+    },
+    "instructions": "https://developer.gemini.com/agents.md"
+  }
+}

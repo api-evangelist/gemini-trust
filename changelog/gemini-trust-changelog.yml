@@ -1,0 +1,70 @@
+generated: '2026-09-18'
+method: searched
+source: https://developer.gemini.com/changelog/revision-history
+scheme: dated entries grouped by product area and protocol, newest first
+cadence: Very active - 246 dated entries are published on the revision-history page, with 2026-09-16 the most recent
+  and entries landing several times a month.
+entry_count_published: 246
+current_versions:
+  rest: 1.0.0
+  prediction-markets: 1.0.0
+  websocket: 0.10.7
+breaking_changes_marked: false
+breaking_changes_note: The changelog does not label an entry breaking. The 2026-09-10 entry adding a REQUIRED symbol
+  parameter to POST /v1/margin/account and removing /v1/feepromos reads identically in form to a documentation typo
+  fix. Breaking flags below are this pipeline's reading of the text, not the provider's label.
+recent_entries:
+- date: '2026-09-16'
+  area: Prediction Markets / REST
+  breaking: false
+  highlights:
+  - Removed the undocumented contracts[].totalShares field from the Contract schema on GET /v1/prediction-markets/events/{eventTicker}
+    - never implemented by the backend
+- date: '2026-09-11'
+  area: Prediction Markets / REST
+  breaking: false
+  highlights:
+  - Documented the events[] field returned by List Events and Get Event for game markets, including full child event
+    objects
+- date: '2026-09-10'
+  area: Margin / Prediction Markets / REST
+  breaking: true
+  highlights:
+  - Added REQUIRED symbol request parameter to POST /v1/margin/account (breaking for existing callers)
+  - Removed the deprecated /v1/feepromos endpoint from the REST specification and the TypeScript SDK
+  - Added Collateral Return documentation for Prediction Markets
+  - Documented the optional symbol parameter on /v1/notionalvolume for stablecoin promo tiers
+  - Added endpoint-specific private rate limits (past transfers, custody fee transfers, deposit addresses) to the
+    Rate Limits page
+- date: '2026-09-09'
+  area: Prediction Markets / Sports Ticker Format
+  breaking: false
+  highlights:
+  - Corrected Team Total (-TT) documentation to distinguish FIFA World Cup regulation-time goals from NFL full-game
+    points including overtime
+- date: '2026-09-03'
+  area: Prediction Markets / Combo RFQ WebSocket
+  breaking: false
+  highlights:
+  - Added optional maker clientId to rfq.submit_quote, returned as c on the maker authenticated fill event
+- date: '2026-09-02'
+  area: Prediction Markets
+  breaking: false
+  highlights:
+  - Added the Tennis "Exact match score" market to the market mapping table
+  - 'Corrected settlement stream documentation: settlements@account is not a production stream'
+- date: '2026-08-27'
+  area: Prediction Markets / Combo RFQ WebSocket
+  breaking: false
+  highlights:
+  - Added optional per-leg instrument symbol (s) to each leg in the requestForQuote broadcast
+- date: '2026-08-26'
+  area: Prediction Markets
+  breaking: false
+  highlights:
+  - Added a Maker Fee-Free Trading Promo from 2026-09-02 through 2026-12-31
+upcoming:
+  url: https://developer.gemini.com/changelog/upcoming-changes
+  status: 200
+  content: TBD
+  note: The forward-looking page exists but is empty - see lifecycle/gemini-trust-lifecycle.yml.

@@ -1,0 +1,62 @@
+overlay: 1.0.0
+info:
+  title: API Evangelist enrichment overlay for Gemini Crypto Trading REST API
+  version: 1.0.0
+extends: openapi/gemini-trust-rest-openapi.yml
+x-generated: '2026-09-18'
+x-method: generated
+x-source: Derived from API Evangelist enrichment artifacts in this repo. Applies our findings without mutating the
+  provider spec.
+actions:
+- target: $.info
+  update:
+    x-apis-io-provider: gemini-trust
+    x-apis-io-artifacts:
+      authentication: authentication/gemini-trust-authentication.yml
+      scopes: scopes/gemini-trust-scopes.yml
+      conventions: conventions/gemini-trust-conventions.yml
+      errors: errors/gemini-trust-error-codes.yml
+      rate-limits: rate-limits/gemini-trust-rate-limits.yml
+      lifecycle: lifecycle/gemini-trust-lifecycle.yml
+      sandbox: sandbox/gemini-trust-sandbox.yml
+      conformance: conformance/gemini-trust-conformance.yml
+    x-rate-limit:
+      public: 120/min
+      private: 600/min
+      burst: 5
+      status: 429
+      response_headers: null
+      docs: https://developer.gemini.com/rate-limit
+    x-error-envelope:
+      format: proprietary
+      fields:
+      - result
+      - reason
+      - message
+      docs: https://developer.gemini.com/error-codes
+    x-idempotency:
+      coverage: partial
+      mechanism: client_order_id on order placement; clientTransferId (UUID) on crypto withdrawal. No Idempotency-Key
+        header.
+    x-sandbox:
+      rest: https://api.sandbox.gemini.com
+      ws: wss://ws.sandbox.gemini.com
+      console: https://exchange.sandbox.gemini.com
+- target: $.paths['/v1/order/new'].post
+  update:
+    x-reversibility:
+      grade: verified
+      reversal: cancelOrder
+      window: Any time while the order remains open; a filled order is final.
+      session_reversal: cancelAllSessionOrders
+- target: $.paths['/v2/withdraw/{network}/{ticker}'].post
+  update:
+    x-reversibility:
+      grade: none
+      reversal: null
+      note: IRREVERSIBLE on-chain withdrawal. clientTransferId prevents a duplicate; it does not undo one. Gate behind
+        human confirmation.
+    x-idempotency:
+      key: clientTransferId
+      type: uuid
+      documented: true

@@ -1,0 +1,51 @@
+generated: '2026-09-18'
+method: searched
+source: https://developer.gemini.com/changelog/revision-history, /changelog/upcoming-changes, https://status.gemini.com
+versioning:
+  style: URI path prefix
+  current:
+  - v1
+  - v2
+  spec_versions:
+    rest: 1.0.0 (OpenAPI 3.0.3)
+    prediction-markets: 1.0.0 (OpenAPI 3.0.3)
+    websocket: 0.10.7 (AsyncAPI 3.0.0)
+  note: v1 and v2 coexist in the same contract rather than v2 superseding v1; v2 carries candles, ticker, transfers,
+    networks, FX rate and network-scoped withdrawals.
+status_page:
+  url: https://status.gemini.com
+  status: 200
+  verified: '2026-09-18'
+deprecation_policy:
+  published: false
+  sunset_headers: false
+  evidence:
+  - url: https://developer.gemini.com/changelog/upcoming-changes
+    status: 200
+    note: The page exists and is titled "Upcoming Changes" but its entire body is the single word "TBD" - a placeholder,
+      not a policy.
+  note: 'Gemini publishes NO deprecation policy, no notice period, and no RFC 8594 Sunset/Deprecation headers. Neither
+    OpenAPI marks a single operation deprecated: true. Removals are announced only retroactively in the changelog
+    - /v1/feepromos was "removed from the REST API specification and TypeScript SDK" on 2026-09-10 with no prior notice
+    window stated. The upcoming-changes page is the right surface for this and is empty.'
+deprecated_operations: []
+deprecated_operations_note: 'Zero operations carry deprecated: true across the 105 published operations.'
+recent_removals:
+- date: '2026-09-16'
+  change: Removed the undocumented contracts[].totalShares field from the Contract schema on GET /v1/prediction-markets/events/{eventTicker}
+  breaking: false
+  note: Never returned by the backend
+- date: '2026-09-10'
+  change: Removed the deprecated /v1/feepromos endpoint from the REST API specification and the TypeScript SDK
+  breaking: true
+- date: '2026-09-10'
+  change: Added required symbol request parameter to POST /v1/margin/account
+  breaking: true
+  note: A newly REQUIRED parameter on an existing operation is a breaking change for existing callers.
+sla:
+  published: false
+  note: No public API SLA was found. The API Agreement (https://www.gemini.com/legal/api-agreement) governs use but
+    states no availability commitment.
+archived_surfaces:
+  note: Archived WebSocket v1/v2 APIs remain documented for reference but are deliberately excluded from the current
+    AsyncAPI contract (stated on https://developer.gemini.com/api-specifications).

@@ -1,0 +1,148 @@
+-----BEGIN PGP SIGNED MESSAGE-----
+Hash: SHA256
+
+Contact: psirt@gemini.com
+Encryption: https://www.gemini.com/static/pgp/gemini.asc
+Preferred-Languages: en
+Canonical: https://gemini.com/.well-known/security.txt
+Hiring: https://www.gemini.com/careers
+
+Bug Bounty Program Policy
+
+At Gemini, we welcome contributions from security researchers to help us build and secure the future of money. If you believe you’ve discovered a vulnerability, please submit a PGP-encrypted report to the contact address listed above. Our team will investigate all valid reports and do our best to respond in a timely manner. To ensure all parties' expectations are met, please review the entirety of this policy before submitting a report to Gemini. By making a submission or otherwise participating in this program, you acknowledge your agreement to the terms set forth below.
+
+Testing Guidance
+
+Whenever possible, research and testing should be performed on our sandbox. The sandbox provides researchers with easy and unfettered access to our platform, including expedited account registration and the ability to interact with fictitious funds.
+
+Domain Scopes
+	The following list of domains are considered in-scope:
+		api.sandbox.gemini.com
+		docs.sandbox.gemini.com
+		exchange.sandbox.gemini.com
+		mobile.exchange.sandbox.gemini.com
+		mobile.sandbox.gemini.com
+		sandbox.gemini.com
+		static.sandbox.gemini.com
+	Out of Scope
+		Any domain not explicitly listed above should be considered out-of-scope. If you believe that a given domain should be considered in-scope, please send an email to the contact address listed above.
+
+Out-of-scope Issues
+
+All vulnerabilities related to or requiring the following are considered outside the scope of this program:
+	Reports relating to login/logout CSRF;
+	Reports relating to email enumeration;
+	Reports relating to password strength or complexity;
+	Reports relating to missing security hardening headers;
+	Reports relating to weak cipher suites;
+	Reports relating to rate limiting issues;
+	Reports that target vulnerabilities on outdated or deprecated browsers, open source libraries, or infrastructure;
+	Reports from automated tools or scans;
+	Vulnerabilities that involve physical access to a device;
+	Vulnerabilities or weaknesses in third party applications that integrate with Gemini;
+	Social engineering of Gemini's employees, contractors, or customers;
+	Our policies on presence/absence of SPF/DMARC/DKIM/CAA/BIMI records;
+	Physical attempts to gain access to Gemini property or data centers;
+	Ability to abuse existing banking functionality such as ACH or credit card chargebacks;
+	Any access to data where the targeted user needs to be operating a rooted or jailbroken mobile device;
+	Self-XSS or developer console code execution;
+	Click-jacking, or issues only exploitable via click-jacking;
+	API keys embedded in mobile applications and web front ends with no security impact, including but not limited to Google Maps, MixPanel, and public keys;
+	MFA bypass on sandbox accounts; and
+	URLs and parameters leaked to 3rd parties without demonstrated attacker access.
+
+Coordinated Disclosure Requirements
+
+Complying with our safe harbor policy requires researchers to adhere to our Coordinated Disclosure process. Coordinated Disclosure requires that researchers abide by the following requirements:
+	Share a detailed report that includes all information as it relates to the vulnerability;
+	Refrain from providing any information to anyone other than Gemini until jointly agreeing to a disclosure timeline with Gemini;
+	Do not access or modify our data or our users’ data without explicit permission. Only interact with your own accounts or test accounts for security research purposes;
+	Do not profit from or allow another party to profit from a vulnerability;
+	Do not defraud Gemini or its customers in the process of participating in our program;
+	Act in good faith to avoid privacy violations, destruction of data, and interruption or degradation of our services (including denial of service);
+	If you inadvertently caused a privacy violation, or accessed, modified or destroyed any user data, you must disclose this in your report; and
+	Otherwise comply with all applicable laws.
+
+Safe Harbor Policy
+
+To encourage responsible disclosures, Gemini will not pursue civil action or initiate a complaint to law enforcement for security research if vulnerability disclosure activities are consistent with this policy and guidelines. We consider security research and vulnerability disclosure activities conducted in accordance with this policy and the guidelines set forth below to be “authorized” conduct under the Computer Fraud and Abuse Act, the DMCA and applicable anti-hacking laws such as Cal. Penal Code 502(c). We waive any DMCA claim against you for circumventing the technological measures we have used to protect the applications in scope. If legal action is initiated by a third party against you and you have complied with this policy, we will take steps to make it known that your actions were conducted in compliance with this policy.
+Please understand that if your security research involves the networks, systems, information, applications, products, or services of another party (which is not us), that third party may determine whether to pursue its own legal action against you. We cannot and do not authorize security research in the name of other entities. You are expected, as always, to comply with all applicable laws. Please submit a report to us before engaging in conduct that may be inconsistent with or unaddressed by this policy.
+
+Submission Process
+
+The following steps are taken to process a bug bounty submission:
+	1. PGP-encrypted report is submitted to psirt@gemini.com
+		a. Report contains a description of the vulnerability, steps to reproduce, a description of the impact, remediation guidance, and any other supporting evidence (screenshots, requests/reponses, logs, etc.)
+		b. If any user PII data is errantly obtained, please redact that information in any reports. Please inform Gemini security of any PII exposure and we will work with you to ensure that it is properly reported and cleaned up in accordance with our regulatory duties.
+	2. Gemini security acknowledges submission (SLA 3 business days)
+	3. Gemini security triages the submission (SLA 15 business days)
+	4. Gemini security sends response with determination, if deemed a vulnerability, notification includes severity level and amount of reward.
+	5. For security vulnerabilities, Gemini will send the reward (SLA 30 business days)
+
+Payouts
+
+Payout eligibility and amounts are decided at the discretion of our Security team and will follow the below mapping for Gemini submissions.
+
+    Low severity      : $150
+    Medium severity   : $350 - $500
+    High severity     : $1,500 - $5,000
+    Critical severity : $10,000 - $20,000
+
+We only reward the first reporter of a vulnerability. Public disclosure of the vulnerability prior to resolution may cancel a pending reward. We reserve the right to disqualify individuals from the program for disrespectful behavior or violations of our Code of Conduct. We will not negotiate in response to duress or threats (e.g., we will not negotiate the payout amount under threat of withholding the vulnerability or threat of releasing the vulnerability or any exposed data to the public).
+
+To receive bug bounty payouts, you must either:
+	* Have an active and verified Gemini account
+	OR
+	* Share a supported wallet address
+	* Provide documentation to verify your identity such as a valid government-issued photo ID
+
+Vulnerability Ratings
+
+Critical severity issues present a direct and immediate risk to a broad array of our users or to Gemini itself. They often affect relatively low-level /foundational components in one of our application stacks or infrastructure. For example:
+	1. The ability to execute arbitrary code/command execution on a server in our production network.
+	2. The ability to execute arbitrary queries on a production database.
+	3. Bypassing our sign-in process, either password or 2FA.
+	4. Access to production user data or access to internal production systems.
+
+High severity issues allow an attacker to read or modify data that they are not authorized to access. They are generally more narrow in scope than critical issues, though they may still grant an attacker extensive access. For example:
+	1. XSS which bypasses CSP
+	2. Discovering user PII data in a publicly exposed resource
+	3. Gaining access to a non-critical system to which an end user account should not have access
+
+Medium severity issues allow an attacker to read or modify limited amounts of data that they are not authorized to access. For example:
+	1. Disclosing information from a production system to which the user should not have access
+	2. XSS that does not bypass CSP or does not execute permissioned actions in another user’s session
+	3. CSRF for low risk actions
+
+Low severity issues allow an attacker to access extremely limited amounts of data. It may violate an expectation for how something is intended to work, but it allows nearly no escalation of privilege or ability to trigger unintended behavior by an attacker. For example:
+	1. Triggering verbose or debug error pages without proof of exploitability.
+
+The Fine Print
+
+We may modify the terms of this program or terminate this program at any time. We won’t apply any changes we make to these program terms retroactively.
+
+Changelog
+
+		2026-04-22: Removed niftygateway.com from in-scope domains; added weak cipher suites to out-of-scope issues
+		2026-03-16: Added MFA bypass on sandbox accounts to out-of-scope issues
+		2026-01-05: Updated payout scope and requirements
+		2025-07-08: Added bug bounty payout requirements
+		2025-04-07: Added Submission Process section and consolidated the list of in-scope domains
+		2025-02-06: Added Vulnerability Ratings section to provide a clearer definition of vulnerabilities that potentially qualify for each severity level.
+-----BEGIN PGP SIGNATURE-----
+
+iQJFBAEBCAAvFiEE0NPvHQMZdktS+NS5jxy+H7c0rXoFAmnqKMQRHHBzaXJ0QGdl
+bWluaS5jb20ACgkQjxy+H7c0rXrYeA/+Ksxuh6C6bBUAFxxS0S7HtKrvH9nI8Ehs
+CeNDoLOyChIooHYGVpzCArzzl+4Y5weK5vl4+G0xMUf8X9snTJiJcPeE0Eurlztt
+GUs/7yZmvKIGVX6qVWrLYKigsa15UDkm/ZeKKMMtnCjogBb9igDJ/S5q8M1CV19F
+f6A/JeTHNmSmN4mDv/mvltEseZJ+ik0KguFCDKPtbjE2VitDtxk5y5IjLJtSJvgu
+Y6Y7l6/ouroqViU4fbSzWAHfvyPLVhFOVqD6mH45JI0Wwpm5UlagIrCeedQbJOeS
+e8HD1BG+DwteiWtfct2BmvSspaC5Zl62dMqIlHsFapL5f+XbxtCkvpWxIkrRh83T
+kWNChYYgZuRRD+ovTnAADiu/rc9YU0QUdHKr4AH9b7MZIMbmj/G+QrsdwT/rtGTl
+Yf+/QOvP2eL6ZzSZ+6V/dGkrpVNCIJacGeK4ceP2aC4M5qW7Vb/AB1BXDxuTApPc
+JIhD5n1OPUT6POLNGIFksgeJvrrhewTEFnrEXdEjdcQ50xIdJ5eTfcSOuyhsQdOf
+CcCJm3PWUV/XIy1Y6LjXkGcvXIgjYjQW6iZkUGQvx6mNQlQjQ3uDbyYBfQOEv5z1
+/hedamwGh8xbJu6ELsm5be5XaMCnARJgFogG/73EXRyRuYRxruWRNsgoMe5uQ5yz
+q3d44HNH0oA=
+=1cnF
+-----END PGP SIGNATURE-----

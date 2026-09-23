@@ -1,0 +1,49 @@
+generated: '2026-09-18'
+method: searched
+source: https://developer.gemini.com/tools + registry.npmjs.org + github.com/gemini/developer-platform
+note: Gemini ships a monorepo (github.com/gemini/developer-platform) holding a TypeScript SDK, a Go SDK, a Go CLI,
+  an MCP server and Claude Code agent skills. Only the TypeScript SDK is published to a package registry; the Go SDK,
+  the CLI and the MCP server are distributed as source in that monorepo and must be built by the consumer.
+packages:
+- name: '@gemini-markets/sdk'
+  registry: npm
+  language: TypeScript/JavaScript
+  official: true
+  url: https://www.npmjs.com/package/@gemini-markets/sdk
+  version: 0.1.0
+  published: '2026-08-28'
+  repository: https://github.com/gemini/developer-platform/tree/main/packages/sdk-typescript
+  docs: https://developer.gemini.com/tools/typescript-sdk/quickstart
+  note: Official TypeScript SDK, two entry points (/server for Node/Bun/Deno, /browser for frontend and edge). Covers
+    all 106 operations across 10 REST namespaces plus WebSocket. First release 2026-08-27; latest 0.1.0 on 2026-08-28
+    — still pre-1.0 and only two published versions.
+- name: github.com/gemini/developer-platform/packages/sdk-go
+  registry: go-module
+  language: Go
+  official: true
+  url: https://github.com/gemini/developer-platform/tree/main/packages/sdk-go
+  version: null
+  published: null
+  note: 'Official Go SDK declared as module github.com/gemini/developer-platform/packages/sdk-go (go 1.23). No tagged
+    release was found on proxy.golang.org for this nested module path, so version/published are null: checked, nothing
+    to record. Consumers pin a commit rather than a semantic version.'
+- name: gemini-markets (CLI)
+  registry: source
+  language: Go
+  official: true
+  url: https://github.com/gemini/developer-platform/tree/main/packages/gemini-markets-cli
+  version: null
+  published: null
+  note: Official command-line client built on the Go SDK, released with goreleaser (.goreleaser.yml present) but no
+    published registry artifact or tagged release was found; version/published null = checked, nothing to record.
+    See cli/gemini-trust-cli.yml.
+- name: gemini MCP server
+  registry: source
+  language: TypeScript
+  official: true
+  url: https://github.com/gemini/developer-platform/tree/main/packages/mcp-server
+  version: 1.0.1
+  published: null
+  note: 'package.json in the monorepo declares name "gemini-mcp" version 1.0.1, but that name on npm belongs to a
+    DIFFERENT publisher (drama-fm/gemini-mcp, latest 1.0.2 on 2025-08-28) and is not Gemini first-party. Gemini''s
+    server is distributed as source only: clone and build. published null — no first-party registry release exists.'

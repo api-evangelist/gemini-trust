@@ -1,0 +1,125 @@
+generated: '2026-09-18'
+method: searched
+source: https://github.com/gemini/developer-platform/tree/main/packages/mcp-server (README.md + src/tools/*.ts)
+name: Gemini MCP Server
+status: published
+official: true
+deployment:
+  mode: local-stdio
+  endpoint: null
+  install: git clone https://github.com/gemini/developer-platform && cd packages/mcp-server && npm install && npm
+    run build
+  package: https://github.com/gemini/developer-platform/tree/main/packages/mcp-server
+  auth: api-key
+  verified: searched
+deployment_note: 'There is NO hosted remote MCP endpoint. The server is TypeScript source inside the monorepo and
+  is run by the MCP client as a local stdio process (node dist/index.js). Its package.json declares name "gemini-mcp"
+  v1.0.1 but that npm name is owned by an unrelated publisher, so there is not even an npx one-liner: a human must
+  clone and build before any agent can reach these tools. Credentials are passed as MCP client env vars (GEMINI_API_KEY,
+  GEMINI_API_SECRET, GEMINI_ACCOUNT for master keys); public market-data tools work with no credentials.'
+clients_documented:
+- Claude Code
+- Claude Desktop
+- ChatGPT desktop
+environment:
+  GEMINI_API_BASE_URL: 'https://api.gemini.com (sandbox: https://api.sandbox.gemini.com)'
+  GEMINI_WS_URL: 'wss://ws.gemini.com (sandbox: wss://ws.sandbox.gemini.com)'
+tool_count: 68
+tool_count_note: Tool names read from packages/mcp-server/src/tools/*.ts; the README states "50+ tools" plus the alert
+  subsystem.
+tool_groups:
+- category: market-data
+  auth_required: false
+  tools:
+  - gemini_get_ticker
+  - gemini_get_symbols
+  - gemini_get_symbol_details
+  - gemini_get_candles
+  - gemini_get_derivative_candles
+  - gemini_get_order_book
+  - gemini_get_recent_trades
+  - gemini_get_price_feed
+  - gemini_get_funding_amounts
+  - gemini_get_current_funding_rate
+  - gemini_get_auction_history
+  - gemini_get_book_ticker
+  - gemini_get_contract_status
+  - gemini_get_order_updates
+  - gemini_get_network_codes
+  - gemini_get_gas_fee_estimate
+- category: orders
+  auth_required: true
+  tools:
+  - gemini_new_order
+  - gemini_cancel_order
+  - gemini_cancel_all_active_orders
+  - gemini_cancel_all_session_orders
+  - gemini_get_active_orders
+  - gemini_get_order_status
+  - gemini_get_my_trades
+  - gemini_get_notional_volume
+  - gemini_get_trade_volume
+  - gemini_get_fee_promos
+  - gemini_session_heartbeat
+  - gemini_clearing_new_order
+  - gemini_clearing_broker_new_order
+  - gemini_clearing_order_status
+- category: funds
+  auth_required: true
+  tools:
+  - gemini_get_balances
+  - gemini_get_notional_balances
+  - gemini_get_transfers
+  - gemini_get_deposit_addresses
+  - gemini_get_new_deposit_address
+  - gemini_withdraw
+  - gemini_fiat_withdrawal
+  - gemini_internal_transfer
+  - gemini_add_bank
+  - gemini_get_bank_payment_methods
+  - gemini_get_approved_addresses
+- category: account
+  auth_required: true
+  tools:
+  - gemini_get_account
+  - gemini_get_accounts
+  - gemini_create_account
+  - gemini_get_roles
+  - gemini_revoke_oauth_token
+- category: margin
+  auth_required: true
+  tools:
+  - gemini_get_margin_account
+  - gemini_get_margin_preview
+  - gemini_get_open_positions
+  - gemini_get_funding_payments
+- category: staking
+  auth_required: true
+  tools:
+  - gemini_get_staking_balances
+  - gemini_get_staking_history
+  - gemini_get_staking_rates
+  - gemini_stake
+  - gemini_unstake
+- category: alerts
+  auth_required: false
+  tools:
+  - gemini_alert_setup
+  - gemini_alert_categories
+  - gemini_alert_create
+  - gemini_alert_list
+  - gemini_alert_get
+  - gemini_alert_update
+  - gemini_alert_delete
+  - gemini_alert_history
+  - gemini_alert_test
+  - gemini_alert_daemon_install
+  - gemini_alert_daemon_status
+  - gemini_alert_daemon_reload_config
+  - gemini_alert_daemon_uninstall
+  note: 'An unusual capability: persistent rule-based alerts fired as native OS notifications by a long-running daemon
+    (launchd / systemd --user / Task Scheduler) even with no chat session open. 8 rule categories across price thresholds
+    and moves, balance changes, funding rates, deposit confirmations, liquidation risk and prediction settlements.'
+probe:
+  tools_list_attempted: false
+  reason: No remote endpoint exists to POST tools/list at. Tool inventory was read from first-party source, not guessed.

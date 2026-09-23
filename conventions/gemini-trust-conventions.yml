@@ -1,0 +1,141 @@
+generated: '2026-09-18'
+method: searched
+source: https://developer.gemini.com/authentication/api-key, /rate-limit, /error-codes, /client-order-id, /roles plus
+  openapi/gemini-trust-rest-openapi.yml
+auth_style:
+  summary: 'Two models. Private REST uses an API key pair with an unusual transport: the JSON request payload is base64-encoded
+    into the X-GEMINI-PAYLOAD header with an EMPTY HTTP body (Content-Length: 0, Content-Type: text/plain), signed
+    as a hex HMAC-SHA384 in X-GEMINI-SIGNATURE. OAuth 2.0 authorization code + refresh tokens (PKCE S256 for public
+    clients) is the delegated model.'
+  headers:
+  - X-GEMINI-APIKEY
+  - X-GEMINI-PAYLOAD
+  - X-GEMINI-SIGNATURE
+  - 'Content-Length: 0'
+  - 'Content-Type: text/plain'
+  - 'Cache-Control: no-cache'
+  key_prefixes:
+  - account-
+  - master-
+  rbac:
+    roles:
+    - Administrator (Master keys only)
+    - Trader (default)
+    - Fund Manager
+    - Auditor
+    failure: HTTP 403 with reason MissingRole
+    docs: https://developer.gemini.com/roles
+  see: authentication/gemini-trust-authentication.yml
+idempotency:
+  coverage: partial
+  mechanism: No Idempotency-Key header. Replay SAFETY is provided by a per-key nonce (time-based within +/-30s of
+    server time, or strictly incrementing) which REJECTS a replayed request rather than returning the original result
+    - that is replay prevention, not idempotency. True idempotent replay exists only where a client-supplied identifier
+    is accepted.
+  scope:
+  - createNewOrder - optional client_order_id, echoed back on every subsequent message about the order
+  - wrapOrder - accepts client_order_id
+  - withdrawCryptoFunds - optional clientTransferId (UUID); duplicate requests with the same value do not create an
+    additional withdrawal (the only explicitly documented idempotent write)
+  - placeOrder (prediction markets) - accepts clientOrderId
+  - placeOrderBatch (prediction markets) - accepts clientOrderId per leg
+  not_covered: The remaining write operations - account transfers, bank account creation, account
+    creation, staking and unstaking, clearing orders, terms acceptance - have no client-supplied dedupe key. 5 of
+    68 write operations across the two specs carry one.
+  client_order_id:
+    pattern: '[:\-_\.#a-zA-Z0-9]{1,36}'
+    max_length_reason: ClientOrderIdTooLong is raised above 100 characters on the REST error surface
+    visibility: Never exposed on public endpoints
+    docs: https://developer.gemini.com/client-order-id
+  docs: https://developer.gemini.com/authentication/api-key
+reversibility:
+  grade: verified
+  summary: Order placement is fully reversible until filled, and the reversal operations are first-class and documented.
+    Fund movement is not reversible.
+  surfaces:
+  - write: createNewOrder
+    reversal: cancelOrder
+    window: Any time while the order remains open; a filled or already-cancelled order cannot be reversed. Trades
+      are final.
+    docs: https://developer.gemini.com/rest
+  - write: createNewOrder
+    reversal: cancelAllActiveOrders
+    window: Cancels every open order on the account at call time.
+    docs: https://developer.gemini.com/rest
+  - write: createNewOrder
+    reversal: cancelAllSessionOrders
+    window: 'Cancels only orders opened by the calling API key session. Also fires automatically on heartbeat expiry
+      when the key is provisioned with Cancel-on-Disconnect ("requires heartbeat"), which is a TIME-BOUND automatic
+      reversal: if no heartbeat arrives within the session timeout, open session orders are cancelled.'
+    docs: https://developer.gemini.com/rest
+  - write: placeOrder / placeOrderBatch (prediction markets)
+    reversal: cancelOrder / cancelOrderBatch
+    window: While the order rests; settled positions cannot be reversed.
+    docs: https://developer.gemini.com/rest-api/prediction-markets/order-management
+  - write: stakeCryptoFunds
+    reversal: unstakeCryptoFunds
+    window: Unstaking is available but subject to the protocol unbonding period per asset, which Gemini does not state
+      as a single number in the API docs - it is a property of each chain, not of the API.
+    docs: https://developer.gemini.com/trading/rest-api/staking/unstake-crypto-funds
+  - write: createNewClearingOrder
+    reversal: cancelClearingOrder
+    window: While the clearing order is pending counterparty confirmation.
+    docs: https://developer.gemini.com/gemini-clearing
+  - write: withdrawCryptoFunds
+    reversal: null
+    window: null
+    note: IRREVERSIBLE. An on-chain withdrawal cannot be recalled. clientTransferId prevents an accidental duplicate;
+      it does not undo one.
+  - write: transferBetweenAccounts
+    reversal: null
+    window: null
+    note: No documented reverse operation; a transfer in the opposite direction is a new transfer, not a reversal.
+  - write: acceptPredictionMarketsTerms
+    reversal: null
+    window: null
+    note: No documented rescission.
+  agent_guidance: 'For an agent this splits cleanly: the ORDER surface is safe to act on because every placement has
+    a named cancel and a session-scoped kill switch, while the FUND MOVEMENT surface has no undo at all and should
+    be gated behind human confirmation.'
+pagination:
+  style: cursor/timestamp and limit parameters, per endpoint
+  params:
+  - timestamp
+  - limit_trades
+  - limit_orders
+  - limit_transfers
+  - since
+  - until
+  note: There is no single uniform pagination envelope; history endpoints take a since/timestamp plus a per-resource
+    limit_* parameter and return a bare JSON array.
+error_envelope:
+  format: proprietary JSON, NOT RFC 9457
+  fields:
+  - result (always "error")
+  - reason (machine-readable identifier)
+  - message (human-readable)
+  see: errors/gemini-trust-error-codes.yml
+  docs: https://developer.gemini.com/error-codes
+rate_limit_signaling:
+  status_on_exhaustion: 429
+  headers: null
+  note: Gemini documents the limits in prose but publishes NO rate-limit response headers - no X-RateLimit-*, no RateLimit-*,
+    no Retry-After is documented. An agent cannot read remaining budget at runtime; it can only observe a 429. See
+    rate-limits/gemini-trust-rate-limits.yml.
+  see: rate-limits/gemini-trust-rate-limits.yml
+versioning:
+  style: URI path prefix
+  versions:
+  - /v1
+  - /v2
+  note: v1 and v2 coexist; v2 is used for candles, ticker, transfers and network-scoped withdrawals.
+  see: lifecycle/gemini-trust-lifecycle.yml
+dry_run:
+  api: none
+  cli: 'The gemini-markets CLI supports --dry-run on order placement: it validates and renders the exact request without
+    loading credentials or contacting Gemini. The REST API itself has no dry-run mode; getMarginPreview is the nearest
+    server-side rehearsal and is margin-specific.'
+tracing:
+  request_id: null
+  note: No request-id or correlation header is documented. client_order_id is the only client-supplied correlator,
+    and only on orders.

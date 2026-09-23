@@ -1,0 +1,97 @@
+generated: '2026-09-18'
+method: derived
+source: openapi/gemini-trust-rest-openapi.yml, openapi/gemini-trust-prediction-markets-openapi.yml
+format: proprietary
+format_note: NOT rfc9457. No operation declares application/problem+json. Gemini returns a bare JSON object with three
+  fields - result (always "error"), reason (machine-readable identifier) and message (human-readable). The full reason
+  registry is in errors/gemini-trust-error-codes.yml, which is the richer artifact; this file records what the SPECS
+  declare per status code.
+envelope:
+  result: always the string "error"
+  reason: machine-readable identifier, see error-codes registry
+  message: human-readable description
+problem_types:
+- status: 400
+  title: Market not open, malformed request, or invalid authentication headers
+  operations_declaring: 88
+  specs:
+  - prediction-markets
+  - rest
+  spec_descriptions:
+  - Invalid date parameters
+  - Invalid or unsupported date. The message includes the current one-year UTC date bounds.
+  - Invalid payload, empty batch, more than 20 entries, or an invalid order ID. No orders are cancelled.
+  - Invalid payload, empty batch, more than 20 entries, or an invalid order. No orders are submitted.
+- status: 401
+  title: Authentication failed
+  operations_declaring: 69
+  specs:
+  - prediction-markets
+  - rest
+  spec_descriptions:
+  - Authentication is missing or invalid.
+  - Signed private REST authentication is missing or invalid.
+- status: 403
+  title: API key lacks the required role for this endpoint
+  operations_declaring: 55
+  specs:
+  - prediction-markets
+  - rest
+  spec_descriptions:
+  - The API key lacks `PredictionsNewOrder`, or the authenticated trading account is restricted.
+  - The account is not permitted to cancel orders.
+  - The account is not permitted to place orders or has not accepted the current Prediction Markets terms. No orders
+    are submitted.
+- status: 404
+  title: Unknown endpoint or order not found
+  operations_declaring: 78
+  specs:
+  - prediction-markets
+  - rest
+  spec_descriptions:
+  - Combo not found
+  - Combos are unavailable, or an underlying contract in the request cannot be found.
+  - Event not found
+  - No Prediction Markets terms are configured
+- status: 409
+  title: Conflict
+  operations_declaring: 2
+  specs:
+  - prediction-markets
+  spec_descriptions:
+  - The request nonce conflicts with a previously submitted request.
+- status: 422
+  title: Unprocessable entity
+  operations_declaring: 3
+  specs:
+  - prediction-markets
+  spec_descriptions:
+  - An order failed an up-front risk check. No orders are submitted.
+  - Order cannot be cancelled (e.g., already filled)
+  - Order rejected (e.g., insufficient funds)
+- status: 429
+  title: Rate limit exceeded
+  operations_declaring: 70
+  specs:
+  - rest
+  spec_descriptions: []
+- status: 500
+  title: Server encountered an error
+  operations_declaring: 99
+  specs:
+  - prediction-markets
+  - rest
+  spec_descriptions:
+  - An unexpected error occurred while creating the combo.
+  - Internal server error
+- status: 503
+  title: Exchange is down for maintenance
+  operations_declaring: 27
+  specs:
+  - prediction-markets
+  spec_descriptions:
+  - Liquidity rewards program is not currently available
+  - Maker rebate program is not currently available
+  - Prediction markets or batch orders are temporarily unavailable
+  - The canonical source is invalid or temporarily unavailable. The endpoint does not return a partial result.
+docs: https://developer.gemini.com/error-codes

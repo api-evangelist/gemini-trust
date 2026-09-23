@@ -1,0 +1,71 @@
+generated: '2026-09-18'
+method: probed
+source: https://api.gemini.com/.well-known/oauth-authorization-server
+docs: https://developer.gemini.com/authentication/oauth
+note: These scopes are NOT in either OpenAPI - neither spec declares an oauth2 securityScheme, so the derive-from-spec
+  path returns nothing. They come from the provider's live RFC 8414 authorization-server metadata, which is the authoritative
+  machine-readable source. 33 scopes, resource:action shaped.
+issuer: https://exchange.gemini.com
+authorization_endpoint: https://exchange.gemini.com/auth
+token_endpoint: https://exchange.gemini.com/auth/token
+revocation_endpoint: https://exchange.gemini.com/auth/token/revoke
+introspection_endpoint: https://exchange.gemini.com/auth/token/introspect
+userinfo_endpoint: https://exchange.gemini.com/userinfo
+grant_types:
+- authorization_code
+- refresh_token
+pkce:
+  supported: true
+  methods:
+  - S256
+  required_for: public clients (SPA, mobile, desktop)
+token_lifetime:
+  access_token: 24 hours
+  refresh_token: non-expiring
+scope_count: 32
+scopes:
+- name: account:read
+- name: addresses:create
+- name: addresses:read
+- name: balances:read
+- name: banks:create
+- name: banks:read
+- name: clearing:create
+- name: clearing:read
+- name: crypto:send
+- name: fdx:accountbasic:read
+- name: fdx:accountdetailed:read
+- name: fdx:customercontact:read
+- name: fdx:rewards:read
+- name: fdx:statements:read
+- name: fdx:transactions:read
+- name: history:read
+- name: orders:create
+- name: orders:read
+- name: payments:create
+- name: payments:read
+- name: payments:send
+- name: positions:read
+- name: predictions:balances:read
+- name: predictions:orders:read
+- name: predictions:orders:write
+- name: predictions:positions:read
+- name: savedAddresses:create
+- name: savedAddresses:read
+- name: settlement:create-update
+- name: settlement:read
+- name: settlement:read-all
+- name: settlement:update
+scope_families:
+  fdx:
+    count: 6
+    note: 'Financial Data Exchange (FDX) namespaced scopes - fdx:accountbasic:read, fdx:accountdetailed:read, fdx:customercontact:read,
+      fdx:rewards:read, fdx:statements:read, fdx:transactions:read. See conformance/gemini-trust-conformance.yml:
+      this is a real domain-standard signature carried in the contract, not a marketing claim.'
+  predictions:
+    count: 4
+  settlement:
+    count: 4
+sandbox:
+  issuer: https://exchange.sandbox.gemini.com
+  source: https://api.sandbox.gemini.com/.well-known/oauth-authorization-server

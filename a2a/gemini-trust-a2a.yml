@@ -1,0 +1,53 @@
+generated: '2026-09-18'
+method: probed
+source: https://developer.gemini.com/.well-known/agent-card.json
+discovery:
+  path: /.well-known/agent-card.json
+  canonical: true
+  host: developer.gemini.com
+  also_served_on:
+  - docs.gemini.com
+  advertised_at: https://developer.gemini.com/agents.md
+x-evidence:
+  fetched: '2026-09-18'
+  url: https://developer.gemini.com/.well-known/agent-card.json
+  http_status: 200
+  content_type: application/json
+card:
+  name: Gemini Developer Platform Agent
+  version: 1.0.0
+  provider:
+    organization: Gemini
+    url: https://gemini.com
+  skills:
+  - gemini-trading
+  - gemini-market-data
+  - gemini-account-management
+grade: flavored
+grade_basis: 'Hard check failed: protocolVersion is absent. capabilities IS an object ({streaming, pushNotifications})
+  and skills IS an array of three objects, so two of three hard checks pass, but A2A 1.0.0 requires protocolVersion.'
+deviations:
+- field: protocolVersion
+  issue: absent
+  impact: An A2A client cannot negotiate the protocol revision. Hard failure.
+- field: url
+  issue: absent
+  impact: A2A 1.0.0 expects a top-level url naming the agent endpoint. Gemini publishes supportedInterfaces[] instead.
+- field: supportedInterfaces
+  issue: not an A2A 1.0.0 field
+  impact: Carries the REST and WebSocket docs URLs; A2A models this as url + preferredTransport + additionalInterfaces.
+- field: preferredTransport
+  issue: absent
+  impact: Optional in A2A 1.0.0.
+- field: custom
+  issue: not an A2A 1.0.0 field
+  impact: Carries authentication types, documentation links and the agents.md instructions pointer. Useful, non-standard.
+- field: $schema
+  issue: points at https://a2a-specs.org/schemas/agent-card-v1.json
+  impact: Not the A2A project schema URL; suggests the card was authored against a paraphrase of the spec.
+- field: skills[].tags / skills[].examples
+  issue: absent
+  impact: A2A skills carry tags and examples; Gemini publishes id/name/description only.
+note: This is a genuinely published, first-party agent card - one of the small minority of providers that serve one
+  at all. It is graded flavored rather than conformant only because protocolVersion is missing; adding that one field
+  plus a top-level url would move it to near-conformant or conformant.

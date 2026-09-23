@@ -1,0 +1,87 @@
+generated: '2026-09-18'
+method: searched
+source: https://github.com/gemini/developer-platform/tree/main/packages/gemini-markets-cli (README.md)
+name: gemini-markets
+official: true
+language: Go
+built_on: The official Go SDK (packages/sdk-go) for authentication, REST and WebSocket transport, and generated API
+  models. The CLI owns parsing, validation and rendering only.
+install:
+  registry: null
+  method: Build from source in the monorepo; a .goreleaser.yml is present but no published release artifact or registry
+    entry was found.
+  note: Same distribution gap as the MCP server - real first-party tooling that a user must build before using.
+global_options:
+- flag: --environment
+  values:
+  - production
+  - sandbox
+  default: production
+- flag: --profile
+  default: default
+- flag: --output
+  values:
+  - table
+  - json
+  default: table
+  note: Does not apply to stream commands, which always emit NDJSON (one JSON event per line).
+commands:
+- group: auth
+  commands:
+  - login
+  - logout
+  - status
+  note: The secure persistence boundary - login/logout use the OS keyring.
+- group: markets
+  commands:
+  - symbols
+  - ticker SYMBOL
+  - book SYMBOL
+  - candles SYMBOL TIMEFRAME
+  note: candles accepts 1m, 5m, 15m, 30m, 1h, 6h, 1d and normalizes the canonical API spellings 1hr, 6hr, 1day.
+- group: prediction-markets
+  commands:
+  - list
+  - get EVENT_TICKER
+  - terms show
+  - terms status
+  - terms accept
+  note: Terms are never accepted automatically - terms accept --yes must be invoked explicitly before placing an order.
+- group: stream
+  commands:
+  - trades SYMBOL
+  - ticker SYMBOL
+  - depth SYMBOL
+  - orders
+  - balances
+  - positions
+  note: Emits NDJSON.
+- group: account
+  commands:
+  - balances
+- group: orders
+  commands:
+  - spot place
+  - spot list
+  - spot get
+  - spot cancel
+  - prediction place
+  - prediction list
+  - prediction cancel
+  note: Spot orders are limit orders (or limit with --option immediate-or-cancel); direct exchange-market orders are
+    not supported by this CLI.
+- group: version / completion / help
+  commands:
+  - version
+  - completion
+  - help
+dry_run:
+  supported: true
+  flag: --dry-run
+  scope: order placement
+  detail: Validates and renders the exact request without loading credentials or contacting Gemini. In table mode
+    the preview includes execution options such as IOC and maker-or-cancel. Stop-limit orders are additionally checked
+    locally against the side-specific trigger/limit price relationship before either preview or submission.
+  note: This is the only dry-run capability anywhere in the Gemini surface - the REST API itself has none.
+credentials: Resolved from the process environment first, then the selected OS keyring profile. Public discovery commands
+  work with an empty credential set.

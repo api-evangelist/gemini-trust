@@ -1,0 +1,748 @@
+openapi: 3.2.0
+info:
+  title: Gemini Trust Combos API
+  version: 1.0.0
+  contact:
+    name: Gemini API Support
+  description: 'Operations tagged Combos across 2 of this provider''s published API definitions: gemini-trust-prediction-markets-openapi.yml, gemini-trust-prediction-markets-openapi.yml. Each path carries the servers of the definition it was published in.'
+servers:
+- url: https://api.gemini.com
+  description: Production
+- url: https://api.sandbox.gemini.com
+  description: Sandbox
+tags:
+- name: Combos
+  description: Public endpoints for discovering and inspecting combo contracts, plus an authenticated endpoint to create or retrieve a canonical combo. Combos are multi-leg contracts; order entry uses the same place/cancel endpoints as single contracts.
+paths:
+  /v1/prediction-markets/combos:
+    get:
+      tags:
+      - Combos
+      summary: List combo contracts
+      description: Returns a paginated list of combo contracts. Each combo includes its full leg breakdown and per-leg resolution status. When `status` is omitted, the endpoint returns only `Active` combos. This Combo Prediction Markets endpoint is not currently enabled in production.
+      operationId: listCombos
+      parameters:
+      - name: status
+        in: query
+        required: false
+        description: Filter by combo contract status (for example, `Active`, `Settled`, or `Voided`). Defaults to `Active` when omitted.
+        schema:
+          type: string
+      - name: contractId
+        in: query
+        required: false
+        description: Filter to combos that contain a specific underlying contract ID as a leg
+        schema:
+          type: integer
+          format: int64
+      - name: instrumentRegistered
+        in: query
+        required: false
+        description: Filter by whether the combo has been registered with an instrument symbol
+        schema:
+          type: boolean
+      - $ref: '#/components/parameters/Limit'
+      - $ref: '#/components/parameters/Offset'
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ListCombosResponse'
+              examples:
+                activeCombos:
+                  summary: List of active combo contracts
+                  value:
+                    combos:
+                    - contract:
+                        contractId: '456'
+                        contractName: BTC EOY26 > $120k AND ETH EOY26 > $4k
+                        contractTicker: GEMI-CMB-0526-A7F3B2C1D4E5
+                        eventTicker: GEMI-CMB-0526-A7F3B2C1D4E5
+                        eventName: BTC EOY26 > $120k AND ETH EOY26 > $4k
+                        category: Combo
+                        contractStatus: Active
+                        eventType: binary
+                        expiryDate: '2026-12-31T23:59:59Z'
+                        resolvedAt: null
+                        resolutionSide: null
+                        parentEventTicker: null
+                        startTime: null
+                      legs:
+                      - comboId: 456
+                        legIndex: 0
+                        contractId: '101'
+                        requiredOutcome: 'Yes'
+                        legOutcome: null
+                        resolvedAt: null
+                        contract:
+                          contractId: '101'
+                          contractName: BTC above $120,000 at year-end 2026
+                          contractTicker: GEMI-BTC-EOY26-HI120000
+                          eventTicker: GEMI-BTC-EOY26
+                          eventName: Bitcoin Year-End 2026
+                          category: Crypto
+                          contractStatus: Active
+                          eventType: binary
+                          expiryDate: '2026-12-31T23:59:59Z'
+                          resolvedAt: null
+                          resolutionSide: null
+                          parentEventTicker: null
+                          startTime: null
+                      - comboId: 456
+                        legIndex: 1
+                        contractId: '202'
+                        requiredOutcome: 'Yes'
+                        legOutcome: null
+                        resolvedAt: null
+                        contract:
+                          contractId: '202'
+                          contractName: ETH above $4,000 at year-end 2026
+                          contractTicker: GEMI-ETH-EOY26-HI4000
+                          eventTicker: GEMI-ETH-EOY26
+                          eventName: Ethereum Year-End 2026
+                          category: Crypto
+                          contractStatus: Active
+                          eventType: binary
+                          expiryDate: '2026-12-31T23:59:59Z'
+                          resolvedAt: null
+                          resolutionSide: null
+                          parentEventTicker: null
+                          startTime: null
+                    pagination:
+                      limit: 50
+                      offset: 0
+                      total: 1
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '500':
+          $ref: '#/components/responses/InternalError'
+        '503':
+          $ref: '#/components/responses/ServiceUnavailable'
+    post:
+      tags:
+      - Combos
+      summary: Create or retrieve a canonical combo
+      description: 'Creates a combo from two to six underlying contract legs for the authenticated account. The service canonicalizes the complete leg set, so submitting the same legs again returns the existing combo regardless of leg order. The account is derived from the authenticated API key; do not include an account ID in the request. This Combo Prediction Markets endpoint is not currently enabled in production.
+
+
+        Requires signed private REST authentication, the `PredictionsNewOrder` permission, and an unrestricted trading account. A new canonical combo returns `201 Created` with `alreadyExisted: false`; an existing canonical combo returns `200 OK` with `alreadyExisted: true`.'
+      operationId: createCombo
+      security:
+      - apiKey: []
+        payloadAuth: []
+        signatureAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateComboRequest'
+            examples:
+              twoLegCombo:
+                summary: Create a two-leg combo
+                value:
+                  legs:
+                  - contractId: '101'
+                    requiredOutcome: 'Yes'
+                  - contractId: '202'
+                    requiredOutcome: 'No'
+      responses:
+        '200':
+          description: The canonical combo already exists.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CreateComboResponse'
+              examples:
+                existingCombo:
+                  summary: Existing canonical combo
+                  value:
+                    combo:
+                      id: 456
+                      canonicalLegKey: 101:Yes|202:No
+                      legCount: 2
+                      displayName: BTC EOY26 > $120k AND ETH EOY26 <= $4k
+                      status: Active
+                      instrumentId: 98765
+                      instrumentSymbol: GEMI-CMB-0526-A7F3B2C1D4E5
+                      instrumentRegistered: true
+                      latestExpiryDate: '2026-12-31T23:59:59.000Z'
+                      createdAt: '2026-05-01T12:00:00.000Z'
+                      updatedAt: '2026-05-01T12:00:00.000Z'
+                      legs:
+                      - comboId: 456
+                        legIndex: 0
+                        contractId: '101'
+                        requiredOutcome: 'Yes'
+                      - comboId: 456
+                        legIndex: 1
+                        contractId: '202'
+                        requiredOutcome: 'No'
+                    alreadyExisted: true
+        '201':
+          description: A new canonical combo was created.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CreateComboResponse'
+              examples:
+                createdCombo:
+                  summary: New canonical combo
+                  value:
+                    combo:
+                      id: 456
+                      canonicalLegKey: 101:Yes|202:No
+                      legCount: 2
+                      displayName: BTC EOY26 > $120k AND ETH EOY26 <= $4k
+                      status: Active
+                      instrumentId: 98765
+                      instrumentSymbol: GEMI-CMB-0526-A7F3B2C1D4E5
+                      instrumentRegistered: true
+                      latestExpiryDate: '2026-12-31T23:59:59.000Z'
+                      createdAt: '2026-05-01T12:00:00.000Z'
+                      updatedAt: '2026-05-01T12:00:00.000Z'
+                      legs:
+                      - comboId: 456
+                        legIndex: 0
+                        contractId: '101'
+                        requiredOutcome: 'Yes'
+                      - comboId: 456
+                        legIndex: 1
+                        contractId: '202'
+                        requiredOutcome: 'No'
+                    alreadyExisted: false
+        '400':
+          description: The request body is malformed or fails combo validation.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ComboWriteError'
+              example:
+                error: InvalidInput
+                code: COMBO_VALIDATION_ERROR
+                message: a combo needs 2-6 legs
+        '401':
+          description: Signed private REST authentication is missing or invalid.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthErrorResponse'
+        '403':
+          description: The API key lacks `PredictionsNewOrder`, or the authenticated trading account is restricted.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthErrorResponse'
+        '404':
+          description: Combos are unavailable, or an underlying contract in the request cannot be found.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ComboWriteError'
+              examples:
+                comboUnavailable:
+                  summary: Combos unavailable
+                  value:
+                    error: NOT_FOUND
+                    message: Not Found
+                legNotFound:
+                  summary: Underlying contract not found
+                  value:
+                    error: NOT_FOUND
+                    code: COMBO_LEG_NOT_FOUND
+                    message: One or more contracts in this combo could not be found. Update your selection and try again.
+        '500':
+          description: An unexpected error occurred while creating the combo.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ComboWriteError'
+              example:
+                error: InternalError
+                message: An unexpected error occurred
+    servers:
+    - url: https://api.gemini.com
+      description: Production
+    - url: https://api.sandbox.gemini.com
+      description: Sandbox
+  /v1/prediction-markets/combos/{instrumentSymbol}:
+    get:
+      tags:
+      - Combos
+      summary: Get combo by instrument symbol
+      description: Returns the full specification of a single combo contract identified by its instrument symbol, including leg breakdown and per-leg resolution status. This Combo Prediction Markets endpoint is not currently enabled in production.
+      operationId: getComboByInstrumentSymbol
+      parameters:
+      - name: instrumentSymbol
+        in: path
+        required: true
+        description: The combo contract's instrument symbol (e.g. `GEMI-CMB-0526-A7F3B2C1D4E5`)
+        schema:
+          type: string
+        example: GEMI-CMB-0526-A7F3B2C1D4E5
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ComboResponse'
+              examples:
+                comboDetail:
+                  summary: Combo contract detail
+                  value:
+                    contract:
+                      contractId: '456'
+                      contractName: BTC EOY26 > $120k AND ETH EOY26 > $4k
+                      contractTicker: GEMI-CMB-0526-A7F3B2C1D4E5
+                      eventTicker: GEMI-CMB-0526-A7F3B2C1D4E5
+                      eventName: BTC EOY26 > $120k AND ETH EOY26 > $4k
+                      category: Combo
+                      contractStatus: Active
+                      eventType: binary
+                      expiryDate: '2026-12-31T23:59:59Z'
+                      resolvedAt: null
+                      resolutionSide: null
+                      parentEventTicker: null
+                      startTime: null
+                    legs:
+                    - comboId: 456
+                      legIndex: 0
+                      contractId: '101'
+                      requiredOutcome: 'Yes'
+                      legOutcome: null
+                      resolvedAt: null
+                      contract:
+                        contractId: '101'
+                        contractName: BTC above $120,000 at year-end 2026
+                        contractTicker: GEMI-BTC-EOY26-HI120000
+                        eventTicker: GEMI-BTC-EOY26
+                        eventName: Bitcoin Year-End 2026
+                        category: Crypto
+                        contractStatus: Active
+                        eventType: binary
+                        expiryDate: '2026-12-31T23:59:59Z'
+                        resolvedAt: null
+                        resolutionSide: null
+                        parentEventTicker: null
+                        startTime: null
+                    - comboId: 456
+                      legIndex: 1
+                      contractId: '202'
+                      requiredOutcome: 'Yes'
+                      legOutcome: null
+                      resolvedAt: null
+                      contract:
+                        contractId: '202'
+                        contractName: ETH above $4,000 at year-end 2026
+                        contractTicker: GEMI-ETH-EOY26-HI4000
+                        eventTicker: GEMI-ETH-EOY26
+                        eventName: Ethereum Year-End 2026
+                        category: Crypto
+                        contractStatus: Active
+                        eventType: binary
+                        expiryDate: '2026-12-31T23:59:59Z'
+                        resolvedAt: null
+                        resolutionSide: null
+                        parentEventTicker: null
+                        startTime: null
+        '404':
+          description: Combo not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                error: NOT_FOUND
+                message: Combo not found
+        '500':
+          $ref: '#/components/responses/InternalError'
+        '503':
+          $ref: '#/components/responses/ServiceUnavailable'
+    servers:
+    - url: https://api.gemini.com
+      description: Production
+    - url: https://api.sandbox.gemini.com
+      description: Sandbox
+components:
+  schemas:
+    ListCombosResponse:
+      type: object
+      required:
+      - combos
+      - pagination
+      properties:
+        combos:
+          type: array
+          description: List of combo contracts matching the query
+          items:
+            $ref: '#/components/schemas/ComboResponse'
+        pagination:
+          allOf:
+          - $ref: '#/components/schemas/Pagination'
+    ComboWriteError:
+      type: object
+      required:
+      - error
+      - message
+      properties:
+        error:
+          type: string
+          description: Error class.
+          example: InvalidInput
+        code:
+          type: string
+          description: Machine-readable code for validation or missing-leg errors, when available.
+          example: COMBO_VALIDATION_ERROR
+        message:
+          type: string
+          description: Human-readable error detail.
+          example: a combo needs 2-6 legs
+    CreateComboResponse:
+      type: object
+      required:
+      - combo
+      - alreadyExisted
+      properties:
+        combo:
+          $ref: '#/components/schemas/ComboSummary'
+        alreadyExisted:
+          type: boolean
+          description: '`false` when this request created the canonical combo; `true` when the canonical combo already existed.'
+    Error:
+      type: object
+      properties:
+        error:
+          type: string
+          description: Error code
+          example: InvalidInput
+        message:
+          type: string
+          description: Human-readable error message
+          example: orderId is required
+    ComboResponse:
+      type: object
+      required:
+      - contract
+      - legs
+      properties:
+        contract:
+          allOf:
+          - $ref: '#/components/schemas/ContractMetadata'
+          description: Metadata for the combo contract itself (ticker, status, expiry, etc.)
+        legs:
+          type: array
+          description: Ordered list of legs that make up this combo
+          items:
+            $ref: '#/components/schemas/ComboLeg'
+    CreateComboRequest:
+      type: object
+      description: A canonical combo definition. The authenticated account is derived from the signed request and is not a request field.
+      required:
+      - legs
+      properties:
+        legs:
+          type: array
+          description: Two to six distinct underlying contract legs. The service canonicalizes their complete set, so leg order does not create a distinct combo.
+          minItems: 2
+          maxItems: 6
+          items:
+            $ref: '#/components/schemas/CreateComboLeg'
+    ComboSummary:
+      type: object
+      required:
+      - id
+      - canonicalLegKey
+      - legCount
+      - instrumentRegistered
+      - legs
+      properties:
+        id:
+          type: integer
+          format: int64
+          description: Internal combo ID.
+          example: 456
+        canonicalLegKey:
+          type: string
+          description: Canonical identity of the complete combo leg set.
+          example: 101:Yes|202:No
+        legCount:
+          type: integer
+          format: int32
+          description: Number of legs in the combo.
+          example: 2
+        displayName:
+          type: string
+          description: Human-readable combo name, when available.
+        status:
+          type: string
+          description: Current combo status, when available.
+        instrumentId:
+          type: integer
+          format: int64
+          description: Associated instrument ID, when available.
+        instrumentSymbol:
+          type: string
+          description: Associated instrument symbol, when available.
+          example: GEMI-CMB-0526-A7F3B2C1D4E5
+        instrumentRegistered:
+          type: boolean
+          description: Whether the combo has been registered with an instrument symbol.
+        latestExpiryDate:
+          type: string
+          format: date-time
+          description: Latest expiry among the underlying legs, when available.
+        createdAt:
+          type: string
+          format: date-time
+          description: Creation time, when available.
+        updatedAt:
+          type: string
+          format: date-time
+          description: Most recent update time, when available.
+        legs:
+          type: array
+          description: Canonically ordered combo legs.
+          items:
+            $ref: '#/components/schemas/ComboSummaryLeg'
+    ComboSummaryLeg:
+      type: object
+      required:
+      - comboId
+      - legIndex
+      - contractId
+      - requiredOutcome
+      properties:
+        comboId:
+          type: integer
+          format: int64
+          description: Parent combo ID.
+        legIndex:
+          type: integer
+          format: int32
+          description: Zero-based leg position in canonical order.
+        contractId:
+          type: string
+          description: Underlying contract ID as a decimal string.
+        requiredOutcome:
+          type: string
+          enum:
+          - 'Yes'
+          - 'No'
+          description: Required settlement outcome for the leg.
+        legOutcome:
+          type:
+          - string
+          - 'null'
+          enum:
+          - 'Yes'
+          - 'No'
+          description: Settled outcome for the leg, when resolved.
+        resolvedAt:
+          type:
+          - string
+          - 'null'
+          format: date-time
+          description: Resolution time for the leg, when resolved.
+        contract:
+          allOf:
+          - $ref: '#/components/schemas/ContractMetadata'
+          description: Underlying contract metadata, when available.
+    CreateComboLeg:
+      type: object
+      required:
+      - contractId
+      - requiredOutcome
+      properties:
+        contractId:
+          type: string
+          description: Underlying contract ID as a decimal string.
+          example: '101'
+        requiredOutcome:
+          type: string
+          enum:
+          - 'Yes'
+          - 'No'
+          description: Required settlement outcome for this leg.
+          example: 'Yes'
+    ComboLeg:
+      type: object
+      required:
+      - comboId
+      - legIndex
+      - contractId
+      - requiredOutcome
+      properties:
+        comboId:
+          type: integer
+          format: int64
+          description: Internal ID of the parent combo contract
+          example: 456
+        legIndex:
+          type: integer
+          description: Zero-based position of this leg in the combo
+          example: 0
+        contractId:
+          type: string
+          description: Internal ID of the underlying single contract, represented as a decimal string
+          example: '101'
+        requiredOutcome:
+          type: string
+          enum:
+          - 'Yes'
+          - 'No'
+          description: The outcome this leg must settle for the combo to settle YES
+          example: 'Yes'
+        legOutcome:
+          type:
+          - string
+          - 'null'
+          description: The outcome this leg has settled to, if resolved (`"Yes"` or `"No"`). Null while the leg is still active.
+          example: null
+        resolvedAt:
+          type:
+          - string
+          - 'null'
+          format: date-time
+          description: UTC timestamp when this leg resolved. Null while still active.
+          example: null
+        contract:
+          allOf:
+          - $ref: '#/components/schemas/ContractMetadata'
+          description: Full metadata for the underlying single contract
+    AuthErrorResponse:
+      type: object
+      additionalProperties: false
+      required:
+      - result
+      - reason
+      - message
+      properties:
+        result:
+          type: string
+          enum:
+          - error
+        reason:
+          type: string
+          description: Authentication or authorization error class
+          example: MissingNonce
+        message:
+          type: string
+          description: Human-readable authentication or authorization detail
+          example: Must provide unique monotonic increasing 'nonce' field in payload
+    ContractMetadata:
+      type: object
+      properties:
+        contractId:
+          type: string
+        contractName:
+          type: string
+        contractTicker:
+          type: string
+        eventTicker:
+          type: string
+        eventName:
+          type: string
+        category:
+          type: string
+        contractStatus:
+          type: string
+        eventType:
+          type: string
+          description: Event type ("binary" or "categorical")
+        expiryDate:
+          type:
+          - string
+          - 'null'
+          format: date-time
+        resolvedAt:
+          type:
+          - string
+          - 'null'
+          format: date-time
+        resolutionSide:
+          type:
+          - string
+          - 'null'
+          description: Winning outcome if resolved ("yes" or "no")
+        parentEventTicker:
+          type:
+          - string
+          - 'null'
+          description: Parent event ticker for sub-events
+        startTime:
+          type:
+          - string
+          - 'null'
+          format: date-time
+          description: Start datetime (ISO 8601)
+    Pagination:
+      type: object
+      properties:
+        limit:
+          type: integer
+          example: 50
+        offset:
+          type: integer
+          example: 0
+        total:
+          type: integer
+          example: 100
+  responses:
+    BadRequest:
+      description: Invalid request parameters
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+    ServiceUnavailable:
+      description: Prediction markets feature is temporarily unavailable
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+    InternalError:
+      description: Internal server error
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+  parameters:
+    Offset:
+      name: offset
+      in: query
+      description: Number of results to skip for pagination
+      schema:
+        type: integer
+        default: 0
+        minimum: 0
+    Limit:
+      name: limit
+      in: query
+      description: Maximum number of results to return (max 500)
+      schema:
+        type: integer
+        default: 50
+        minimum: 1
+        maximum: 500
+  securitySchemes:
+    apiKey:
+      type: apiKey
+      in: header
+      name: X-GEMINI-APIKEY
+      description: Gemini API key with appropriate permissions
+    payloadAuth:
+      type: apiKey
+      in: header
+      name: X-GEMINI-PAYLOAD
+      description: Base64-encoded private REST payload. See Gemini private REST authentication.
+    signatureAuth:
+      type: apiKey
+      in: header
+      name: X-GEMINI-SIGNATURE
+      description: Hex HMAC-SHA384 signature of the payload using the API secret.
+x-refined-from:
+- gemini-trust-prediction-markets-openapi.yml
+- gemini-trust-prediction-markets-openapi.yml

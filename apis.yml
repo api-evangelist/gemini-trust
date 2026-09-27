@@ -10,6 +10,22 @@ description: Gemini Trust Company, LLC is a United States cryptocurrency exchang
 url: https://raw.githubusercontent.com/api-evangelist/gemini-trust/refs/heads/main/apis.yml
 x-type: company
 x-source: split:gemini
+deliveryModel:
+  model: saas
+  license_evidence:
+    not_product:
+    - gemini/developer-platform
+  open_source: unknown
+  commercial: true
+  callable_host: true
+  label: Hosted service · you call their endpoint
+  confidence: low
+  source:
+  - openapi
+  - pricing
+  - repository-not-product
+  generated: '2026-09-25'
+  method: derived
 specificationVersion: '0.20'
 created: '2026-09-15'
 modified: '2026-09-18'
@@ -22,12 +38,14 @@ tags:
 - Order Management
 - Clearing
 - Custody
-- Financial-Services
+- Financial Services
 - Prediction Markets
 - Staking
 - Derivatives
 - WebSocket
 - FIX
+- Real-Time
+- A2A
 tags_raw:
 - Company
 - Cryptocurrency
@@ -43,74 +61,17 @@ tags_raw:
 - Derivatives
 - WebSocket
 - FIX
+- Financial-Services
+- Real-Time
+- A2A
 image: https://gemini.com/static/images/gemini-logomark.png
 apis:
-- name: Gemini Crypto Trading REST API
-  description: 'The Gemini Exchange REST API for spot, margin and perpetuals trading: market data, order placement
-    and cancellation, past trades, clearing, fund management, deposit addresses, withdrawals, sub-account administration,
-    roles, margin and staking. Authenticated with an API key plus a base64 X-GEMINI-PAYLOAD and a hex HMAC-SHA384
-    X-GEMINI-SIGNATURE; 74 operations across 74 paths.'
-  image: https://gemini.com/static/images/gemini-logomark.png
-  humanURL: https://developer.gemini.com/rest-api/rest-api
-  baseURL: https://api.gemini.com
-  tags:
-  - Cryptocurrency
-  - Exchange
-  - Trading
-  - Market Data
-  - Order Management
-  - Clearing
-  - Custody
-  - Staking
-  - Derivatives
-  properties:
-  - type: OpenAPI
-    url: openapi/gemini-trust-rest-openapi.yml
-  - type: OpenAPI
-    name: OpenAPI (provider-hosted)
-    url: https://developer.gemini.com/specs/openapi/rest.yaml
-  - type: Documentation
-    url: https://developer.gemini.com/rest-api/rest-api
-  - type: APIReference
-    url: https://developer.gemini.com/rest
-  - type: Overlay
-    url: overlays/gemini-trust-rest-overlay.yaml
-  - type: ErrorCatalog
-    url: errors/gemini-trust-problem-types.yml
-  - type: DataModel
-    url: data-model/gemini-trust-data-model.yml
-  - type: AgentSkill
-    url: skills/_index.yml
-- name: Gemini Prediction Markets REST API
-  description: 'The Gemini Prediction Markets REST API for event-contract trading: market and event discovery, contract
-    prices, order placement and management, positions, combos and RFQ, volume, terms and maker/taker reward programs.
-    31 operations across 30 paths, sharing the Gemini private-REST signing transport.'
-  image: https://gemini.com/static/images/gemini-logomark.png
-  humanURL: https://developer.gemini.com/rest-api/prediction-markets
-  baseURL: https://api.gemini.com
-  tags:
-  - Prediction Markets
-  - Trading
-  - Market Data
-  - Order Management
-  - Derivatives
-  properties:
-  - type: OpenAPI
-    url: openapi/gemini-trust-prediction-markets-openapi.yml
-  - type: OpenAPI
-    name: OpenAPI (provider-hosted)
-    url: https://developer.gemini.com/specs/openapi/prediction-markets.yaml
-  - type: Documentation
-    url: https://developer.gemini.com/rest-api/prediction-markets
-  - type: APIReference
-    url: https://developer.gemini.com/prediction-markets-spec
-  - type: Overlay
-    url: overlays/gemini-trust-prediction-markets-overlay.yaml
 - name: Gemini WebSocket API
-  description: 'The production Gemini WebSocket API at wss://ws.gemini.com: request/response methods, market data
-    streams (book ticker, partial and differential depth, trades), authenticated account streams for orders, balances
-    and positions, prediction-market contract lifecycle, and combo RFQ messages. Published as AsyncAPI 3.0.0 with
-    21 channels and 22 operations.'
+  description: >-
+    The production Gemini WebSocket API at wss://ws.gemini.com: request/response methods, market data
+    streams (book ticker, partial and differential depth, trades), authenticated account streams for orders,
+    balances and positions, prediction-market contract lifecycle, and combo RFQ messages. Published as
+    AsyncAPI 3.0.0 with 21 channels and 22 operations.
   image: https://gemini.com/static/images/gemini-logomark.png
   humanURL: https://developer.gemini.com/websocket/introduction
   baseURL: wss://ws.gemini.com
@@ -129,10 +90,11 @@ apis:
   - type: Documentation
     url: https://developer.gemini.com/websocket/introduction
 - name: Gemini MCP Server
-  description: The official first-party Model Context Protocol server from the gemini/developer-platform monorepo,
-    exposing Gemini market data, orders, funds, account, margin, staking, prediction-market and native-OS alert
-    tools to MCP clients. Distributed as source in the monorepo and run over local stdio; there is no hosted remote
-    endpoint.
+  description: >-
+    The official first-party Model Context Protocol server from the gemini/developer-platform monorepo,
+    exposing Gemini market data, orders, funds, account, margin, staking, prediction-market and native-OS
+    alert tools to MCP clients. Distributed as source in the monorepo and run over local stdio; there
+    is no hosted remote endpoint.
   image: https://gemini.com/static/images/gemini-logomark.png
   humanURL: https://developer.gemini.com/tools
   baseURL: https://api.gemini.com
@@ -150,7 +112,444 @@ apis:
     url: https://developer.gemini.com/tools
   - type: SourceCode
     url: https://github.com/gemini/developer-platform/tree/main/packages/mcp-server
+- aid: gemini-trust:gemini-trust-account-administration-api
+  name: Gemini Trust Company Account Administration API
+  description: >-
+    The Account Administration API from Gemini Trust Company — 5 operation(s) for account administration.
+  humanURL: https://developer.gemini.com/rest-api/rest-api
+  baseURL: https://api.gemini.com
+  tags:
+  - Account Administration
+  properties:
+  - type: OpenAPI
+    url: openapi/gemini-trust-account-administration-api-openapi.yml
+  - type: Documentation
+    url: https://developer.gemini.com/rest-api/rest-api
+  - type: APIReference
+    url: https://developer.gemini.com/rest
+  - type: ErrorCatalog
+    url: errors/gemini-trust-problem-types.yml
+  - type: DataModel
+    url: data-model/gemini-trust-data-model.yml
+  - type: Documentation
+    url: https://developer.gemini.com/rest-api/prediction-markets
+  - type: APIReference
+    url: https://developer.gemini.com/prediction-markets-spec
+- aid: gemini-trust:gemini-trust-clearing-api
+  name: Gemini Trust Company Clearing API
+  description: The Clearing API from Gemini Trust Company — 8 operation(s) for clearing.
+  humanURL: https://developer.gemini.com/rest-api/rest-api
+  baseURL: https://api.gemini.com
+  tags:
+  - Clearing
+  properties:
+  - type: OpenAPI
+    url: openapi/gemini-trust-clearing-api-openapi.yml
+  - type: Documentation
+    url: https://developer.gemini.com/rest-api/rest-api
+  - type: APIReference
+    url: https://developer.gemini.com/rest
+  - type: ErrorCatalog
+    url: errors/gemini-trust-problem-types.yml
+  - type: DataModel
+    url: data-model/gemini-trust-data-model.yml
+  - type: Documentation
+    url: https://developer.gemini.com/rest-api/prediction-markets
+  - type: APIReference
+    url: https://developer.gemini.com/prediction-markets-spec
+- aid: gemini-trust:gemini-trust-combos-api
+  name: Gemini Trust Company Combos API
+  description: >-
+    Public endpoints for discovering and inspecting combo contracts, plus an authenticated endpoint to
+    create or retrieve a canonical combo. Combos are multi-leg contracts; order entry uses the same place/cancel
+    endpoints as single contracts.
+  humanURL: https://developer.gemini.com/rest-api/rest-api
+  baseURL: https://api.gemini.com
+  tags:
+  - Combos
+  properties:
+  - type: OpenAPI
+    url: openapi/gemini-trust-combos-api-openapi.yml
+  - type: Documentation
+    url: https://developer.gemini.com/rest-api/rest-api
+  - type: APIReference
+    url: https://developer.gemini.com/rest
+  - type: ErrorCatalog
+    url: errors/gemini-trust-problem-types.yml
+  - type: DataModel
+    url: data-model/gemini-trust-data-model.yml
+  - type: Documentation
+    url: https://developer.gemini.com/rest-api/prediction-markets
+  - type: APIReference
+    url: https://developer.gemini.com/prediction-markets-spec
+- aid: gemini-trust:gemini-trust-derivatives-api
+  name: Gemini Trust Company Derivatives API
+  description: The Derivatives API from Gemini Trust Company — 6 operation(s) for derivatives.
+  humanURL: https://developer.gemini.com/rest-api/rest-api
+  baseURL: https://api.gemini.com
+  tags:
+  - Derivatives
+  properties:
+  - type: OpenAPI
+    url: openapi/gemini-trust-derivatives-api-openapi.yml
+  - type: Documentation
+    url: https://developer.gemini.com/rest-api/rest-api
+  - type: APIReference
+    url: https://developer.gemini.com/rest
+  - type: ErrorCatalog
+    url: errors/gemini-trust-problem-types.yml
+  - type: DataModel
+    url: data-model/gemini-trust-data-model.yml
+  - type: Documentation
+    url: https://developer.gemini.com/rest-api/prediction-markets
+  - type: APIReference
+    url: https://developer.gemini.com/prediction-markets-spec
+- aid: gemini-trust:gemini-trust-fund-management-api
+  name: Gemini Trust Company Fund Management API
+  description: The Fund Management API from Gemini Trust Company — 16 operation(s) for fund management.
+  humanURL: https://developer.gemini.com/rest-api/rest-api
+  baseURL: https://api.gemini.com
+  tags:
+  - Fund Management
+  properties:
+  - type: OpenAPI
+    url: openapi/gemini-trust-fund-management-api-openapi.yml
+  - type: Documentation
+    url: https://developer.gemini.com/rest-api/rest-api
+  - type: APIReference
+    url: https://developer.gemini.com/rest
+  - type: ErrorCatalog
+    url: errors/gemini-trust-problem-types.yml
+  - type: DataModel
+    url: data-model/gemini-trust-data-model.yml
+  - type: Documentation
+    url: https://developer.gemini.com/rest-api/prediction-markets
+  - type: APIReference
+    url: https://developer.gemini.com/prediction-markets-spec
+- aid: gemini-trust:gemini-trust-instant-api
+  name: Gemini Trust Company Instant API
+  description: The Instant API from Gemini Trust Company — 2 operation(s) for instant.
+  humanURL: https://developer.gemini.com/rest-api/rest-api
+  baseURL: https://api.gemini.com
+  tags:
+  - Instant
+  properties:
+  - type: OpenAPI
+    url: openapi/gemini-trust-instant-api-openapi.yml
+  - type: Documentation
+    url: https://developer.gemini.com/rest-api/rest-api
+  - type: APIReference
+    url: https://developer.gemini.com/rest
+  - type: ErrorCatalog
+    url: errors/gemini-trust-problem-types.yml
+  - type: DataModel
+    url: data-model/gemini-trust-data-model.yml
+  - type: Documentation
+    url: https://developer.gemini.com/rest-api/prediction-markets
+  - type: APIReference
+    url: https://developer.gemini.com/prediction-markets-spec
+- aid: gemini-trust:gemini-trust-margin-trading-api
+  name: Gemini Trust Company Margin Trading API
+  description: The Margin Trading API from Gemini Trust Company — 3 operation(s) for margin trading.
+  humanURL: https://developer.gemini.com/rest-api/rest-api
+  baseURL: https://api.gemini.com
+  tags:
+  - Margin Trading
+  properties:
+  - type: OpenAPI
+    url: openapi/gemini-trust-margin-trading-api-openapi.yml
+  - type: Documentation
+    url: https://developer.gemini.com/rest-api/rest-api
+  - type: APIReference
+    url: https://developer.gemini.com/rest
+  - type: ErrorCatalog
+    url: errors/gemini-trust-problem-types.yml
+  - type: DataModel
+    url: data-model/gemini-trust-data-model.yml
+  - type: Documentation
+    url: https://developer.gemini.com/rest-api/prediction-markets
+  - type: APIReference
+    url: https://developer.gemini.com/prediction-markets-spec
+- aid: gemini-trust:gemini-trust-market-data-api
+  name: Gemini Trust Company Market Data API
+  description: The Market Data API from Gemini Trust Company — 15 operation(s) for market data.
+  humanURL: https://developer.gemini.com/rest-api/rest-api
+  baseURL: https://api.gemini.com
+  tags:
+  - Market Data
+  properties:
+  - type: OpenAPI
+    url: openapi/gemini-trust-market-data-api-openapi.yml
+  - type: Documentation
+    url: https://developer.gemini.com/rest-api/rest-api
+  - type: APIReference
+    url: https://developer.gemini.com/rest
+  - type: ErrorCatalog
+    url: errors/gemini-trust-problem-types.yml
+  - type: DataModel
+    url: data-model/gemini-trust-data-model.yml
+  - type: Documentation
+    url: https://developer.gemini.com/rest-api/prediction-markets
+  - type: APIReference
+    url: https://developer.gemini.com/prediction-markets-spec
+- aid: gemini-trust:gemini-trust-markets-api
+  name: Gemini Trust Company Markets API
+  description: >-
+    Public endpoints for browsing prediction markets.
+
+
+    **Market Data:** Use these REST endpoints to discover active events and each contract's `instrumentSymbol`
+    (e.g., `GEMI-FEDJAN26-DN25`). For active trading and market making, prefer [Prediction Markets WebSocket
+    streams](/prediction-markets/websocket/streams) with that `instrumentSymbol`.
+
+    - [List Events](/rest-api/prediction-markets/events/list-events) - Discover active events and instrument
+    symbols
+
+    - [Prediction Markets WebSocket Streams](/prediction-markets/websocket/streams) - Stream prices, depth,
+    order events, and positions
+  humanURL: https://developer.gemini.com/rest-api/rest-api
+  baseURL: https://api.gemini.com
+  tags:
+  - Markets
+  properties:
+  - type: OpenAPI
+    url: openapi/gemini-trust-markets-api-openapi.yml
+  - type: Documentation
+    url: https://developer.gemini.com/rest-api/rest-api
+  - type: APIReference
+    url: https://developer.gemini.com/rest
+  - type: ErrorCatalog
+    url: errors/gemini-trust-problem-types.yml
+  - type: DataModel
+    url: data-model/gemini-trust-data-model.yml
+  - type: Documentation
+    url: https://developer.gemini.com/rest-api/prediction-markets
+  - type: APIReference
+    url: https://developer.gemini.com/prediction-markets-spec
+- aid: gemini-trust:gemini-trust-oauth-api
+  name: Gemini Trust Company OAuth API
+  description: The OAuth API from Gemini Trust Company — 1 operation(s) for oauth.
+  humanURL: https://developer.gemini.com/rest-api/rest-api
+  baseURL: https://api.gemini.com
+  tags:
+  - OAuth
+  properties:
+  - type: OpenAPI
+    url: openapi/gemini-trust-oauth-api-openapi.yml
+  - type: Documentation
+    url: https://developer.gemini.com/rest-api/rest-api
+  - type: APIReference
+    url: https://developer.gemini.com/rest
+  - type: ErrorCatalog
+    url: errors/gemini-trust-problem-types.yml
+  - type: DataModel
+    url: data-model/gemini-trust-data-model.yml
+  - type: Documentation
+    url: https://developer.gemini.com/rest-api/prediction-markets
+  - type: APIReference
+    url: https://developer.gemini.com/prediction-markets-spec
+- aid: gemini-trust:gemini-trust-orders-api
+  name: Gemini Trust Company Orders API
+  description: The Orders API from Gemini Trust Company — 11 operation(s) for orders.
+  humanURL: https://developer.gemini.com/rest-api/rest-api
+  baseURL: https://api.gemini.com
+  tags:
+  - Orders
+  properties:
+  - type: OpenAPI
+    url: openapi/gemini-trust-orders-api-openapi.yml
+  - type: Documentation
+    url: https://developer.gemini.com/rest-api/rest-api
+  - type: APIReference
+    url: https://developer.gemini.com/rest
+  - type: ErrorCatalog
+    url: errors/gemini-trust-problem-types.yml
+  - type: DataModel
+    url: data-model/gemini-trust-data-model.yml
+  - type: Documentation
+    url: https://developer.gemini.com/rest-api/prediction-markets
+  - type: APIReference
+    url: https://developer.gemini.com/prediction-markets-spec
+- aid: gemini-trust:gemini-trust-positions-api
+  name: Gemini Trust Company Positions API
+  description: >-
+    Authenticated endpoints for viewing positions and order history. Use REST positions for recovery or
+    audit snapshots after reconnects, missed WebSocket messages, and settlement windows.
+  humanURL: https://developer.gemini.com/rest-api/rest-api
+  baseURL: https://api.gemini.com
+  tags:
+  - Positions
+  properties:
+  - type: OpenAPI
+    url: openapi/gemini-trust-positions-api-openapi.yml
+  - type: Documentation
+    url: https://developer.gemini.com/rest-api/rest-api
+  - type: APIReference
+    url: https://developer.gemini.com/rest
+  - type: ErrorCatalog
+    url: errors/gemini-trust-problem-types.yml
+  - type: DataModel
+    url: data-model/gemini-trust-data-model.yml
+  - type: Documentation
+    url: https://developer.gemini.com/rest-api/prediction-markets
+  - type: APIReference
+    url: https://developer.gemini.com/prediction-markets-spec
+- aid: gemini-trust:gemini-trust-rewards-api
+  name: Gemini Trust Company Rewards API
+  description: >-
+    Endpoints for the Maker Rebate and Liquidity Rewards programs.
+
+
+    - **Maker Rebate** — per-fill rebates earned by resting limit orders that get filled. Rates and rebate
+    multipliers are configured per category. Public rate schedule plus authenticated payout and summary
+    endpoints.
+
+    - **Liquidity Rewards** — daily USD reward pools distributed across qualifying makers based on quote
+    uptime, spread, and size. Public config + event listing, authenticated daily and lifetime summary
+    endpoints.
+
+
+    When a program is not active, its endpoints return `503 Service Unavailable`.
+
+
+    **Note on field naming.** Response fields under the Rewards endpoints use `snake_case` (e.g. `event_ticker`,
+    `daily_pool_usd`). This differs from the `camelCase` convention used by the rest of the Prediction
+    Markets REST endpoints.
+  humanURL: https://developer.gemini.com/rest-api/rest-api
+  baseURL: https://api.gemini.com
+  tags:
+  - Rewards
+  properties:
+  - type: OpenAPI
+    url: openapi/gemini-trust-rewards-api-openapi.yml
+  - type: Documentation
+    url: https://developer.gemini.com/rest-api/rest-api
+  - type: APIReference
+    url: https://developer.gemini.com/rest
+  - type: ErrorCatalog
+    url: errors/gemini-trust-problem-types.yml
+  - type: DataModel
+    url: data-model/gemini-trust-data-model.yml
+  - type: Documentation
+    url: https://developer.gemini.com/rest-api/prediction-markets
+  - type: APIReference
+    url: https://developer.gemini.com/prediction-markets-spec
+- aid: gemini-trust:gemini-trust-session-api
+  name: Gemini Trust Company Session API
+  description: The Session API from Gemini Trust Company — 1 operation(s) for session.
+  humanURL: https://developer.gemini.com/rest-api/rest-api
+  baseURL: https://api.gemini.com
+  tags:
+  - Session
+  properties:
+  - type: OpenAPI
+    url: openapi/gemini-trust-session-api-openapi.yml
+  - type: Documentation
+    url: https://developer.gemini.com/rest-api/rest-api
+  - type: APIReference
+    url: https://developer.gemini.com/rest
+  - type: ErrorCatalog
+    url: errors/gemini-trust-problem-types.yml
+  - type: DataModel
+    url: data-model/gemini-trust-data-model.yml
+  - type: Documentation
+    url: https://developer.gemini.com/rest-api/prediction-markets
+  - type: APIReference
+    url: https://developer.gemini.com/prediction-markets-spec
+- aid: gemini-trust:gemini-trust-staking-api
+  name: Gemini Trust Company Staking API
+  description: The Staking API from Gemini Trust Company — 6 operation(s) for staking.
+  humanURL: https://developer.gemini.com/rest-api/rest-api
+  baseURL: https://api.gemini.com
+  tags:
+  - Staking
+  properties:
+  - type: OpenAPI
+    url: openapi/gemini-trust-staking-api-openapi.yml
+  - type: Documentation
+    url: https://developer.gemini.com/rest-api/rest-api
+  - type: APIReference
+    url: https://developer.gemini.com/rest
+  - type: ErrorCatalog
+    url: errors/gemini-trust-problem-types.yml
+  - type: DataModel
+    url: data-model/gemini-trust-data-model.yml
+  - type: Documentation
+    url: https://developer.gemini.com/rest-api/prediction-markets
+  - type: APIReference
+    url: https://developer.gemini.com/prediction-markets-spec
+- aid: gemini-trust:gemini-trust-terms-api
+  name: Gemini Trust Company Terms API
+  description: >-
+    Read, check, and accept the latest Prediction Markets terms for API key and OAuth trading flows.
+  humanURL: https://developer.gemini.com/rest-api/rest-api
+  baseURL: https://api.gemini.com
+  tags:
+  - Terms
+  properties:
+  - type: OpenAPI
+    url: openapi/gemini-trust-terms-api-openapi.yml
+  - type: Documentation
+    url: https://developer.gemini.com/rest-api/rest-api
+  - type: APIReference
+    url: https://developer.gemini.com/rest
+  - type: ErrorCatalog
+    url: errors/gemini-trust-problem-types.yml
+  - type: DataModel
+    url: data-model/gemini-trust-data-model.yml
+  - type: Documentation
+    url: https://developer.gemini.com/rest-api/prediction-markets
+  - type: APIReference
+    url: https://developer.gemini.com/prediction-markets-spec
+- aid: gemini-trust:gemini-trust-trading-api
+  name: Gemini Trust Company Trading API
+  description: >-
+    Authenticated REST endpoints for placing and managing orders. Treat REST order placement as payload
+    reference or a one-off server workflow; for active trading and market making, prefer WebSocket order.place.
+  humanURL: https://developer.gemini.com/rest-api/rest-api
+  baseURL: https://api.gemini.com
+  tags:
+  - Trading
+  properties:
+  - type: OpenAPI
+    url: openapi/gemini-trust-trading-api-openapi.yml
+  - type: Documentation
+    url: https://developer.gemini.com/rest-api/rest-api
+  - type: APIReference
+    url: https://developer.gemini.com/rest
+  - type: ErrorCatalog
+    url: errors/gemini-trust-problem-types.yml
+  - type: DataModel
+    url: data-model/gemini-trust-data-model.yml
+  - type: Documentation
+    url: https://developer.gemini.com/rest-api/prediction-markets
+  - type: APIReference
+    url: https://developer.gemini.com/prediction-markets-spec
+- aid: gemini-trust:gemini-trust-volume-api
+  name: Gemini Trust Company Volume API
+  description: Public, unauthenticated prediction-market trade volume by category and UTC period.
+  humanURL: https://developer.gemini.com/rest-api/rest-api
+  baseURL: https://api.gemini.com
+  tags:
+  - Volume
+  properties:
+  - type: OpenAPI
+    url: openapi/gemini-trust-volume-api-openapi.yml
+  - type: Documentation
+    url: https://developer.gemini.com/rest-api/rest-api
+  - type: APIReference
+    url: https://developer.gemini.com/rest
+  - type: ErrorCatalog
+    url: errors/gemini-trust-problem-types.yml
+  - type: DataModel
+    url: data-model/gemini-trust-data-model.yml
+  - type: Documentation
+    url: https://developer.gemini.com/rest-api/prediction-markets
+  - type: APIReference
+    url: https://developer.gemini.com/prediction-markets-spec
 common:
+- type: Overlay
+  url: overlays/gemini-trust-prediction-markets-overlay.yaml
 - type: Website
   url: https://www.gemini.com
 - type: DeveloperPortal

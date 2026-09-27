@@ -1,0 +1,1009 @@
+openapi: 3.2.0
+info:
+  title: REST Staking API
+  description: 'The Gemini Crypto Exchange REST API allows programmatic access to trade cryptocurrencies
+
+    and manage your account on the Gemini Exchange platform. The API provides both public and
+
+    private endpoints for market data, order management, and account operations.'
+  version: 1.0.0
+  contact:
+    name: Gemini Trading Support
+    email: trading@gemini.com
+servers:
+- url: https://api.gemini.com
+  description: Production server
+- url: https://api.sandbox.gemini.com
+  description: Sandbox server for testing
+tags:
+- name: Staking
+paths:
+  /v1/balances/staking:
+    post:
+      x-zudoku-playground-enabled: false
+      tags:
+      - Staking
+      summary: List Staking Balances
+      operationId: listStakingBalances
+      description: 'This will show the available balance in Staking as well as the available balance for withdrawal.
+
+
+        ### Roles
+
+        The API key you use to access this endpoint must have the Trader, Fund Manager or Auditor role assigned. See Roles for more information.'
+      parameters:
+      - $ref: '#/components/parameters/apiKeyAuth'
+      - $ref: '#/components/parameters/signatureAuth'
+      - $ref: '#/components/parameters/payloadAuth'
+      - $ref: '#/components/parameters/contentType'
+      - $ref: '#/components/parameters/contentLength'
+      - $ref: '#/components/parameters/cacheControl'
+      security:
+      - apiKeyAuth: []
+        signatureAuth: []
+        payloadAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+              - request
+              - nonce
+              properties:
+                request:
+                  type: string
+                  description: The literal string "/v1/balances/staking"
+                nonce:
+                  $ref: '#/components/schemas/Nonce'
+                account:
+                  type: string
+                  description: Required for Master API keys as described in [Private API Invocation](/authentication/api-key#private-api-invocation). The name of the account within the subaccount group.
+            example:
+              request: /v1/balances/staking
+              nonce: <nonce>
+              account: primary
+      responses:
+        '200':
+          description: The staking balances
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/StakingBalance'
+              example:
+              - type: Staking
+                currency: MATIC
+                balance: 10
+                available: 0
+                availableForWithdrawal: 10
+                balanceByProvider:
+                  62b21e17-2534-4b9f-afcf-b7edb609dd8d:
+                    balance: 10
+              - type: Staking
+                currency: ETH
+                balance: 3
+                available: 0
+                availableForWithdrawal: 3
+                balanceByProvider:
+                  62b21e17-2534-4b9f-afcf-b7edb609dd8d:
+                    balance: 3
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/ApiKeyIpFilteringFailure'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+        '500':
+          $ref: '#/components/responses/InternalError'
+  /v1/staking/stake:
+    post:
+      x-zudoku-playground-enabled: false
+      tags:
+      - Staking
+      summary: Stake Crypto Funds
+      operationId: stakeCryptoFunds
+      description: 'Initiates Staking deposits.
+
+
+        ### Roles
+
+        The API key you use to access this endpoint must have the Trader, Fund Manager or Trader role assigned. See Roles for more information.'
+      parameters:
+      - $ref: '#/components/parameters/apiKeyAuth'
+      - $ref: '#/components/parameters/signatureAuth'
+      - $ref: '#/components/parameters/payloadAuth'
+      - $ref: '#/components/parameters/contentType'
+      - $ref: '#/components/parameters/contentLength'
+      - $ref: '#/components/parameters/cacheControl'
+      security:
+      - apiKeyAuth: []
+        signatureAuth: []
+        payloadAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+              - request
+              - nonce
+              - providerId
+              - currency
+              - amount
+              properties:
+                request:
+                  type: string
+                  description: The literal string "v1/staking/stake"
+                nonce:
+                  $ref: '#/components/schemas/Nonce'
+                account:
+                  type: string
+                  description: Required for Master API keys as described in [Private API Invocation](/authentication/api-key#private-api-invocation). The name of the account within the subaccount group.
+                providerId:
+                  type: string
+                  description: Provider Id, in uuid4 format. providerId is accessible from the [Staking rates](#list-staking-rates) response
+                currency:
+                  type: string
+                  description: Currency code, see [symbols](/market-data/symbols-and-minimums)
+                amount:
+                  type: string
+                  format: decimal
+                  description: The amount of currency to deposit
+            example:
+              request: v1/staking/stake
+              nonce: <nonce>
+              providerId: 62b21e17-2534-4b9f-afcf-b7edb609dd8d
+              currency: MATIC
+              amount: 30
+      responses:
+        '200':
+          description: The staking deposit transaction
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StakingDeposit'
+              example:
+                transactionId: 65QN4XM5
+                providerId: 62b21e17-2534-4b9f-afcf-b7edb609dd8d
+                currency: MATIC
+                amount: 30
+                rates:
+                  rate: 540
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/ApiKeyIpFilteringFailure'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+        '500':
+          $ref: '#/components/responses/InternalError'
+  /v1/staking/history:
+    post:
+      x-zudoku-playground-enabled: false
+      tags:
+      - Staking
+      summary: List Staking Event History
+      operationId: listStakingEventHistory
+      description: 'This will show all staking deposits, redemptions and interest accruals.
+
+
+        ### Roles
+
+        The API key you use to access this endpoint must have the Trader, Fund Manager or Auditor role assigned. See Roles for more information.
+
+
+        ### How to iterate through all transactions:
+
+        To retrieve your full Staking history walking backwards,
+
+
+        1. Initial request: `POST` to https://api.gemini.com/v1/staking/history with a JSON payload including `sortAsc` set to `false` and a limit key with value `500`.
+
+        2. When you receive the list of Staking transactions, they will be sorted by `datetime` descending - so the last element in the list will have the lowest `timestamp` value. For this example, say that value is `X`.
+
+        3. Create a second `POST` request with a JSON payload including a `until` timestamp key with value `X-1`, `sortAsc` set to `false`, and a limit key with value `500`.
+
+        4. Take the last element of the list returned with lowest `datetime` value `Y` and create a third `POST` request with a JSON payload including a `until` timestamp key with value `Y-1`, `sortAsc` set to false, and a `limit` key with value `500`.
+
+        5. Continue creating `POST` requests and retrieving Staking transactions until an empty list is returned.'
+      parameters:
+      - $ref: '#/components/parameters/apiKeyAuth'
+      - $ref: '#/components/parameters/signatureAuth'
+      - $ref: '#/components/parameters/payloadAuth'
+      - $ref: '#/components/parameters/contentType'
+      - $ref: '#/components/parameters/contentLength'
+      - $ref: '#/components/parameters/cacheControl'
+      security:
+      - apiKeyAuth: []
+        signatureAuth: []
+        payloadAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+              - request
+              - nonce
+              properties:
+                request:
+                  type: string
+                  description: The literal string "/v1/staking/history"
+                nonce:
+                  $ref: '#/components/schemas/Nonce'
+                account:
+                  type: string
+                  description: Required for Master API keys as described in [Private API Invocation](/authentication/api-key#private-api-invocation). The name of the account within the subaccount group.
+                since:
+                  description: In iso datetime with timezone format. Defaults to the timestamp of the first deposit into Staking.
+                  allOf:
+                  - $ref: '#/components/schemas/TimestampType'
+                until:
+                  description: In iso datetime with timezone format, default to current time as of server time
+                  allOf:
+                  - $ref: '#/components/schemas/TimestampType'
+                limit:
+                  type: integer
+                  description: The maximum number of transactions to return. Default is 50, max is 500.
+                  default: 50
+                providerId:
+                  type: string
+                  description: Borrower Id, in uuid4 format. providerId is accessible from the [Staking rates](#list-staking-rates) response
+                currency:
+                  type: string
+                  description: Currency code, see [symbols](/market-data/symbols-and-minimums)
+                interestOnly:
+                  type: boolean
+                  description: Toggles whether to only return daily interest transactions. Defaults to false.
+                  default: false
+                sortAsc:
+                  type: boolean
+                  description: Toggles whether to sort the transactions in ascending order by datetime. Defaults to false.
+                  default: false
+            example:
+              request: /v1/staking/history
+              nonce: <nonce>
+              account: primary
+              since: '2022-11-01T00:00:00.000Z'
+              until: '2022-11-03T00:00:00.000Z'
+              limit: 50
+      responses:
+        '200':
+          description: Staking transaction history
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/StakingHistory'
+              example:
+              - providerId: 62b21e17-2534-4b9f-afcf-b7edb609dd8d
+                transactions:
+                - transactionId: MPZ7LDD8
+                  transactionType: Redeem
+                  amountCurrency: MATIC
+                  amount: 20
+                  dateTime: 1667418560153
+                - transactionId: 65QN4XM5
+                  transactionType: Deposit
+                  amountCurrency: MATIC
+                  amount: 30
+                  dateTime: 1667418287795
+                - transactionId: YP22OK4P
+                  transactionType: Deposit
+                  amountCurrency: ETH
+                  amount: 3
+                  dateTime: 1667397368929
+                - transactionId: TQN9OPN
+                  transactionType: Interest
+                  amountCurrency: MATIC
+                  amount: 0.01
+                  priceCurrency: USD
+                  priceAmount: 0.1
+                  dateTime: 1667418287795
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/ApiKeyIpFilteringFailure'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+        '500':
+          $ref: '#/components/responses/InternalError'
+  /v1/staking/rates:
+    get:
+      tags:
+      - Staking
+      summary: List Staking Rates
+      operationId: listStakingRates
+      description: This will return the current Gemini Staking interest rates (in bps). When including the specific asset(s) in the request, the response will include the specific assets' (e.g. `eth`, `matic`) Staking rate. When not including the specific asset in the request, the response will include all Staking rates.
+      responses:
+        '200':
+          description: JSON response with staking rates
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StakingRateResponse'
+              example:
+                62bb4d27-a9c8-4493-a737-d4fa33994f1f:
+                  MATIC:
+                    providerId: 62bb4d27-a9c8-4493-a737-d4fa33994f1f
+                    rate: 95.8909
+                    apyPct: 0.96
+                    ratePct: 0.958909
+                    depositUsdLimit: 500000
+                  ETH:
+                    providerId: 62bb4d27-a9c8-4493-a737-d4fa33994f1f
+                    rate: 228.0197
+                    apyPct: 2.31
+                    ratePct: 2.280197
+                    depositUsdLimit: 500000
+                  SOL:
+                    providerId: 62bb4d27-a9c8-4493-a737-d4fa33994f1f
+                    rate: 321.5282
+                    apyPct: 3.27
+                    ratePct: 3.215282
+                    depositUsdLimit: 500000
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+        '500':
+          $ref: '#/components/responses/InternalError'
+  /v1/staking/rewards:
+    post:
+      x-zudoku-playground-enabled: false
+      tags:
+      - Staking
+      summary: List Staking Rewards
+      operationId: listStakingRewards
+      description: 'This will show the historical Staking reward payments and accrual.
+
+
+        ### Roles
+
+        The API key you use to access this endpoint must have the Trader, Fund Manager or Auditor role assigned. See Roles for more information.'
+      parameters:
+      - $ref: '#/components/parameters/apiKeyAuth'
+      - $ref: '#/components/parameters/signatureAuth'
+      - $ref: '#/components/parameters/payloadAuth'
+      - $ref: '#/components/parameters/contentType'
+      - $ref: '#/components/parameters/contentLength'
+      - $ref: '#/components/parameters/cacheControl'
+      security:
+      - apiKeyAuth: []
+        signatureAuth: []
+        payloadAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+              - request
+              - nonce
+              - since
+              properties:
+                request:
+                  type: string
+                  description: The literal string "/v1/staking/rewards"
+                nonce:
+                  $ref: '#/components/schemas/Nonce'
+                account:
+                  type: string
+                  description: Required for Master API keys as described in [Private API Invocation](/authentication/api-key#private-api-invocation). The name of the account within the subaccount group.
+                since:
+                  type: string
+                  description: In iso datetime with timezone format
+                until:
+                  type: string
+                  description: In iso datetime with timezone format, default to current time as of server time
+                providerId:
+                  type: string
+                  description: Borrower Id, in uuid4 format. providerId is accessible from the [Staking rates](#list-staking-rates) response
+                currency:
+                  type: string
+                  description: Currency code, see [symbols](/market-data/symbols-and-minimums)
+            example:
+              request: /v1/staking/rewards
+              nonce: <nonce>
+              since: '2022-08-20T00:00:00.000Z'
+              until: '2022-11-05T00:00:00.000Z'
+              providerId: 62b21e17-2534-4b9f-afcf-b7edb609dd8d
+              currency: ETH
+      responses:
+        '200':
+          description: A nested JSON object, organized by provider, then currency
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StakingRewardsResponse'
+              example:
+                62b21e17-2534-4b9f-afcf-b7edb609dd8d:
+                  MATIC:
+                    providerId: 62b21e17-2534-4b9f-afcf-b7edb609dd8d
+                    currency: MATIC
+                    accrualTotal: 0.103994
+                    ratePeriods:
+                    - providerId: 62b21e17-2534-4b9f-afcf-b7edb609dd8d
+                      currency: MATIC
+                      apyPct: 5.75
+                      ratePct: 5.592369
+                      numberOfAccruals: 1
+                      accrualTotal: 0.0065678
+                      firstAccrualAt: '2022-08-23T20:00:00.000Z'
+                      lastAccrualAt: '2022-08-23T20:00:00.000Z'
+                    - providerId: 62b21e17-2534-4b9f-afcf-b7edb609dd8d
+                      currency: MATIC
+                      apyPct: 5.2
+                      ratePct: 5.073801
+                      numberOfAccruals: 1
+                      accrualTotal: 0.0037971687995651837
+                      firstAccrualAt: '2022-10-28T20:00:00.000Z'
+                      lastAccrualAt: '2022-10-28T20:00:00.000Z'
+                  ETH:
+                    providerId: 62b21e17-2534-4b9f-afcf-b7edb609dd8d
+                    currency: ETH
+                    accrualTotal: 0.017999076209977
+                    ratePeriods:
+                    - providerId: 62b21e17-2534-4b9f-afcf-b7edb609dd8d
+                      currency: ETH
+                      apyPct: 0.66
+                      ratePct: 0.65913408
+                      numberOfAccruals: 1
+                      accrualTotal: 0.00014802170517505
+                      firstAccrualAt: '2022-11-02T20:00:00.000Z'
+                      lastAccrualAt: '2022-11-02T20:00:00.000Z'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/ApiKeyIpFilteringFailure'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+        '500':
+          $ref: '#/components/responses/InternalError'
+  /v1/staking/unstake:
+    post:
+      x-zudoku-playground-enabled: false
+      tags:
+      - Staking
+      summary: Unstake Crypto Funds
+      operationId: unstakeCryptoFunds
+      description: 'Initiates Staking withdrawals.
+
+
+        ### Roles
+
+        The API key you use to access this endpoint must have the Trader, Fund Manager or Trader role assigned. See Roles for more information.'
+      parameters:
+      - $ref: '#/components/parameters/apiKeyAuth'
+      - $ref: '#/components/parameters/signatureAuth'
+      - $ref: '#/components/parameters/payloadAuth'
+      - $ref: '#/components/parameters/contentType'
+      - $ref: '#/components/parameters/contentLength'
+      - $ref: '#/components/parameters/cacheControl'
+      security:
+      - apiKeyAuth: []
+        signatureAuth: []
+        payloadAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+              - request
+              - nonce
+              - providerId
+              - currency
+              - amount
+              properties:
+                request:
+                  type: string
+                  description: The literal string "v1/staking/unstake"
+                nonce:
+                  $ref: '#/components/schemas/Nonce'
+                account:
+                  type: string
+                  description: Required for Master API keys as described in [Private API Invocation](/authentication/api-key#private-api-invocation). The name of the account within the subaccount group.
+                providerId:
+                  type: string
+                  description: Provider Id, in uuid4 format. providerId is accessible from the [Staking rates](#list-staking-rates) response
+                currency:
+                  type: string
+                  description: Currency code, see [symbols](/market-data/symbols-and-minimums)
+                amount:
+                  type: string
+                  format: decimal
+                  description: The amount of currency to withdraw
+            example:
+              request: v1/staking/unstake
+              nonce: <nonce>
+              providerId: 62b21e17-2534-4b9f-afcf-b7edb609dd8d
+              currency: MATIC
+              amount: 20
+      responses:
+        '200':
+          description: The staking withdrawal transaction
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StakingWithdrawal'
+              example:
+                transactionId: MPZ7LDD8
+                amount: 20
+                amountPaidSoFar: 20
+                amountRemaining: 0
+                currency: MATIC
+                requestInitiated: '2022-11-02T19:49:20.153Z'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/ApiKeyIpFilteringFailure'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+        '500':
+          $ref: '#/components/responses/InternalError'
+components:
+  schemas:
+    StakingWithdrawal:
+      type: object
+      properties:
+        transactionId:
+          type: string
+          description: A unique identifier for the staking transaction
+          example: MPZ7LDD8
+        amount:
+          type: number
+          format: decimal
+          description: The amount deposited
+          example: 20
+        amountPaidSoFar:
+          type: number
+          format: decimal
+          description: The amount redeemed successfully
+          example: 20
+        amountRemaining:
+          type: number
+          format: decimal
+          description: The amount pending to be redeemed
+          example: 0
+        currency:
+          type: string
+          description: Currency code
+          example: MATIC
+        requestInitiated:
+          type: string
+          description: In ISO datetime with timezone format
+          example: '2022-11-02T19:49:20.153Z'
+    StakingRewardsResponse:
+      type: object
+      description: Provider UUID Keys
+      properties:
+        provider_uuid:
+          $ref: '#/components/schemas/StakingRewardsProvider'
+    StakingDeposit:
+      type: object
+      properties:
+        transactionId:
+          type: string
+          description: A unique identifier for the staking transaction
+          example: 65QN4XM5
+        providerId:
+          type: string
+          description: Provider Id, in uuid4 format
+          example: 62b21e17-2534-4b9f-afcf-b7edb609dd8d
+        currency:
+          type: string
+          description: Currency code, see [symbols](/market-data/symbols-and-minimums)
+          example: MATIC
+        amount:
+          type: number
+          format: decimal
+          description: The amount deposited
+          example: 30
+        accrualTotal:
+          type: number
+          format: decimal
+          description: The total accrual
+        rates:
+          type: object
+          description: A JSON object including one or many rates. If more than one rate it would be an array of rates.
+          properties:
+            rate:
+              type: integer
+              description: Staking interest rate in bps (Expressed as a simple rate. Interest on Staking balances compounds daily. In mobile and web applications, APYs are derived from this rate and rounded to 1/10th of a percent.)
+              example: 540
+    TimestampType:
+      description: timestamp
+      oneOf:
+      - type: string
+        description: 'Gemini strongly recommends using milliseconds instead of seconds for timestamps.
+
+
+          | Timestamp format      | Example               | Supported request type |
+
+          |-----------------------|-----------------------|------------------------|
+
+          | string (seconds)      | `1495127793`          | `POST` only            |
+
+          | string (milliseconds) | `1495127793000`       | `POST` only            |
+
+          '
+        example: '1495127793000'
+      - type: integer
+        format: int64
+        description: 'Gemini strongly recommends using milliseconds instead of seconds for timestamps.
+
+
+          | Timestamp format            | Example                   | Supported request type |
+
+          |-----------------------------|---------------------------|------------------------|
+
+          | whole number (seconds)      | `1495127793`              | `GET`, `POST`          |
+
+          | whole number (milliseconds) | `1495127793000`           | `GET`, `POST`          |
+
+          '
+        example: 1495127793000
+    StakingRewardsProvider:
+      type: object
+      description: Currency Symbol Keys
+      properties:
+        currency_symbol:
+          $ref: '#/components/schemas/StakingRewards'
+    ErrorResponse:
+      type: object
+      properties:
+        result:
+          type: string
+          description: Error
+        reason:
+          type: string
+          description: A short description
+        message:
+          type: string
+          description: Detailed error message
+    StakingRate:
+      type: object
+      properties:
+        providerId:
+          type: string
+          description: Provider Id, in uuid4 format
+          example: 62bb4d27-a9c8-4493-a737-d4fa33994f1f
+        rate:
+          type: number
+          format: decimal
+          description: Staking interest rate in bps (Expressed as a simple rate. Interest on Staking balances compounds daily. In mobile and web applications, APYs are derived from this rate and rounded to 1/10th of a percent.)
+          example: 429.386
+        apyPct:
+          type: number
+          format: decimal
+          description: Staking interest APY (Expressed as a percentage derived from the rate and rounded to 1/10th of a percent.)
+          example: 4.39
+        ratePct:
+          type: number
+          format: decimal
+          description: '`rate` expressed as a percentage'
+          example: 4.29386
+        depositUsdLimit:
+          type: integer
+          description: Maximum new amount in USD notional of this crypto that can participate in Gemini Staking per account per month
+          example: 500000
+    StakingHistory:
+      type: object
+      properties:
+        providerId:
+          type: string
+          description: Provider Id, in uuid4 format
+          example: 62b21e17-2534-4b9f-afcf-b7edb609dd8d
+        transactions:
+          type: array
+          items:
+            $ref: '#/components/schemas/StakingTransaction'
+    StakingRewardPeriod:
+      type: object
+      properties:
+        providerId:
+          type: string
+          description: Provider Id, in uuid4 format
+          example: 62b21e17-2534-4b9f-afcf-b7edb609dd8d
+        currency:
+          type: string
+          description: Currency code, see [symbols](/market-data/symbols-and-minimums)
+          example: MATIC
+        apyPct:
+          type: number
+          format: decimal
+          description: Staking reward rate expressed as an APY at time of accrual. Interest on Staking balances compounds daily based on the simple rate which is available from `/v1/staking/rates/`
+          example: 5.75
+        ratePct:
+          type: number
+          format: decimal
+          description: Rate expressed as a percentage
+          example: 5.592369
+        numberOfAccruals:
+          type: integer
+          description: Number of accruals in the specific aggregate, typically one per day. If the rate is adjusted, new accruals are added.
+          example: 1
+        accrualTotal:
+          type: number
+          format: decimal
+          description: The total accrual
+          example: 0.0065678
+        firstAccrualAt:
+          type: string
+          description: Time of first accrual. In iso datetime with timezone format
+          example: '2022-08-23T20:00:00.000Z'
+        lastAccrualAt:
+          type: string
+          description: Time of last accrual. In iso datetime with timezone format
+          example: '2022-08-23T20:00:00.000Z'
+    StakingRewards:
+      type: object
+      properties:
+        providerId:
+          type: string
+          description: Provider Id, in uuid4 format
+          example: 62b21e17-2534-4b9f-afcf-b7edb609dd8d
+        currency:
+          type: string
+          description: Currency code, see [symbols](/market-data/symbols-and-minimums)
+          example: MATIC
+        accrualTotal:
+          type: number
+          format: decimal
+          description: The total accrual
+          example: 0.103994
+        ratePeriods:
+          type: array
+          description: Array of JSON objects with period accrual information
+          items:
+            $ref: '#/components/schemas/StakingRewardPeriod'
+    StakingRateProvider:
+      type: object
+      description: Currency Symbol Keys
+      properties:
+        currency_symbol:
+          $ref: '#/components/schemas/StakingRate'
+    Nonce:
+      oneOf:
+      - type: TimestampType
+        $ref: '#/components/schemas/TimestampType'
+        example: 1495127793000
+      - type: integer
+        example: 1495127793000
+      description: The nonce, as described in [Private API Invocation](/authentication/api-key#private-api-invocation)
+    StakingRateResponse:
+      type: object
+      description: Provider UUID Keys
+      properties:
+        provider_uuid:
+          $ref: '#/components/schemas/StakingRateProvider'
+    StakingBalance:
+      type: object
+      properties:
+        type:
+          type: string
+          description: Will always be "Staking"
+          example: Staking
+        currency:
+          type: string
+          description: Currency code, see symbols and minimums
+          example: MATIC
+        balance:
+          type: number
+          format: decimal
+          description: The current Staking balance
+          example: 10
+        available:
+          type: number
+          format: decimal
+          description: The amount that is available to trade
+          example: 0
+        availableForWithdrawal:
+          type: number
+          format: decimal
+          description: The Staking amount that is available to redeem to exchange account
+          example: 10
+        balanceByProvider:
+          type: object
+          additionalProperties:
+            type: object
+            properties:
+              balance:
+                type: number
+                format: decimal
+                description: The current Staking balance per providerId
+                example: 10
+    StakingTransaction:
+      type: object
+      properties:
+        transactionId:
+          type: string
+          description: A unique identifier for the staking transaction
+          example: MPZ7LDD8
+        transactionType:
+          type: string
+          description: Can be any one of the following - Deposit, Redeem, Interest, RedeemPayment, AdminRedeem, AdminCreditAdjustment, AdminDebitAdjustment
+          enum:
+          - Deposit
+          - Redeem
+          - Interest
+          - RedeemPayment
+          - AdminRedeem
+          - AdminCreditAdjustment
+          - AdminDebitAdjustment
+          example: Redeem
+        amountCurrency:
+          type: string
+          description: Currency code
+          example: MATIC
+        amount:
+          type: number
+          format: decimal
+          description: The amount that is defined by the transactionType above
+          example: 20
+        priceCurrency:
+          type: string
+          description: A supported three-letter fiat currency code, e.g. usd
+          example: USD
+        priceAmount:
+          type: number
+          format: decimal
+          description: Current market price of the underlying token at the time of the reward
+          example: 0.1
+        dateTime:
+          $ref: '#/components/schemas/TimestampType'
+          description: The time of the transaction in milliseconds
+          example: 1667418560153
+  responses:
+    TooManyRequests:
+      description: Too many requests - you have exceeded the rate limit
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          example:
+            result: error
+            reason: Too Many Requests
+            message: Too Many Requests
+    ApiKeyIpFilteringFailure:
+      description: ApiKey fails IP Filtering Check
+      content:
+        application/json:
+          schema:
+            type: object
+            $ref: '#/components/schemas/ErrorResponse'
+          example:
+            result: error
+            reason: ApiKeyIpFilteringFailure
+            message: ApiKey fails IP Filtering Check for some accounts
+    BadRequest:
+      description: Bad request - malformed request or invalid parameters
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          example:
+            result: error
+            reason: InvalidSignature
+            message: Invalid signature for this request
+    InternalError:
+      description: Internal server error
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          example:
+            result: error
+            reason: Internal Server Error
+            message: Unexpected server error occurred.
+    Unauthorized:
+      description: Unauthorized - missing or invalid authentication
+      content:
+        application/json:
+          schema:
+            type: object
+            $ref: '#/components/schemas/ErrorResponse'
+          example:
+            result: error
+            reason: MissingApikeyHeader
+            message: Must provide 'X-GEMINI-APIKEY' header
+    NotFound:
+      description: Resource not found
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          example:
+            result: error
+            reason: EndpointNotFound
+            message: API entry point not found
+  parameters:
+    apiKeyAuth:
+      name: X-GEMINI-APIKEY
+      in: header
+      required: true
+      description: Your API key
+      schema:
+        type: string
+    cacheControl:
+      name: Cache-Control
+      in: header
+      required: false
+      schema:
+        type: string
+        default: no-cache
+    contentType:
+      name: Content-Type
+      in: header
+      required: false
+      schema:
+        type: string
+        default: text/plain
+    signatureAuth:
+      name: X-GEMINI-SIGNATURE
+      in: header
+      required: true
+      description: HEX-encoded HMAC-SHA384 of payload signed with API secret
+      schema:
+        type: string
+    contentLength:
+      name: Content-Length
+      in: header
+      required: false
+      schema:
+        type: string
+        default: '0'
+    payloadAuth:
+      name: X-GEMINI-PAYLOAD
+      in: header
+      required: true
+      description: Base64-encoded JSON payload
+      schema:
+        type: string
+  securitySchemes:
+    apiKeyAuth:
+      type: apiKey
+      in: header
+      name: X-GEMINI-APIKEY
+      description: Your API key
+    payloadAuth:
+      type: apiKey
+      in: header
+      name: X-GEMINI-PAYLOAD
+      description: Base64-encoded JSON payload
+    signatureAuth:
+      type: apiKey
+      in: header
+      name: X-GEMINI-SIGNATURE
+      description: HEX-encoded HMAC-SHA384 of payload signed with API secret

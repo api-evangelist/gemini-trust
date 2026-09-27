@@ -1,0 +1,231 @@
+openapi: 3.2.0
+info:
+  title: Gemini Trust Terms API
+  version: 1.0.0
+  contact:
+    name: Gemini API Support
+  description: 'Operations tagged Terms across 2 of this provider''s published API definitions: gemini-trust-prediction-markets-openapi.yml, gemini-trust-prediction-markets-openapi.yml. Each path carries the servers of the definition it was published in.'
+servers:
+- url: https://api.gemini.com
+  description: Production
+- url: https://api.sandbox.gemini.com
+  description: Sandbox
+tags:
+- name: Terms
+  description: Read, check, and accept the latest Prediction Markets terms for API key and OAuth trading flows.
+paths:
+  /v1/prediction-markets/terms:
+    get:
+      tags:
+      - Terms
+      summary: Get prediction market terms
+      description: Returns the latest Prediction Markets terms content. This endpoint is public so clients can display the terms before asking an authenticated account to accept them.
+      operationId: getPredictionMarketsTerms
+      responses:
+        '200':
+          description: Latest Prediction Markets terms
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PredictionMarketsTerms'
+              examples:
+                terms:
+                  summary: Latest terms
+                  value:
+                    termsType: PredictionsMarket
+                    version: 3
+                    content: These are the prediction market terms.
+                    updatedAt: '2026-05-18T17:00:00Z'
+        '404':
+          description: No Prediction Markets terms are configured
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                error: TermsNotFound
+                message: No terms configured for prediction markets
+        '500':
+          $ref: '#/components/responses/InternalError'
+    servers:
+    - url: https://api.gemini.com
+      description: Production
+    - url: https://api.sandbox.gemini.com
+      description: Sandbox
+  /v1/prediction-markets/terms/status:
+    get:
+      tags:
+      - Terms
+      summary: Get prediction market terms status
+      description: Returns whether the authenticated account group has accepted the latest Prediction Markets terms. Requires authentication and OrderStatus permission.
+      operationId: getPredictionMarketsTermsStatus
+      security:
+      - apiKey: []
+        payloadAuth: []
+        signatureAuth: []
+      responses:
+        '200':
+          description: Terms acceptance status
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PredictionMarketsTermsStatus'
+              examples:
+                accepted:
+                  summary: Latest terms accepted
+                  value:
+                    hasAcceptedLatest: true
+                    acceptedVersion: 3
+                    latestVersion: 3
+                needsAcceptance:
+                  summary: Latest terms not accepted
+                  value:
+                    hasAcceptedLatest: false
+                    acceptedVersion: 2
+                    latestVersion: 3
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '500':
+          $ref: '#/components/responses/InternalError'
+    servers:
+    - url: https://api.gemini.com
+      description: Production
+    - url: https://api.sandbox.gemini.com
+      description: Sandbox
+  /v1/prediction-markets/terms/accept:
+    post:
+      tags:
+      - Terms
+      summary: Accept prediction market terms
+      description: Accepts the latest configured Prediction Markets terms for the authenticated account group. Requires authentication and NewOrder permission. The actor is recorded from the OAuth client when OAuth is used, otherwise from the API key session.
+      operationId: acceptPredictionMarketsTerms
+      security:
+      - apiKey: []
+        payloadAuth: []
+        signatureAuth: []
+      responses:
+        '200':
+          description: Terms accepted
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AcceptPredictionMarketsTermsResponse'
+              example:
+                success: true
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          description: No Prediction Markets terms are configured
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                error: TermsNotFound
+                message: No terms configured for prediction markets
+        '500':
+          $ref: '#/components/responses/InternalError'
+    servers:
+    - url: https://api.gemini.com
+      description: Production
+    - url: https://api.sandbox.gemini.com
+      description: Sandbox
+components:
+  schemas:
+    AcceptPredictionMarketsTermsResponse:
+      type: object
+      required:
+      - success
+      properties:
+        success:
+          type: boolean
+          example: true
+    Error:
+      type: object
+      properties:
+        error:
+          type: string
+          description: Error code
+          example: InvalidInput
+        message:
+          type: string
+          description: Human-readable error message
+          example: orderId is required
+    PredictionMarketsTerms:
+      type: object
+      required:
+      - termsType
+      - version
+      - content
+      - updatedAt
+      properties:
+        termsType:
+          type: string
+          description: Terms type identifier
+          example: PredictionsMarket
+        version:
+          type: integer
+          description: Latest terms version
+          example: 3
+        content:
+          type: string
+          description: Terms content to display before acceptance
+          example: These are the prediction market terms.
+        updatedAt:
+          type: string
+          format: date-time
+          description: UTC timestamp when the terms content was last updated
+          example: '2026-05-18T17:00:00Z'
+    PredictionMarketsTermsStatus:
+      type: object
+      required:
+      - hasAcceptedLatest
+      properties:
+        hasAcceptedLatest:
+          type: boolean
+          description: Whether the account group has accepted the latest configured Prediction Markets terms
+          example: false
+        acceptedVersion:
+          type:
+          - integer
+          - 'null'
+          description: Latest terms version accepted by the account group, if any
+          example: 2
+        latestVersion:
+          type:
+          - integer
+          - 'null'
+          description: Latest configured Prediction Markets terms version, if available
+          example: 3
+  responses:
+    Unauthorized:
+      description: Authentication required or invalid credentials
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+    InternalError:
+      description: Internal server error
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+  securitySchemes:
+    apiKey:
+      type: apiKey
+      in: header
+      name: X-GEMINI-APIKEY
+      description: Gemini API key with appropriate permissions
+    payloadAuth:
+      type: apiKey
+      in: header
+      name: X-GEMINI-PAYLOAD
+      description: Base64-encoded private REST payload. See Gemini private REST authentication.
+    signatureAuth:
+      type: apiKey
+      in: header
+      name: X-GEMINI-SIGNATURE
+      description: Hex HMAC-SHA384 signature of the payload using the API secret.
+x-refined-from:
+- gemini-trust-prediction-markets-openapi.yml
+- gemini-trust-prediction-markets-openapi.yml

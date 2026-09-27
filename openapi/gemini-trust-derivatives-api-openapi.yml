@@ -1,0 +1,910 @@
+openapi: 3.2.0
+info:
+  title: REST Derivatives API
+  description: 'The Gemini Crypto Exchange REST API allows programmatic access to trade cryptocurrencies
+
+    and manage your account on the Gemini Exchange platform. The API provides both public and
+
+    private endpoints for market data, order management, and account operations.'
+  version: 1.0.0
+  contact:
+    name: Gemini Trading Support
+    email: trading@gemini.com
+servers:
+- url: https://api.gemini.com
+  description: Production server
+- url: https://api.sandbox.gemini.com
+  description: Sandbox server for testing
+tags:
+- name: Derivatives
+paths:
+  /v1/margin:
+    post:
+      x-zudoku-playground-enabled: false
+      tags:
+      - Derivatives
+      summary: Get Account Margin
+      operationId: getAccountMargin
+      description: '### Roles
+
+        The API key you use to access this endpoint must have the Trader or Auditor role assigned. See Roles for more information.
+
+
+        The OAuth scope must have `orders:read` assigned to access this endpoint. See OAuth Scopes for more information.'
+      parameters:
+      - $ref: '#/components/parameters/apiKeyAuth'
+      - $ref: '#/components/parameters/signatureAuth'
+      - $ref: '#/components/parameters/payloadAuth'
+      - $ref: '#/components/parameters/contentType'
+      - $ref: '#/components/parameters/contentLength'
+      - $ref: '#/components/parameters/cacheControl'
+      security:
+      - apiKeyAuth: []
+        signatureAuth: []
+        payloadAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+              - request
+              - nonce
+              - symbol
+              properties:
+                request:
+                  type: string
+                  description: The API endpoint path
+                  example: /v1/margin
+                nonce:
+                  type: TimestampType
+                  $ref: '#/components/schemas/TimestampType'
+                  title: The nonce, as described in [Private API Invocation](/authentication/api-key#private-api-invocation)
+                account:
+                  type: string
+                  description: Required for Master API keys as described in [Private API Invocation](/authentication/api-key#private-api-invocation). The name of the account within the subaccount group. Specifies the account on which you intend to place the order. Only available for exchange accounts.
+                  example: primary
+                symbol:
+                  type: string
+                  description: Trading pair symbol. See [symbols and minimums](/market-data/symbols-and-minimums)
+            example:
+              request: /v1/margin
+              nonce: <nonce>
+              symbol: BTC-GUSD-PERP
+      responses:
+        '200':
+          description: JSON object
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MarginResponse'
+              example:
+                margin_assets_value: '9800'
+                initial_margin: '6000'
+                available_margin: '3800'
+                margin_maintenance_limit: '5800'
+                leverage: '12.34567'
+                notional_value: '1300'
+                estimated_liquidation_price: '1300'
+                initial_margin_positions: '3500'
+                reserved_margin: '2500'
+                reserved_margin_buys: '1800'
+                reserved_margin_sells: '700'
+                buying_power: '0.19'
+                selling_power: '0.19'
+  /v1/perpetuals/fundingPayment:
+    post:
+      x-zudoku-playground-enabled: false
+      tags:
+      - Derivatives
+      summary: List Funding Payments
+      operationId: listFundingPayments
+      description: 'Note that the response field ''instrumentSymbol'' is only attached to requests from 16th April 2024 onwards.
+
+
+        ### Roles
+
+        The API key you use to access this endpoint must have the Trader or Auditor role assigned. See Roles for more information.
+
+
+        The OAuth scope must have `orders:read` assigned to access this endpoint. See OAuth Scopes for more information.'
+      parameters:
+      - name: since
+        in: query
+        description: If specified, only return funding payments after this point. Default value is 24h in past. See [<u>**Timestamps**</u>](/rest/~schemas#timestamp-type) for more information
+        required: false
+        schema:
+          $ref: '#/components/schemas/TimestampType'
+      - name: to
+        in: query
+        description: If specified, only returns funding payment until this point. Default value is now. See [<u>**Timestamps**</u>](/rest/~schemas#timestamp-type) for more information
+        required: false
+        schema:
+          $ref: '#/components/schemas/TimestampType'
+      - $ref: '#/components/parameters/apiKeyAuth'
+      - $ref: '#/components/parameters/signatureAuth'
+      - $ref: '#/components/parameters/payloadAuth'
+      - $ref: '#/components/parameters/contentType'
+      - $ref: '#/components/parameters/contentLength'
+      - $ref: '#/components/parameters/cacheControl'
+      security:
+      - apiKeyAuth: []
+        signatureAuth: []
+        payloadAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+              - request
+              - nonce
+              properties:
+                request:
+                  type: string
+                  description: The API endpoint path
+                  example: /v1/perpetuals/fundingPayment
+                nonce:
+                  type: TimestampType
+                  $ref: '#/components/schemas/TimestampType'
+                  title: The nonce, as described in [Private API Invocation](/authentication/api-key#private-api-invocation)
+                account:
+                  type: string
+                  description: Required for Master API keys as described in [Private API Invocation](/authentication/api-key#private-api-invocation). The name of the account within the subaccount group. Specifies the account on which you intend to place the order. Only available for exchange accounts.
+                  example: primary
+            example:
+              request: /v1/perpetuals/fundingPayment
+              nonce: <nonce>
+      responses:
+        '200':
+          description: The response will be an array of funding payment objects.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/FundingPayment'
+              example:
+              - eventType: Hourly Funding Transfer
+                hourlyFundingTransfer:
+                  eventType: Hourly Funding Transfer
+                  timestamp: 1683730803940
+                  assetCode: GUSD
+                  action: Debit
+                  quantity:
+                    currency: GUSD
+                    value: '4.78958'
+              - eventType: Hourly Funding Transfer
+                hourlyFundingTransfer:
+                  eventType: Hourly Funding Transfer
+                  timestamp: 1683734406746
+                  assetCode: GUSD
+                  action: Debit
+                  quantity:
+                    currency: GUSD
+                    value: '4.78958'
+                  instrumentSymbol: BTCGUSDPERP
+  /v1/perpetuals/fundingpaymentreport/records.xlsx:
+    get:
+      x-zudoku-playground-enabled: false
+      tags:
+      - Derivatives
+      summary: Get Funding Payment Report File
+      operationId: getFundingPaymentReportFile
+      description: '### Roles
+
+        The API key you use to access this endpoint must have the Trader or Auditor role assigned. See Roles for more information.
+
+
+        The OAuth scope must have `orders:read` assigned to access this endpoint. See OAuth Scopes for more information.
+
+
+        ### Examples
+
+        - `&fromDate=2024-04-10&toDate=2024-04-25&numRows=1000`
+
+
+        Compare and obtain the minimum records between (2024-04-10 to 2024-04-25) and 1000. If (2024-04-10 to 2024-04-25) contains 360 records. Then fetch the minimum between 360 and 1000 records only.
+
+
+        - `&numRows=2024-04-10&toDate=2024-04-25`
+
+
+        If (2024-04-10 to 2024-04-25) contains 360 records. Then fetch 360 records only.
+
+
+        - `&numRows=1000`
+
+
+        Fetch maximum 1000 records starting from Now to a historical date
+
+
+        - ``
+
+
+        Fetch maximum 8760 records starting from Now to a historical date'
+      parameters:
+      - name: fromDate
+        in: query
+        description: If empty, will only fetch records by numRows value.
+        required: false
+        schema:
+          type: string
+          format: date
+      - name: toDate
+        in: query
+        description: If empty, will only fetch records by numRows value.
+        required: false
+        schema:
+          type: string
+          format: date
+      - name: numRows
+        in: query
+        description: If empty, default value '8760'
+        required: false
+        schema:
+          type: integer
+      - $ref: '#/components/parameters/apiKeyAuth'
+      - $ref: '#/components/parameters/signatureAuth'
+      - $ref: '#/components/parameters/payloadAuth'
+      - $ref: '#/components/parameters/contentType'
+      - $ref: '#/components/parameters/contentLength'
+      - $ref: '#/components/parameters/cacheControl'
+      security:
+      - apiKeyAuth: []
+        signatureAuth: []
+        payloadAuth: []
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+              - request
+              - nonce
+              properties:
+                request:
+                  type: string
+                  description: The API endpoint path
+                  example: /v1/perpetuals/fundingpaymentreport/records.xlsx
+                nonce:
+                  type: TimestampType
+                  $ref: '#/components/schemas/TimestampType'
+                  title: The nonce, as described in [Private API Invocation](/authentication/api-key#private-api-invocation)
+                account:
+                  type: string
+                  description: Required for Master API keys as described in [Private API Invocation](/authentication/api-key#private-api-invocation). The name of the account within the subaccount group. Specifies the account on which you intend to place the order. Only available for exchange accounts.
+                  example: primary
+            example:
+              request: /v1/perpetuals/fundingpaymentreport/records.xlsx?fromDate=2024-04-10&toDate=2024-04-25&numRows=1000
+              nonce: <nonce>
+      responses:
+        '200':
+          description: XLSX file downloaded containing funding payment report.
+          headers:
+            Content-Disposition:
+              schema:
+                type: string
+                example: attachment; filename=FundingPayment_Report.xlsx
+          content:
+            application/vnd.openxmlformats-officedocument.spreadsheetml.sheet:
+              schema:
+                type: string
+                format: binary
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+        '500':
+          $ref: '#/components/responses/InternalError'
+  /v1/perpetuals/fundingpaymentreport/records.json:
+    post:
+      x-zudoku-playground-enabled: false
+      tags:
+      - Derivatives
+      summary: Get Funding Payment Report JSON
+      operationId: getFundingPaymentReportJson
+      description: 'This endpoint retrieves funding payment report in JSON format.
+
+
+        ### Examples
+
+        - `&fromDate=2024-04-10&toDate=2024-04-25&numRows=1000`
+
+
+        Compare and obtain the minimum records between (2024-04-10 to 2024-04-25) and 1000. If (2024-04-10 to 2024-04-25) contains 360 records. Then fetch the minimum between 360 and 1000 records only.
+
+
+        - `&numRows=2024-04-10&toDate=2024-04-25`
+
+
+        If (2024-04-10 to 2024-04-25) contains 360 records. Then fetch 360 records only.
+
+
+        - `&numRows=1000`
+
+
+        Fetch maximum 1000 records starting from Now to a historical date
+
+
+        - ``
+
+
+        Fetch maximum 8760 records starting from Now to a historical date'
+      parameters:
+      - name: fromDate
+        in: query
+        description: If empty, will only fetch records by numRows value.
+        required: false
+        schema:
+          type: string
+          format: date
+      - name: toDate
+        in: query
+        description: If empty, will only fetch records by numRows value.
+        required: false
+        schema:
+          type: string
+          format: date
+      - name: numRows
+        in: query
+        description: If empty, default value '8760'
+        required: false
+        schema:
+          type: integer
+      - $ref: '#/components/parameters/apiKeyAuth'
+      - $ref: '#/components/parameters/signatureAuth'
+      - $ref: '#/components/parameters/payloadAuth'
+      - $ref: '#/components/parameters/contentType'
+      - $ref: '#/components/parameters/contentLength'
+      - $ref: '#/components/parameters/cacheControl'
+      security:
+      - apiKeyAuth: []
+        signatureAuth: []
+        payloadAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+              - request
+              - nonce
+              properties:
+                request:
+                  type: string
+                  description: The API endpoint path
+                  example: /v1/perpetuals/fundingpaymentreport/records.json?fromDate=2024-04-10&toDate=2024-04-25&numRows=1000
+                nonce:
+                  type: TimestampType
+                  $ref: '#/components/schemas/TimestampType'
+                  title: The nonce, as described in [Private API Invocation](/authentication/api-key#private-api-invocation)
+                account:
+                  type: string
+                  description: Required for Master API keys as described in [Private API Invocation](/authentication/api-key#private-api-invocation). The name of the account within the subaccount group. Specifies the account on which you intend to place the order. Only available for exchange accounts.
+                  example: primary
+            example:
+              request: /v1/perpetuals/fundingpaymentreport/records.json?fromDate=2024-04-10&toDate=2024-04-25&numRows=1000
+              nonce: <nonce>
+      responses:
+        '200':
+          description: JSON response containing funding payment report.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/FundingPaymentReportItem'
+              example:
+              - eventType: Hourly Funding Transfer
+                timestamp: 1713344403617
+                assetCode: GUSD
+                action: Credit
+                quantity:
+                  currency: GUSD
+                  value: '35.81084'
+                instrumentSymbol: BTCGUSDPERP
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+        '500':
+          $ref: '#/components/responses/InternalError'
+  /v1/positions:
+    post:
+      x-zudoku-playground-enabled: false
+      tags:
+      - Derivatives
+      summary: Get Open Positions
+      operationId: getOpenPositions
+      description: '### Roles
+
+        The API key you use to access this endpoint must have the Trader or Auditor role assigned. See Roles for more information.
+
+
+        The OAuth scope must have `orders:read` assigned to access this endpoint. See OAuth Scopes for more information.'
+      parameters:
+      - $ref: '#/components/parameters/apiKeyAuth'
+      - $ref: '#/components/parameters/signatureAuth'
+      - $ref: '#/components/parameters/payloadAuth'
+      - $ref: '#/components/parameters/contentType'
+      - $ref: '#/components/parameters/contentLength'
+      - $ref: '#/components/parameters/cacheControl'
+      security:
+      - apiKeyAuth: []
+        signatureAuth: []
+        payloadAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+              - request
+              - nonce
+              properties:
+                request:
+                  type: string
+                  description: The literal string "/v1/positions"
+                nonce:
+                  $ref: '#/components/schemas/Nonce'
+                account:
+                  type: string
+                  description: Required for Master API keys as described in [Private API Invocation](/authentication/api-key#private-api-invocation). The name of the account within the subaccount group. Specifies the account on which the orders were placed. Only available for exchange accounts.
+            example:
+              request: /v1/positions
+              nonce: <nonce>
+              account: primary
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  openPositions:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/OpenPosition'
+              example:
+              - symbol: btcgusdperp
+                instrument_type: perp
+                quantity: '0.2'
+                notional_value: '4000.036'
+                realised_pnl: '1234.5678'
+                unrealised_pnl: '999.946'
+                average_cost: '15000.45'
+                mark_price: '20000.18'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/ApiKeyIpFilteringFailure'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+        '500':
+          $ref: '#/components/responses/InternalError'
+  /v1/riskstats/{symbol}:
+    get:
+      tags:
+      - Derivatives
+      summary: Get Risk Stats
+      operationId: getRiskStats
+      parameters:
+      - name: symbol
+        in: path
+        required: true
+        schema:
+          type: string
+        description: 'Perps Trading pair symbol <br /> <br />
+
+
+          `BTCGUSDPERP`, etc. See [<u>**symbols and minimums**</u>](/market-data/symbols-and-minimums#all-supported-symbols).
+
+          '
+      responses:
+        '200':
+          description: The response will be an json object
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RiskStatsResponse'
+              example:
+                product_type: PerpetualSwapContract
+                mark_price: '30080.00'
+                index_price: '30079.046'
+                open_interest: '14.439'
+                open_interest_notional: '434325.12'
+components:
+  schemas:
+    RiskStatsResponse:
+      type: object
+      properties:
+        product_type:
+          type: string
+          enum:
+          - PerpetualSwapContract
+          description: Contract type for which the symbol data is fetched
+        mark_price:
+          type: string
+          format: decimal
+          description: Current mark price at the time of request
+        index_price:
+          type: string
+          format: decimal
+          description: Current index price at the time of request
+        open_interest:
+          type: string
+          format: decimal
+          description: string representation of decimal value of open interest
+        open_interest_notional:
+          type: string
+          format: decimal
+          description: string representation of decimal value of open interest notional
+    TimestampType:
+      description: timestamp
+      oneOf:
+      - type: string
+        description: 'Gemini strongly recommends using milliseconds instead of seconds for timestamps.
+
+
+          | Timestamp format      | Example               | Supported request type |
+
+          |-----------------------|-----------------------|------------------------|
+
+          | string (seconds)      | `1495127793`          | `POST` only            |
+
+          | string (milliseconds) | `1495127793000`       | `POST` only            |
+
+          '
+        example: '1495127793000'
+      - type: integer
+        format: int64
+        description: 'Gemini strongly recommends using milliseconds instead of seconds for timestamps.
+
+
+          | Timestamp format            | Example                   | Supported request type |
+
+          |-----------------------------|---------------------------|------------------------|
+
+          | whole number (seconds)      | `1495127793`              | `GET`, `POST`          |
+
+          | whole number (milliseconds) | `1495127793000`           | `GET`, `POST`          |
+
+          '
+        example: 1495127793000
+    ErrorResponse:
+      type: object
+      properties:
+        result:
+          type: string
+          description: Error
+        reason:
+          type: string
+          description: A short description
+        message:
+          type: string
+          description: Detailed error message
+    MarginResponse:
+      type: object
+      properties:
+        margin_assets_value:
+          type: string
+          format: decimal
+          description: The $ equivalent value of all the assets available in the current trading account that can contribute to funding a derivatives position.
+        initial_margin:
+          type: string
+          format: decimal
+          description: The $ amount that is being required by the accounts current positions and open orders.
+        available_margin:
+          type: string
+          format: decimal
+          description: The difference between the `margin_assets_value` and `initial_margin`.
+        margin_maintenance_limit:
+          type: string
+          format: decimal
+          description: The minimum amount of `margin_assets_value` required before the account is moved to liquidation status.
+        leverage:
+          type: string
+          format: decimal
+          description: The ratio of Notional Value to Margin Assets Value.
+        notional_value:
+          type: string
+          format: decimal
+          description: The $ value of the current position.
+        estimated_liquidation_price:
+          type: string
+          format: decimal
+          description: The estimated price for the asset at which liquidation would occur.
+        initial_margin_positions:
+          type: string
+          format: decimal
+          description: The contribution to `initial_margin` from open positions.
+        reserved_margin:
+          type: string
+          format: decimal
+          description: The contribution to `initial_margin` from open orders.
+        reserved_margin_buys:
+          type: string
+          format: decimal
+          description: The contribution to `initial_margin` from open BUY orders.
+        reserved_margin_sells:
+          type: string
+          format: decimal
+          description: The contribution to `initial_margin` from open SELL orders.
+        buying_power:
+          type: string
+          format: decimal
+          description: The amount of that product the account could purchase based on current `initial_margin` and `margin_assets_value`.
+        selling_power:
+          type: string
+          format: decimal
+          description: The amount of that product the account could sell based on current `initial_margin` and `margin_assets_value`.
+    FundingPayment:
+      type: object
+      required:
+      - eventType
+      - hourlyFundingTransfer
+      properties:
+        eventType:
+          type: string
+          enum:
+          - Hourly Funding Transfer
+          description: Event type
+        hourlyFundingTransfer:
+          $ref: '#/components/schemas/FundingTransfer'
+    OpenPosition:
+      type: object
+      properties:
+        symbol:
+          type: string
+          description: The [symbol](/market-data/symbols-and-minimums) of the order.
+        instrument_type:
+          type: string
+          description: The type of instrument. Either "spot" or "perp".
+        quantity:
+          type: string
+          format: decimal
+          description: The position size. Value will be negative for shorts.
+        notional_value:
+          type: string
+          format: decimal
+          description: The value of position; calculated as (`quantity` * `mark_price`). Value will be negative for shorts.
+        realised_pnl:
+          type: string
+          format: decimal
+          description: The current P&L that has been realised from the position.
+        unrealised_pnl:
+          type: string
+          format: decimal
+          description: Current Mark to Market value of the positions.
+        average_cost:
+          type: string
+          format: decimal
+          description: The average price of the current position.
+        mark_price:
+          type: string
+          format: decimal
+          description: The current Mark Price for the Asset or the position.
+    Nonce:
+      oneOf:
+      - type: TimestampType
+        $ref: '#/components/schemas/TimestampType'
+        example: 1495127793000
+      - type: integer
+        example: 1495127793000
+      description: The nonce, as described in [Private API Invocation](/authentication/api-key#private-api-invocation)
+    Quantity:
+      type: object
+      properties:
+        currency:
+          type: string
+          description: The currency code of the quantity.
+        value:
+          type: string
+          format: decimal
+          description: The value of the quantity.
+      required:
+      - currency
+      - value
+    FundingPaymentReportItem:
+      type: object
+      required:
+      - eventType
+      - timestamp
+      - assetCode
+      - action
+      - quantity
+      properties:
+        eventType:
+          type: string
+          enum:
+          - Hourly Funding Transfer
+          description: Event type
+        timestamp:
+          allOf:
+          - $ref: '#/components/schemas/TimestampType'
+          description: Time of the funding payment
+        assetCode:
+          type: string
+          description: Asset symbol
+        action:
+          type: string
+          enum:
+          - Credit
+          - Debit
+          description: Credit or Debit
+        quantity:
+          allOf:
+          - $ref: '#/components/schemas/Quantity'
+          description: A nested JSON object describing the transaction amount
+        instrumentSymbol:
+          type: string
+          description: Symbol of the underlying instrument. **Note** that this is only attached to requests from 16th April 2024 onwards.
+    FundingTransfer:
+      type: object
+      properties:
+        eventType:
+          type: string
+          description: Event type
+        timestamp:
+          allOf:
+          - $ref: '#/components/schemas/TimestampType'
+          description: Time of the funding payment
+        assetCode:
+          type: string
+          description: Asset symbol
+        action:
+          type: string
+          enum:
+          - Credit
+          - Debit
+          description: Credit or Debit
+        quantity:
+          allOf:
+          - $ref: '#/components/schemas/Quantity'
+          description: A nested JSON object describing the transaction amount
+        instrumentSymbol:
+          type: string
+          description: Symbol of the underlying instrument. **Note** that this is only attached to requests from 16th April 2024 onwards.
+      required:
+      - eventType
+      - timestamp
+      - assetCode
+      - action
+      - quantity
+  responses:
+    TooManyRequests:
+      description: Too many requests - you have exceeded the rate limit
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          example:
+            result: error
+            reason: Too Many Requests
+            message: Too Many Requests
+    ApiKeyIpFilteringFailure:
+      description: ApiKey fails IP Filtering Check
+      content:
+        application/json:
+          schema:
+            type: object
+            $ref: '#/components/schemas/ErrorResponse'
+          example:
+            result: error
+            reason: ApiKeyIpFilteringFailure
+            message: ApiKey fails IP Filtering Check for some accounts
+    BadRequest:
+      description: Bad request - malformed request or invalid parameters
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          example:
+            result: error
+            reason: InvalidSignature
+            message: Invalid signature for this request
+    InternalError:
+      description: Internal server error
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          example:
+            result: error
+            reason: Internal Server Error
+            message: Unexpected server error occurred.
+    Unauthorized:
+      description: Unauthorized - missing or invalid authentication
+      content:
+        application/json:
+          schema:
+            type: object
+            $ref: '#/components/schemas/ErrorResponse'
+          example:
+            result: error
+            reason: MissingApikeyHeader
+            message: Must provide 'X-GEMINI-APIKEY' header
+    NotFound:
+      description: Resource not found
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          example:
+            result: error
+            reason: EndpointNotFound
+            message: API entry point not found
+  parameters:
+    apiKeyAuth:
+      name: X-GEMINI-APIKEY
+      in: header
+      required: true
+      description: Your API key
+      schema:
+        type: string
+    cacheControl:
+      name: Cache-Control
+      in: header
+      required: false
+      schema:
+        type: string
+        default: no-cache
+    contentType:
+      name: Content-Type
+      in: header
+      required: false
+      schema:
+        type: string
+        default: text/plain
+    signatureAuth:
+      name: X-GEMINI-SIGNATURE
+      in: header
+      required: true
+      description: HEX-encoded HMAC-SHA384 of payload signed with API secret
+      schema:
+        type: string
+    contentLength:
+      name: Content-Length
+      in: header
+      required: false
+      schema:
+        type: string
+        default: '0'
+    payloadAuth:
+      name: X-GEMINI-PAYLOAD
+      in: header
+      required: true
+      description: Base64-encoded JSON payload
+      schema:
+        type: string
+  securitySchemes:
+    apiKeyAuth:
+      type: apiKey
+      in: header
+      name: X-GEMINI-APIKEY
+      description: Your API key
+    payloadAuth:
+      type: apiKey
+      in: header
+      name: X-GEMINI-PAYLOAD
+      description: Base64-encoded JSON payload
+    signatureAuth:
+      type: apiKey
+      in: header
+      name: X-GEMINI-SIGNATURE
+      description: HEX-encoded HMAC-SHA384 of payload signed with API secret

@@ -1,0 +1,570 @@
+openapi: 3.2.0
+info:
+  title: REST Instant API
+  description: 'The Gemini Crypto Exchange REST API allows programmatic access to trade cryptocurrencies
+
+    and manage your account on the Gemini Exchange platform. The API provides both public and
+
+    private endpoints for market data, order management, and account operations.'
+  version: 1.0.0
+  contact:
+    name: Gemini Trading Support
+    email: trading@gemini.com
+servers:
+- url: https://api.gemini.com
+  description: Production server
+- url: https://api.sandbox.gemini.com
+  description: Sandbox server for testing
+tags:
+- name: Instant
+paths:
+  /v1/instant/quote:
+    post:
+      x-zudoku-playground-enabled: false
+      tags:
+      - Instant
+      summary: Get Instant Quote
+      operationId: getInstantQuote
+      description: '### Roles
+
+        The API key you use to access this endpoint must have the Trader role assigned. See Roles for more information.
+
+
+        The OAuth scope must have `orders:create` assigned to access this endpoint. See OAuth Scopes for more information.'
+      parameters:
+      - $ref: '#/components/parameters/apiKeyAuth'
+      - $ref: '#/components/parameters/signatureAuth'
+      - $ref: '#/components/parameters/payloadAuth'
+      - $ref: '#/components/parameters/contentType'
+      - $ref: '#/components/parameters/contentLength'
+      - $ref: '#/components/parameters/cacheControl'
+      security:
+      - apiKeyAuth: []
+        signatureAuth: []
+        payloadAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+              - request
+              - side
+              - symbol
+              - nonce
+              - totalSpend
+              properties:
+                request:
+                  type: string
+                  description: The literal string "/v1/instant/quote/"
+                side:
+                  type: string
+                  enum:
+                  - buy
+                  - sell
+                  description: '"buy" or "sell"'
+                symbol:
+                  type: string
+                  description: The [symbol](/market-data/symbols-and-minimums) for the order. Instant includes order books denominated in a [supported currency](https://support.gemini.com/hc/en-us/articles/360000032663-Does-Gemini-support-fiat-currencies-other-than-USD), as `CCY2`
+                nonce:
+                  $ref: '#/components/schemas/Nonce'
+                totalSpend:
+                  type: string
+                  description: Quoted decimal amount to spend on the order. Must comply with [stated minimums](/market-data/symbols-and-minimums). The `totalSpend` will be `CCY2` in `buy` orders and `CCY1` in `sell` orders.
+                paymentMethodUuid:
+                  type: string
+                  description: uuid provided as `bankId` in [Payment Methods API](/fund-management#list-payment-methods)
+                paymentMethodType:
+                  type: string
+                  description: Method used to specify payment method in `buy` order. Can be "AccountBalancePaymentType" to use funds available in USD balance held on Gemini, "BankAccountType" to initial an ACH from a linked bank account, or "CardAccountType" to use a linked debit card to fund the purchase.
+                account:
+                  type: string
+                  description: Required for Master API keys as described in [Private API Invocation](/authentication/api-key#private-api-invocation). The name of the account within the subaccount group. Specifies the account on which you intend to place the order. Only available for exchange accounts.
+            examples:
+              buyQuote:
+                summary: Buy Quote Request
+                description: JSON payload for BTCUSD buy quote
+                value:
+                  request: /v1/instant/quote
+                  nonce: <nonce>
+                  symbol: btcusd
+                  side: buy
+                  totalSpend: '100'
+              sellQuote:
+                summary: Sell Quote Request
+                description: JSON payload for ETHUSD sell quote
+                value:
+                  request: /v1/instant/quote
+                  nonce: <nonce>
+                  symbol: ethusd
+                  side: sell
+                  totalSpend: '1'
+      responses:
+        '200':
+          description: Sample Responses
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InstantQuote'
+              examples:
+                btcBuyResponse:
+                  summary: BTC Buy Quote Response
+                  description: Sample BTCUSD Buy Response
+                  value:
+                    quoteId: 1328
+                    maxAgeMs: 60000
+                    pair: BTCUSD
+                    price: '6445.07'
+                    priceCurrency: USD
+                    side: buy
+                    quantity: '0.01505181'
+                    quantityCurrency: BTC
+                    fee: '2.9900309233'
+                    feeCurrency: USD
+                    depositFee: '0'
+                    depositFeeCurrency: USD
+                    totalSpend: '100'
+                    totalSpendCurrency: USD
+                ethSellResponse:
+                  summary: ETH Sell Quote Response
+                  description: Sample ETHUSD Sell Response
+                  value:
+                    quoteId: 20930
+                    maxAgeMs: 60000
+                    pair: ETHUSD
+                    price: '225.42'
+                    priceCurrency: USD
+                    side: sell
+                    quantity: '1'
+                    quantityCurrency: ETH
+                    fee: '2.99'
+                    feeCurrency: USD
+                    depositFee: '0'
+                    depositFeeCurrency: USD
+                    totalSpend: '1'
+                    totalSpendCurrency: ETH
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/ApiKeyIpFilteringFailure'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+        '500':
+          $ref: '#/components/responses/InternalError'
+  /v1/instant/execute:
+    post:
+      x-zudoku-playground-enabled: false
+      tags:
+      - Instant
+      summary: Execute Instant Order
+      operationId: executeInstantOrder
+      description: '### Roles
+
+        The API key you use to access this endpoint must have the Trader role assigned. See Roles for more information.
+
+
+        The OAuth scope must have `orders:create` assigned to access this endpoint. See OAuth Scopes for more information.'
+      parameters:
+      - $ref: '#/components/parameters/apiKeyAuth'
+      - $ref: '#/components/parameters/signatureAuth'
+      - $ref: '#/components/parameters/payloadAuth'
+      - $ref: '#/components/parameters/contentType'
+      - $ref: '#/components/parameters/contentLength'
+      - $ref: '#/components/parameters/cacheControl'
+      security:
+      - apiKeyAuth: []
+        signatureAuth: []
+        payloadAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+              - request
+              - nonce
+              - quoteId
+              - symbol
+              - side
+              - quantity
+              - price
+              - fee
+              properties:
+                request:
+                  type: string
+                  description: The literal string "/v1/instant/execute"
+                nonce:
+                  $ref: '#/components/schemas/Nonce'
+                symbol:
+                  type: string
+                  description: The symbol for the order.
+                side:
+                  type: string
+                  enum:
+                  - buy
+                  - sell
+                  description: '"buy" or "sell"'
+                quantity:
+                  type: string
+                  description: The quantity of the asset bought or sold. quantity must match quantity returned in the quote
+                price:
+                  type: string
+                  description: The price from the quote. price must match price returned in the quote
+                fee:
+                  type: string
+                  description: The fee for the order. fee must match fee returned in the quote
+                quoteId:
+                  type: integer
+                  description: Unique ID for the quote. quoteId must match quoteId returned in the quote
+                account:
+                  type: string
+                  description: Required for Master API keys as described in [Private API Invocation](/authentication/api-key#private-api-invocation). The name of the account within the subaccount group. Specifies the account on which you intend to place the order. Only available for exchange accounts.
+            examples:
+              executeBuyOrder:
+                summary: Execute Buy Instant Order
+                description: Sample Instant Order Execution Request Payload BTCUSD Buy
+                value:
+                  request: /v1/instant/execute
+                  nonce: <nonce>
+                  symbol: BTCUSD
+                  side: buy
+                  quantity: '0.01505181'
+                  price: '6445.07'
+                  fee: '2.9900309233'
+                  quoteId: 1328
+              executeSellOrder:
+                summary: Execute Sell Instant Order
+                description: Sample Instant Order Execution Request Payload ETHUSD Sell
+                value:
+                  request: /v1/instant/execute
+                  nonce: <nonce>
+                  symbol: ETHUSD
+                  side: sell
+                  quantity: '1'
+                  price: '225.42'
+                  fee: '2.99'
+                  quoteId: 20930
+      responses:
+        '200':
+          description: JSON response
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  orderId:
+                    type: integer
+                    description: The ID for the executed order
+                  pair:
+                    type: string
+                    description: The symbol for the order.
+                  price:
+                    type: string
+                    description: The price at which the order was executed
+                  priceCurrency:
+                    type: string
+                    description: The currency in which the order is priced. Matches `CCY2` in the symbol
+                  side:
+                    type: string
+                    description: Either "buy" or "sell"
+                  quantity:
+                    type: string
+                    description: The quantity of the asset bought or sold
+                  quantityCurrency:
+                    type: string
+                    description: The currency label for the `quantity` field.
+                  totalSpend:
+                    type: string
+                    description: Total quantity to spend for the order. Will be the sum inclusive of all fees and amount to be traded.
+                  totalSpendCurrency:
+                    type: string
+                    description: Currency of the `totalSpend` to be spent on the order
+                  fee:
+                    type: string
+                    description: The fee quantity charged for the order
+                  feeCurrency:
+                    type: string
+                    description: The currency label for the fee.
+                  depositFee:
+                    type: string
+                    description: The deposit fee quantity. Will be applied if a debit card is used for the order. Will return 0 if there is no `depositFee`
+                  depositFeeCurrency:
+                    type: string
+                    description: Currency in which `depositFee` is taken
+              examples:
+                btcusdBuy:
+                  summary: Sample BTCUSD Buy
+                  description: Sample Response BTCUSD Buy
+                  value:
+                    orderId: 375089415
+                    pair: BTCUSD
+                    price: '6445.07'
+                    priceCurrency: USD
+                    side: buy
+                    quantity: '0.01505181'
+                    quantityCurrency: BTC
+                    totalSpend: '100'
+                    totalSpendCurrency: USD
+                    fee: '2.9900309233'
+                    feeCurrency: USD
+                    depositFee: '0'
+                    depositFeeCurrency: USD
+                ethusdSell:
+                  summary: Sample ETHUSD Sell
+                  description: Sample Response ETHUSD Sell
+                  value:
+                    orderId: 377326322
+                    pair: ETHUSD
+                    price: '225.42'
+                    priceCurrency: USD
+                    side: sell
+                    quantity: '1'
+                    quantityCurrency: ETH
+                    totalSpend: '0.1'
+                    totalSpendCurrency: ETH
+                    fee: '2.99'
+                    feeCurrency: USD
+                    depositFee: '0'
+                    depositFeeCurrency: USD
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/ApiKeyIpFilteringFailure'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+        '500':
+          $ref: '#/components/responses/InternalError'
+components:
+  schemas:
+    ErrorResponse:
+      type: object
+      properties:
+        result:
+          type: string
+          description: Error
+        reason:
+          type: string
+          description: A short description
+        message:
+          type: string
+          description: Detailed error message
+    Nonce:
+      oneOf:
+      - type: TimestampType
+        $ref: '#/components/schemas/TimestampType'
+        example: 1495127793000
+      - type: integer
+        example: 1495127793000
+      description: The nonce, as described in [Private API Invocation](/authentication/api-key#private-api-invocation)
+    InstantQuote:
+      type: object
+      properties:
+        quoteId:
+          type: integer
+          description: Unique ID for the quote. This is used in the execution of the order
+        maxAgeMs:
+          type: integer
+          description: Number of milliseconds until this quote price expires. Once expired, you will need to request a new quote
+        pair:
+          type: string
+          description: The symbol passed in the quote request
+        price:
+          type: string
+          description: The quoted price of the asset. This will not change when attempting execution
+        priceCurrency:
+          type: string
+          description: The currency in which the order is priced. Matches `CCY2` in the symbol
+        side:
+          type: string
+          enum:
+          - buy
+          - sell
+          description: Either "buy" or "sell"
+        quantity:
+          type: string
+          description: The quantity of the asset to be bought or sold
+        quantityCurrency:
+          type: string
+          description: The currency label for the `quantity` field. Matches `CCY1` in the symbol
+        fee:
+          type: string
+          description: The fee quantity to be taken for the order upon execution
+        feeCurrency:
+          type: string
+          description: The currency label for the order
+        depositFee:
+          type: string
+          description: The deposit fee quantity. Will be applied if a debit card is used for the order. Will return 0 if there is no `depositFee`
+        depositFeeCurrency:
+          type: string
+          description: Currency in which `depositFee` is taken
+        totalSpend:
+          type: string
+          description: Total quantity to spend for the order. Will be the sum inclusive of all fees and amount to be traded.
+        totalSpendCurrency:
+          type: string
+          description: Currency of the `totalSpend` to be spent on the order
+    TimestampType:
+      description: timestamp
+      oneOf:
+      - type: string
+        description: 'Gemini strongly recommends using milliseconds instead of seconds for timestamps.
+
+
+          | Timestamp format      | Example               | Supported request type |
+
+          |-----------------------|-----------------------|------------------------|
+
+          | string (seconds)      | `1495127793`          | `POST` only            |
+
+          | string (milliseconds) | `1495127793000`       | `POST` only            |
+
+          '
+        example: '1495127793000'
+      - type: integer
+        format: int64
+        description: 'Gemini strongly recommends using milliseconds instead of seconds for timestamps.
+
+
+          | Timestamp format            | Example                   | Supported request type |
+
+          |-----------------------------|---------------------------|------------------------|
+
+          | whole number (seconds)      | `1495127793`              | `GET`, `POST`          |
+
+          | whole number (milliseconds) | `1495127793000`           | `GET`, `POST`          |
+
+          '
+        example: 1495127793000
+  responses:
+    BadRequest:
+      description: Bad request - malformed request or invalid parameters
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          example:
+            result: error
+            reason: InvalidSignature
+            message: Invalid signature for this request
+    Unauthorized:
+      description: Unauthorized - missing or invalid authentication
+      content:
+        application/json:
+          schema:
+            type: object
+            $ref: '#/components/schemas/ErrorResponse'
+          example:
+            result: error
+            reason: MissingApikeyHeader
+            message: Must provide 'X-GEMINI-APIKEY' header
+    ApiKeyIpFilteringFailure:
+      description: ApiKey fails IP Filtering Check
+      content:
+        application/json:
+          schema:
+            type: object
+            $ref: '#/components/schemas/ErrorResponse'
+          example:
+            result: error
+            reason: ApiKeyIpFilteringFailure
+            message: ApiKey fails IP Filtering Check for some accounts
+    InternalError:
+      description: Internal server error
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          example:
+            result: error
+            reason: Internal Server Error
+            message: Unexpected server error occurred.
+    TooManyRequests:
+      description: Too many requests - you have exceeded the rate limit
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          example:
+            result: error
+            reason: Too Many Requests
+            message: Too Many Requests
+    NotFound:
+      description: Resource not found
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          example:
+            result: error
+            reason: EndpointNotFound
+            message: API entry point not found
+  parameters:
+    signatureAuth:
+      name: X-GEMINI-SIGNATURE
+      in: header
+      required: true
+      description: HEX-encoded HMAC-SHA384 of payload signed with API secret
+      schema:
+        type: string
+    contentLength:
+      name: Content-Length
+      in: header
+      required: false
+      schema:
+        type: string
+        default: '0'
+    payloadAuth:
+      name: X-GEMINI-PAYLOAD
+      in: header
+      required: true
+      description: Base64-encoded JSON payload
+      schema:
+        type: string
+    apiKeyAuth:
+      name: X-GEMINI-APIKEY
+      in: header
+      required: true
+      description: Your API key
+      schema:
+        type: string
+    cacheControl:
+      name: Cache-Control
+      in: header
+      required: false
+      schema:
+        type: string
+        default: no-cache
+    contentType:
+      name: Content-Type
+      in: header
+      required: false
+      schema:
+        type: string
+        default: text/plain
+  securitySchemes:
+    apiKeyAuth:
+      type: apiKey
+      in: header
+      name: X-GEMINI-APIKEY
+      description: Your API key
+    payloadAuth:
+      type: apiKey
+      in: header
+      name: X-GEMINI-PAYLOAD
+      description: Base64-encoded JSON payload
+    signatureAuth:
+      type: apiKey
+      in: header
+      name: X-GEMINI-SIGNATURE
+      description: HEX-encoded HMAC-SHA384 of payload signed with API secret

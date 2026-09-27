@@ -1,0 +1,2413 @@
+openapi: 3.2.0
+info:
+  title: REST Orders API
+  description: 'The Gemini Crypto Exchange REST API allows programmatic access to trade cryptocurrencies
+
+    and manage your account on the Gemini Exchange platform. The API provides both public and
+
+    private endpoints for market data, order management, and account operations.'
+  version: 1.0.0
+  contact:
+    name: Gemini Trading Support
+    email: trading@gemini.com
+servers:
+- url: https://api.gemini.com
+  description: Production server
+- url: https://api.sandbox.gemini.com
+  description: Sandbox server for testing
+tags:
+- name: Orders
+paths:
+  /v1/order/new:
+    post:
+      x-zudoku-playground-enabled: false
+      tags:
+      - Orders
+      summary: Create New Order
+      operationId: createNewOrder
+      description: 'If you wish orders to be automatically cancelled when your session ends, see the require heartbeat section, or manually send the cancel all session orders message.
+
+
+        Master API keys do not support cancelation on disconnect via heartbeat.
+
+
+        Enabled for perpetuals accounts from July 10th, 0100hrs ET onwards.
+
+
+        ### Roles
+
+        The API key you use to access this endpoint must have the Trader role assigned. See Roles for more information.
+
+
+        The OAuth scope must have `orders:create` assigned to access this endpoint. See OAuth Scopes for more information.
+
+
+        ### Margin Orders
+
+        Set `margin_order: true` to place an order using borrowed funds on a margin-enabled account. This allows you to trade with leverage beyond your available balance.
+
+
+        **Important**: Margin trading amplifies both gains and losses. Monitor your account using the Margin Account Summary endpoint and preview order impacts with Order Preview before placing margin orders.
+
+
+        ### Stop-Limit Orders
+
+        A Stop-Limit order is an order type that allows for order placement when a price reaches a specified level. Stop-Limit orders take in both a `price` and and a `stop_price` as parameters. The `stop_price` is the price that triggers the order to be placed on the continous live order book at the `price`. For buy orders, the `stop_price` must be below the `price` while sell orders require the `stop_price` to be greater than the `price`.
+
+
+        ### What about market orders?
+
+        The API doesn''t directly support market orders because they provide you with no price protection.
+
+
+        Instead, use the “immediate-or-cancel” order execution option, coupled with an aggressive limit price (i.e. very high for a buy order or very low for a sell order), to achieve the same result.
+
+
+        ### Order execution options
+
+        Note that `options` is an array. If you omit `options` or provide an empty array, your order will be a standard limit order - it will immediately fill against any open orders at an equal or better price, then the remainder of the order will be posted to the order book.
+
+
+        If you specify more than one option (or an unsupported option) in the `options` array, the exchange will reject your order.
+
+
+        No `options` can be applied to stop-limit orders at this time.
+
+
+        The available limit order options are:
+
+
+        | Option | Description |
+
+        |--------|-------------|
+
+        | `"maker-or-cancel"` | This order will only add liquidity to the order book.
+
+
+        If any part of the order could be filled immediately, the whole order will instead be canceled before any execution occurs.
+
+
+        If that happens, the response back from the API will indicate that the order has already been canceled (`"is_cancelled": true` in JSON).
+
+
+        *Note: some other exchanges call this option "post-only".* |
+
+        | `"immediate-or-cancel"` | This order will only remove liquidity from the order book.
+
+
+        It will fill whatever part of the order it can immediately, then cancel any remaining amount so that no part of the order is added to the order book.
+
+
+        If the order doesn''t fully fill immediately, the response back from the API will indicate that the order has already been canceled (`"is_cancelled": true` in JSON). |
+
+        | `"fill-or-kill"` | This order will only remove liquidity from the order book.
+
+
+        It will fill the entire order immediately or cancel.
+
+
+        If the order doesn''t fully fill immediately, the response back from the API will indicate that the order has already been canceled (`"is_cancelled": true` in JSON). |'
+      parameters:
+      - $ref: '#/components/parameters/apiKeyAuth'
+      - $ref: '#/components/parameters/signatureAuth'
+      - $ref: '#/components/parameters/payloadAuth'
+      - $ref: '#/components/parameters/contentType'
+      - $ref: '#/components/parameters/contentLength'
+      - $ref: '#/components/parameters/cacheControl'
+      security:
+      - apiKeyAuth: []
+        signatureAuth: []
+        payloadAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/NewOrderRequest'
+            examples:
+              limitOrder:
+                summary: Limit Order
+                description: JSON limit order payload
+                value:
+                  request: /v1/order/new
+                  nonce: <nonce>
+                  client_order_id: '470135'
+                  symbol: BTCUSD
+                  amount: '5'
+                  price: '3633.00'
+                  side: buy
+                  type: exchange limit
+              stopLimitOrder:
+                summary: Stop-Limit Order
+                description: JSON stop-limit order payload
+                value:
+                  request: /v1/order/new
+                  nonce: <nonce>
+                  client_order_id: '921841'
+                  symbol: BTCUSD
+                  amount: '0.1'
+                  price: '10500'
+                  side: buy
+                  type: exchange stop limit
+                  stop_price: '10000'
+              marginOrder:
+                summary: Margin Order
+                description: JSON margin order payload using borrowed funds
+                value:
+                  request: /v1/order/new
+                  nonce: <nonce>
+                  client_order_id: '384729'
+                  symbol: ETHUSD
+                  amount: '2.5'
+                  price: '3200.00'
+                  side: buy
+                  type: exchange limit
+                  margin_order: true
+      responses:
+        '200':
+          description: Response will be the fields included in Order Status
+          content:
+            application/json:
+              schema:
+                oneOf:
+                - $ref: '#/components/schemas/LimitOrderResponse'
+                - $ref: '#/components/schemas/StopLimitOrderResponse'
+              examples:
+                limitOrder:
+                  summary: Limit Order
+                  description: JSON limit order response
+                  value:
+                    order_id: '106817811'
+                    id: '106817811'
+                    symbol: BTCUSD
+                    exchange: gemini
+                    avg_execution_price: '3632.8508430064554'
+                    side: buy
+                    type: exchange limit
+                    timestamp: '1547220404'
+                    timestampms: 1547220404836
+                    is_live: true
+                    is_cancelled: false
+                    is_hidden: false
+                    was_forced: false
+                    executed_amount: '3.7567928949'
+                    remaining_amount: '1.2432071051'
+                    client_order_id: 20190110-4738721
+                    options: []
+                    price: '3633.00'
+                    original_amount: '5'
+                stopLimitOrder:
+                  summary: Stop-Limit Order
+                  description: JSON stop-limit order response
+                  value:
+                    order_id: '7419662'
+                    id: '7419662'
+                    symbol: BTCUSD
+                    exchange: gemini
+                    avg_execution_price: '0.00'
+                    side: buy
+                    type: stop-limit
+                    timestamp: '1572378649'
+                    timestampms: 1572378649018
+                    is_live: true
+                    is_cancelled: false
+                    is_hidden: false
+                    was_forced: false
+                    executed_amount: '0'
+                    options: []
+                    stop_price: '10400.00'
+                    price: '10500.00'
+                    original_amount: '0.01'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/ApiKeyIpFilteringFailure'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+        '500':
+          $ref: '#/components/responses/InternalError'
+  /v1/order/cancel:
+    post:
+      x-zudoku-playground-enabled: false
+      tags:
+      - Orders
+      summary: Cancel Order
+      operationId: cancelOrder
+      description: 'This will cancel an order. If the order is already canceled, the message will succeed but have no effect.
+
+
+        Enabled for perpetuals accounts from July 10th, 0100hrs ET onwards.
+
+
+        ### Roles
+
+        The API key you use to access this endpoint must have the Trader role assigned. See Roles for more information.
+
+
+        The OAuth scope must have `orders:create` assigned to access this endpoint. See OAuth Scopes for more information.
+
+
+        ### All Cancellation Reasons
+
+        Under unique circumstances, orders may be automatically cancelled by the exchange. These scenarios are detailed in the table below:
+
+
+        | Cancel Reason | Description |
+
+        |---------------|-------------|
+
+        | `MakerOrCancelWouldTake` | Occurs when the "maker-or-cancel" execution option is included in the order request and any part of the requested order could be filled immediately. |
+
+        | `ExceedsPriceLimits` | Occurs when there is not sufficient liquidity on the order book to support the entered trade. Orders will be automatically cancelled when liquidity conditions are such that the order would move price +/- 5%. |
+
+        | `SelfCrossPrevented` | Occurs when a user enters a bid that is higher than that user''s lowest open ask or enters an ask that is lower than their highest open bid on the same pair. |
+
+        | `ImmediateOrCancelWouldPost` | Occurs when the "immediate-or-cancel" execution option is included in the order request and the requested order cannot be fully filled immediately. This type of cancellation will only cancel the unfulfilled part of any impacted order. |
+
+        | `FillOrKillWouldNotFill` | Occurs when the "fill-or-kill" execution option is included in the new order request and the entire order cannot be filled immediately.
+
+
+        Unlike "immediate-or-cancel" orders, this execution option will result in the entire order being cancelled rather than just the unfulfilled portion. |
+
+        | `Requested` | Cancelled via user request to /v1/order/cancel endpoint. |
+
+        | `MarketClosed` | Occurs when an order is placed for a trading pair that is currently closed. |
+
+        | `TradingClosed` | Occurs when an order is placed while the exchange is closed for trading. |'
+      parameters:
+      - $ref: '#/components/parameters/apiKeyAuth'
+      - $ref: '#/components/parameters/signatureAuth'
+      - $ref: '#/components/parameters/payloadAuth'
+      - $ref: '#/components/parameters/contentType'
+      - $ref: '#/components/parameters/contentLength'
+      - $ref: '#/components/parameters/cacheControl'
+      security:
+      - apiKeyAuth: []
+        signatureAuth: []
+        payloadAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CancelOrderRequest'
+            examples:
+              cancelOrder:
+                summary: Cancel Order Example
+                description: JSON payload to cancel an order using its order_id
+                value:
+                  request: /v1/order/cancel
+                  nonce: <nonce>
+                  order_id: 106817811
+      responses:
+        '200':
+          description: Response will be the fields included in Order Status. If the order was already canceled, then the request will have no effect and the status will be returned. Note the *is_cancelled* node will have a value of 'true'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CancelOrderResponse'
+              examples:
+                cancelledOrder:
+                  summary: Cancelled Order
+                  description: JSON response for a cancelled order
+                  value:
+                    order_id: '106817811'
+                    id: '106817811'
+                    symbol: btcusd
+                    exchange: gemini
+                    avg_execution_price: '3632.85101103'
+                    side: buy
+                    type: exchange limit
+                    timestamp: '1495742383'
+                    timestampms: 1495742383345
+                    is_live: false
+                    is_cancelled: true
+                    is_hidden: false
+                    was_forced: false
+                    executed_amount: '3.7610296649'
+                    remaining_amount: '1.2389703351'
+                    reason: Requested
+                    options: []
+                    price: '2960.00'
+                    original_amount: '5'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/ApiKeyIpFilteringFailure'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+        '500':
+          $ref: '#/components/responses/InternalError'
+  /v1/order/cancel/all:
+    post:
+      x-zudoku-playground-enabled: false
+      tags:
+      - Orders
+      summary: Cancel All Active Orders
+      operationId: cancelAllActiveOrders
+      description: 'This will cancel all outstanding orders created by all sessions owned by this account, including interactive orders placed through the UI.
+
+
+        Note that this cancels orders that were not placed using this API key.
+
+        Enabled for perpetuals accounts from July 10th, 0100hrs ET onwards.
+
+
+        Typically Cancel All Session Orders is preferable, so that only orders related to the current connected session are cancelled.
+
+
+        ### Roles
+
+        The API key you use to access this endpoint must have the Trader role assigned. See Roles for more information.
+
+
+        The OAuth scope must have `orders:create` assigned to access this endpoint. See OAuth Scopes for more information.'
+      parameters:
+      - $ref: '#/components/parameters/apiKeyAuth'
+      - $ref: '#/components/parameters/signatureAuth'
+      - $ref: '#/components/parameters/payloadAuth'
+      - $ref: '#/components/parameters/contentType'
+      - $ref: '#/components/parameters/contentLength'
+      - $ref: '#/components/parameters/cacheControl'
+      security:
+      - apiKeyAuth: []
+        signatureAuth: []
+        payloadAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CancelAllOrdersRequest'
+            examples:
+              cancelAllOrders:
+                summary: Cancel All Orders
+                description: JSON payload to cancel all orders
+                value:
+                  request: /v1/order/cancel/all
+                  nonce: <nonce>
+      responses:
+        '200':
+          description: JSON response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CancelAllResult'
+              example:
+                result: ok
+                details:
+                  cancelRejects: []
+                  cancelledOrders:
+                  - 330429106
+                  - 330429079
+                  - 330429082
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/ApiKeyIpFilteringFailure'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+        '500':
+          $ref: '#/components/responses/InternalError'
+  /v1/order/cancel/session:
+    post:
+      x-zudoku-playground-enabled: false
+      tags:
+      - Orders
+      summary: Cancel All Session Orders
+      operationId: cancelAllSessionOrders
+      description: 'This will cancel all orders opened by this session.
+
+
+        This will have the same effect as heartbeat expiration if "Require Heartbeat" is selected for the session.
+
+
+        ### Roles
+
+        The API key you use to access this endpoint must have the Trader role assigned. See Roles for more information.
+
+
+        The OAuth scope must have `orders:create` assigned to access this endpoint. See OAuth Scopes for more information.'
+      parameters:
+      - $ref: '#/components/parameters/apiKeyAuth'
+      - $ref: '#/components/parameters/signatureAuth'
+      - $ref: '#/components/parameters/payloadAuth'
+      - $ref: '#/components/parameters/contentType'
+      - $ref: '#/components/parameters/contentLength'
+      - $ref: '#/components/parameters/cacheControl'
+      security:
+      - apiKeyAuth: []
+        signatureAuth: []
+        payloadAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CancelAllOrdersBySessionRequest'
+            examples:
+              cancelAllSessionOrders:
+                summary: Cancel All Session Orders
+                description: JSON payload to cancel all orders opened by this session
+                value:
+                  request: /v1/order/cancel/session
+                  nonce: <nonce>
+      responses:
+        '200':
+          description: JSON response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CancelAllResult'
+              example:
+                result: ok
+                details:
+                  cancelRejects:
+                  - 330429345
+                  cancelledOrders: []
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/ApiKeyIpFilteringFailure'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+        '500':
+          $ref: '#/components/responses/InternalError'
+  /v1/order/status:
+    post:
+      x-zudoku-playground-enabled: false
+      tags:
+      - Orders
+      summary: Get Order Status
+      operationId: getOrderStatus
+      description: 'Gemini recommends using our WebSocket Order Events API to receive order status changes. It''s much better because you''ll be notified of order status changes as they happen.
+
+
+        Under the terms of the Gemini API Agreement, polling this endpoint may be subject to rate limiting.
+
+
+        Enabled for perpetuals accounts from July 10th, 0100hrs ET onwards. Trade info for all perpetuals orders submitted prior to this timing, will not be available through this API.
+
+
+        ### Roles
+
+        The API key you use to access this endpoint must have the Trader role assigned. See Roles for more information.
+
+
+        The OAuth scope must have `orders:read` assigned to access this endpoint. See OAuth Scopes for more information.'
+      parameters:
+      - $ref: '#/components/parameters/apiKeyAuth'
+      - $ref: '#/components/parameters/signatureAuth'
+      - $ref: '#/components/parameters/payloadAuth'
+      - $ref: '#/components/parameters/contentType'
+      - $ref: '#/components/parameters/contentLength'
+      - $ref: '#/components/parameters/cacheControl'
+      security:
+      - apiKeyAuth: []
+        signatureAuth: []
+        payloadAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/OrderStatusRequest'
+            examples:
+              orderStatusRequest:
+                value:
+                  request: /v1/order/status
+                  nonce: <nonce>
+                  order_id: 123456789012345
+                  include_trades: true
+      responses:
+        '200':
+          description: The order status
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Order'
+              examples:
+                limitBuyResponse:
+                  summary: Limit Buy Response
+                  description: JSON response for limit buy
+                  value:
+                    order_id: '123456789012345'
+                    id: '123456789012345'
+                    symbol: btcusd
+                    exchange: gemini
+                    avg_execution_price: '400.00'
+                    side: buy
+                    type: exchange limit
+                    timestamp: '1494870642'
+                    timestampms: 1494870642156
+                    is_live: false
+                    is_cancelled: false
+                    is_hidden: false
+                    was_forced: false
+                    executed_amount: '3'
+                    remaining_amount: '0'
+                    options: []
+                    price: '400.00'
+                    original_amount: '3'
+                includeTradesResponse:
+                  summary: Include Trades Response
+                  description: JSON response for market buy with include_trades as True
+                  value:
+                    avg_execution_price: '22728.94'
+                    exchange: gemini
+                    executed_amount: '0.0219983861'
+                    id: '17379712927'
+                    is_cancelled: false
+                    is_hidden: false
+                    is_live: false
+                    options: []
+                    order_id: '17379712927'
+                    remaining_amount: '0'
+                    side: buy
+                    symbol: btcusd
+                    timestamp: '1608229172'
+                    timestampms: 1608229172627
+                    trades:
+                    - aggressor: true
+                      amount: '0.0219983861'
+                      exchange: gemini
+                      fee_amount: '0.00'
+                      fee_currency: USD
+                      order_id: '17379712927'
+                      price: '22728.94'
+                      tid: 17379712930
+                      timestamp: 1608229172
+                      timestampms: 1608229172627
+                      type: Buy
+                    type: market buy
+                    was_forced: false
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/ApiKeyIpFilteringFailure'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+        '500':
+          $ref: '#/components/responses/InternalError'
+  /v1/orders:
+    post:
+      x-zudoku-playground-enabled: false
+      tags:
+      - Orders
+      summary: List Active Orders
+      operationId: listActiveOrders
+      description: 'Gemini recommends using our WebSocket Order Events API to maintain a current view of your active orders. It''s both faster and more efficient than polling this endpoint.
+
+
+        Under the terms of the Gemini API Agreement, polling this endpoint may be subject to rate limiting.
+
+
+        Enabled for perpetuals accounts from July 10th, 0100hrs ET onwards.
+
+
+        ### Roles
+
+        The API key you use to access this endpoint must have the Trader or Auditor role assigned. See Roles for more information.
+
+
+        The OAuth scope must have `orders:read` assigned to access this endpoint. See OAuth Scopes for more information.'
+      parameters:
+      - $ref: '#/components/parameters/apiKeyAuth'
+      - $ref: '#/components/parameters/signatureAuth'
+      - $ref: '#/components/parameters/payloadAuth'
+      - $ref: '#/components/parameters/contentType'
+      - $ref: '#/components/parameters/contentLength'
+      - $ref: '#/components/parameters/cacheControl'
+      security:
+      - apiKeyAuth: []
+        signatureAuth: []
+        payloadAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+              - request
+              - nonce
+              properties:
+                request:
+                  type: string
+                  description: The API endpoint path
+                  example: /v1/orders
+                nonce:
+                  type: TimestampType
+                  $ref: '#/components/schemas/TimestampType'
+                  title: The nonce, as described in [Private API Invocation](/authentication/api-key#private-api-invocation)
+                account:
+                  type: string
+                  description: Required for Master API keys as described in [Private API Invocation](/authentication/api-key#private-api-invocation). The name of the account within the subaccount group. Specifies the account on which you intend to place the order. Only available for exchange accounts.
+                  example: primary
+            examples:
+              basic:
+                summary: Basic Request
+                description: Basic request to get active orders
+                value:
+                  request: /v1/orders
+                  nonce: <nonce>
+              withAccount:
+                summary: With Account Parameter
+                description: Request with account parameter for Master API keys
+                value:
+                  request: /v1/orders
+                  nonce: <nonce>
+                  account: primary
+      responses:
+        '200':
+          description: The active orders
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Order'
+              examples:
+                multipleOrders:
+                  summary: Multiple Active Orders
+                  description: Response with multiple active orders
+                  value:
+                  - order_id: '107421210'
+                    id: '107421210'
+                    symbol: ethusd
+                    exchange: gemini
+                    avg_execution_price: '0.00'
+                    side: sell
+                    type: exchange limit
+                    timestamp: '1547241628'
+                    timestampms: 1547241628042
+                    is_live: true
+                    is_cancelled: false
+                    is_hidden: false
+                    was_forced: false
+                    executed_amount: '0'
+                    remaining_amount: '1'
+                    options: []
+                    price: '125.51'
+                    original_amount: '1'
+                  - order_id: '107421205'
+                    id: '107421205'
+                    symbol: ethusd
+                    exchange: gemini
+                    avg_execution_price: '125.41'
+                    side: buy
+                    type: exchange limit
+                    timestamp: '1547241626'
+                    timestampms: 1547241626991
+                    is_live: true
+                    is_cancelled: false
+                    is_hidden: false
+                    was_forced: false
+                    executed_amount: '0.029147'
+                    remaining_amount: '0.970853'
+                    options: []
+                    price: '125.42'
+                    original_amount: '1'
+                emptyOrders:
+                  summary: No Active Orders
+                  description: Response when there are no active orders
+                  value: []
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/ApiKeyIpFilteringFailure'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+        '500':
+          $ref: '#/components/responses/InternalError'
+  /v1/orders/history:
+    post:
+      x-zudoku-playground-enabled: false
+      tags:
+      - Orders
+      summary: List Past Orders
+      operationId: listPastOrders
+      description: 'This API retrieves (closed) orders history for an account.
+
+
+        ### Roles
+
+        The API key you use to access this endpoint must have the Trader or Auditor role assigned. See Roles for more information.
+
+
+        The OAuth scope must have `history:read` assigned to access this endpoint. See OAuth Scopes for more information.
+
+
+        ### How to retrieve your order history
+
+
+        To retrieve your full order history walking backwards,
+
+
+        1. Initial request: `POST` to https://api.gemini.com/v1/orders/history with a JSON payload including a `timestamp` key with value `0` and a `limit_orders` key with value `500`
+
+        2. When you receive the list of orders, it will be sorted by `timestamp` descending - so the first element in the list will have the highest `timestamp` value. For this example, say that value is `X`.
+
+        3. Create a second `POST` request with a JSON payload including a `timestamp` key with value `X+1` and a `limit_orders` key with value `500`.
+
+        4. Take the first element of the list returned with highest `timestamp` value `Y` and create a third `POST` request with a JSON payload including a `timestamp` key with value `Y+1` and a `limit_orders` key with value `500`.
+
+        5. Continue creating `POST` requests and retrieving orders until an empty list is returned.
+
+
+        ### Break Types
+
+
+        In the rare event that a trade has been reversed (broken), the trade that is broken will have this flag set. The field will contain one of these values
+
+
+        |Value|Description|
+
+        |--- |--- |
+
+        |manual|The trade was reversed manually. This means that all fees, proceeds, and debits associated with the trade have been credited or debited to the account seperately. That means that this reported trade must be included for order for the account balance to be correct.|
+
+        |full|The trade was fully broken. The reported trade should not be accounted for. It will be as though the transfer of fund associated with the trade had simply not happened.|'
+      parameters:
+      - $ref: '#/components/parameters/apiKeyAuth'
+      - $ref: '#/components/parameters/signatureAuth'
+      - $ref: '#/components/parameters/payloadAuth'
+      - $ref: '#/components/parameters/contentType'
+      - $ref: '#/components/parameters/contentLength'
+      - $ref: '#/components/parameters/cacheControl'
+      security:
+      - apiKeyAuth: []
+        signatureAuth: []
+        payloadAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+              - request
+              - nonce
+              properties:
+                request:
+                  type: string
+                  description: The API endpoint `/v1/orders/history`
+                nonce:
+                  $ref: '#/components/schemas/Nonce'
+                symbol:
+                  type: string
+                  description: The symbol to retrieve orders for
+                limit_orders:
+                  type: integer
+                  description: The maximum number of orders to return. Default is 50, max is 500.
+                  default: 50
+                timestamp:
+                  title: '#/components/schemas/TimestampType'
+                  description: In iso datetime with timezone format from that date you will get order history
+                  allOf:
+                  - $ref: '#/components/schemas/TimestampType'
+                account:
+                  type: string
+                  description: Required for Master API keys as described in [Private API Invocation](/authentication/api-key#private-api-invocation). The name of the account within the subaccount group.
+            examples:
+              basic:
+                summary: Basic Request
+                description: Basic request to get order history
+                value:
+                  request: /v1/orders/history
+                  nonce: <nonce>
+                  limit_orders: 50
+              withSymbolAndTimestamp:
+                summary: With Symbol and Timestamp
+                description: Request with symbol and timestamp filters
+                value:
+                  request: /v1/orders/history
+                  nonce: <nonce>
+                  symbol: btcusd
+                  timestamp: 1591084414000
+                  limit_orders: 50
+              withAccount:
+                summary: With Account Parameter
+                description: Request with account parameter for Master API keys
+                value:
+                  request: /v1/orders/history
+                  nonce: <nonce>
+                  account: primary
+                  limit_orders: 100
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Order'
+              examples:
+                cancelledOrder:
+                  summary: Cancelled Order
+                  description: Response with a cancelled order
+                  value:
+                  - order_id: '73751560172006688'
+                    id: '73751560172006688'
+                    symbol: ethgusd
+                    exchange: gemini
+                    avg_execution_price: '0.00'
+                    side: buy
+                    type: exchange limit
+                    timestamp: '1695629298'
+                    timestampms: 1695629298505
+                    is_live: false
+                    is_cancelled: true
+                    is_hidden: false
+                    was_forced: false
+                    executed_amount: '0'
+                    client_order_id: fb5321b0-2114-47fd-8cca-531a66d7feaf
+                    options: []
+                    price: '420.00'
+                    original_amount: '0.69'
+                    remaining_amount: '0.69'
+                    trades: []
+                completedOrder:
+                  summary: Completed Order
+                  description: Response with a completed order
+                  value:
+                  - order_id: '107421205'
+                    id: '107421205'
+                    symbol: btcusd
+                    exchange: gemini
+                    avg_execution_price: '3633.00'
+                    side: buy
+                    type: exchange limit
+                    timestamp: '1547241626'
+                    timestampms: 1547241626991
+                    is_live: false
+                    is_cancelled: false
+                    is_hidden: false
+                    was_forced: false
+                    executed_amount: '5'
+                    remaining_amount: '0'
+                    options: []
+                    price: '3633.00'
+                    original_amount: '5'
+                    trades:
+                    - price: '3633.00'
+                      amount: '5'
+                      timestamp: 1547241627
+                      timestampms: 1547241627000
+                      type: Buy
+                      aggressor: true
+                      fee_currency: USD
+                      fee_amount: '9.0825'
+                      tid: 106921823
+                      order_id: '107421205'
+                      exchange: gemini
+                emptyHistory:
+                  summary: Empty History
+                  description: Response when there are no orders in history
+                  value: []
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/ApiKeyIpFilteringFailure'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+        '500':
+          $ref: '#/components/responses/InternalError'
+  /v1/mytrades:
+    post:
+      x-zudoku-playground-enabled: false
+      tags:
+      - Orders
+      summary: List Past Trades
+      operationId: listPastTrades
+      description: 'Gemini recommends using our WebSocket Order Events API to be notified when a trade executes on your account instead of polling this endpoint.
+
+
+        Under the terms of the Gemini API Agreement, polling this endpoint may be subject to rate limiting.
+
+
+        Enabled for perpetuals accounts from July 10th, 0100hrs ET onwards. Trade info for all perpetuals orders submitted prior to this timing, will not be available through this API.
+
+
+        ### Roles
+
+        The API key you use to access this endpoint must have the Trader or Auditor role assigned. See Roles for more information.
+
+
+        The OAuth scope must have `history:read` assigned to access this endpoint. See OAuth Scopes for more information.
+
+
+        ### How to retrieve your trade history
+
+
+        To retrieve your full trade history walking backwards,
+
+
+        1. Initial request: `POST` to https://api.gemini.com/v1/mytrades with a JSON payload including a `timestamp` key with value 0 and a `limit_trades` key with value `500`
+
+        2. When you receive the list of trades, it will be sorted by `timestamp` descending - so the first element in the list will have the highest `timestamp` value. For this example, say that value is `X`.
+
+        3. Create a second `POST` request with a JSON payload including a `timestamp` key with value `X+1` and a `limit_trades` key with value `500`.
+
+        4. Take the first element of the list returned with highest `timestamp` value `Y` and create a third `POST` request with a JSON payload including a `timestamp` key with value `Y+1` and a `limit_trades` key with value `500`.
+
+        5. Continue creating `POST` requests and retrieving trades until an empty list is returned.
+
+
+        ### Break Types
+
+
+        In the rare event that a trade has been reversed (broken), the trade that is broken will have this flag set. The field will contain one of these values
+
+
+        |Value|Description|
+
+        |--- |--- |
+
+        |manual|The trade was reversed manually. This means that all fees, proceeds, and debits associated with the trade have been credited or debited to the account seperately. That means that this reported trade must be included for order for the account balance to be correct.|
+
+        |full|The trade was fully broken. The reported trade should not be accounted for. It will be as though the transfer of fund associated with the trade had simply not happened.|'
+      parameters:
+      - $ref: '#/components/parameters/apiKeyAuth'
+      - $ref: '#/components/parameters/signatureAuth'
+      - $ref: '#/components/parameters/payloadAuth'
+      - $ref: '#/components/parameters/contentType'
+      - $ref: '#/components/parameters/contentLength'
+      - $ref: '#/components/parameters/cacheControl'
+      security:
+      - apiKeyAuth: []
+        signatureAuth: []
+        payloadAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/MyTradesRequest'
+            examples:
+              basic:
+                summary: Basic Request
+                description: Basic request to get past trades for a symbol
+                value:
+                  request: /v1/mytrades
+                  nonce: <nonce>
+                  symbol: btcusd
+              withLimitAndTimestamp:
+                summary: With Limit and Timestamp
+                description: Request with limit and timestamp parameters
+                value:
+                  request: /v1/mytrades
+                  nonce: <nonce>
+                  symbol: btcusd
+                  limit_trades: 100
+                  timestamp: 1591084414000
+              withAccount:
+                summary: With Account Parameter
+                description: Request with account parameter for Master API keys
+                value:
+                  request: /v1/mytrades
+                  nonce: <nonce>
+                  symbol: btcusd
+                  account: primary
+      responses:
+        '200':
+          description: The past trades
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/MyTrade'
+              examples:
+                multipleTrades:
+                  summary: Multiple Trades
+                  description: Response with multiple trades
+                  value:
+                  - price: '3648.09'
+                    amount: '0.0027343246'
+                    timestamp: 1547232911
+                    timestampms: 1547232911021
+                    type: Buy
+                    aggressor: true
+                    fee_currency: USD
+                    fee_amount: '0.024937655575035'
+                    tid: 107317526
+                    order_id: '107317524'
+                    exchange: gemini
+                    is_clearing_fill: false
+                    symbol: BTCUSD
+                  - price: '3633.00'
+                    amount: '0.00423677'
+                    timestamp: 1547220640
+                    timestampms: 1547220640195
+                    type: Buy
+                    aggressor: false
+                    fee_currency: USD
+                    fee_amount: '0.038480463525'
+                    tid: 106921823
+                    order_id: '106817811'
+                    exchange: gemini
+                    is_clearing_fill: false
+                    symbol: BTCUSD
+                withClientOrderId:
+                  summary: Trade with Client Order ID
+                  description: Response with a trade that includes client_order_id
+                  value:
+                  - price: '42000.00'
+                    amount: '0.5'
+                    timestamp: 1616492376
+                    timestampms: 1616492376594
+                    type: Sell
+                    aggressor: true
+                    fee_currency: USD
+                    fee_amount: '52.50'
+                    tid: 123456789
+                    order_id: '123456789'
+                    client_order_id: my-custom-id-12345
+                    exchange: gemini
+                    is_clearing_fill: false
+                    symbol: BTCUSD
+                emptyTrades:
+                  summary: No Trades
+                  description: Response when there are no trades matching the criteria
+                  value: []
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/ApiKeyIpFilteringFailure'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+        '500':
+          $ref: '#/components/responses/InternalError'
+  /v1/tradevolume:
+    post:
+      x-zudoku-playground-enabled: false
+      tags:
+      - Orders
+      summary: Get Trading Volume
+      operationId: getTradingVolume
+      description: '### Roles
+
+        The API key you use to access this endpoint must have the Trader or Auditor role assigned. See Roles for more information.
+
+
+        The OAuth scope must have `history:read` assigned to access this endpoint. See OAuth Scopes for more information.'
+      parameters:
+      - $ref: '#/components/parameters/apiKeyAuth'
+      - $ref: '#/components/parameters/signatureAuth'
+      - $ref: '#/components/parameters/payloadAuth'
+      - $ref: '#/components/parameters/contentType'
+      - $ref: '#/components/parameters/contentLength'
+      - $ref: '#/components/parameters/cacheControl'
+      security:
+      - apiKeyAuth: []
+        signatureAuth: []
+        payloadAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+              - request
+              - nonce
+              properties:
+                request:
+                  type: string
+                  description: The API endpoint path
+                  example: /v1/tradevolume
+                nonce:
+                  type: TimestampType
+                  $ref: '#/components/schemas/TimestampType'
+                  title: The nonce, as described in [Private API Invocation](/authentication/api-key#private-api-invocation)
+                account:
+                  type: string
+                  description: Required for Master API keys as described in [Private API Invocation](/authentication/api-key#private-api-invocation). The name of the account within the subaccount group. Specifies the account on which you intend to place the order. Only available for exchange accounts.
+                  example: primary
+            examples:
+              basic:
+                summary: Basic Request
+                description: Basic request to get trade volume
+                value:
+                  request: /v1/tradevolume
+                  nonce: <nonce>
+              withAccount:
+                summary: With Account Parameter
+                description: Request with account parameter for Master API keys
+                value:
+                  request: /v1/tradevolume
+                  nonce: <nonce>
+                  account: primary
+      responses:
+        '200':
+          description: The trade volume
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/TradeVolume'
+              examples:
+                multipleSymbols:
+                  summary: Multiple Symbols
+                  description: Response with trade volume for multiple symbols
+                  value:
+                  - - symbol: btcusd
+                      base_currency: BTC
+                      notional_currency: USD
+                      data_date: '2019-01-10'
+                      total_volume_base: 8.06021756
+                      maker_buy_sell_ratio: 1
+                      buy_maker_base: 6.06021756
+                      buy_maker_notional: 23461.3515203844
+                      buy_maker_count: 34
+                      sell_maker_base: 0
+                      sell_maker_notional: 0
+                      sell_maker_count: 0
+                      buy_taker_base: 0
+                      buy_taker_notional: 0
+                      buy_taker_count: 0
+                      sell_taker_base: 2
+                      sell_taker_notional: 7935.66
+                      sell_taker_count: 2
+                    - symbol: ltcusd
+                      base_currency: LTC
+                      notional_currency: USD
+                      data_date: '2019-01-11'
+                      total_volume_base: 3
+                      maker_buy_sell_ratio: 0
+                      buy_maker_base: 0
+                      buy_maker_notional: 0
+                      buy_maker_count: 0
+                      sell_maker_base: 0
+                      sell_maker_notional: 0
+                      sell_maker_count: 0
+                      buy_taker_base: 3
+                      buy_taker_notional: 98.22
+                      buy_taker_count: 3
+                      sell_taker_base: 0
+                      sell_taker_notional: 0
+                      sell_taker_count: 0
+                singleSymbol:
+                  summary: Single Symbol
+                  description: Response with trade volume for a single symbol
+                  value:
+                  - - symbol: ethusd
+                      base_currency: ETH
+                      notional_currency: USD
+                      data_date: '2019-01-10'
+                      total_volume_base: 25.5
+                      maker_buy_sell_ratio: 0.75
+                      buy_maker_base: 15.5
+                      buy_maker_notional: 3875.0
+                      buy_maker_count: 12
+                      sell_maker_base: 5.0
+                      sell_maker_notional: 1250.0
+                      sell_maker_count: 4
+                      buy_taker_base: 2.5
+                      buy_taker_notional: 625.0
+                      buy_taker_count: 2
+                      sell_taker_base: 2.5
+                      sell_taker_notional: 625.0
+                      sell_taker_count: 2
+                emptyVolume:
+                  summary: No Trade Volume
+                  description: Response when there is no trade volume
+                  value:
+                  - []
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/ApiKeyIpFilteringFailure'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+        '500':
+          $ref: '#/components/responses/InternalError'
+  /v1/notionalvolume:
+    post:
+      x-zudoku-playground-enabled: false
+      tags:
+      - Orders
+      summary: Get Notional Trading Volume
+      operationId: getNotionalTradingVolume
+      description: '### Roles
+
+        The API key you use to access this endpoint must have the Trader or Auditor role assigned. See Roles for more information.
+
+
+        The OAuth scope must have `history:read` assigned to access this endpoint. See OAuth Scopes for more information.'
+      parameters:
+      - $ref: '#/components/parameters/apiKeyAuth'
+      - $ref: '#/components/parameters/signatureAuth'
+      - $ref: '#/components/parameters/payloadAuth'
+      - $ref: '#/components/parameters/contentType'
+      - $ref: '#/components/parameters/contentLength'
+      - $ref: '#/components/parameters/cacheControl'
+      security:
+      - apiKeyAuth: []
+        signatureAuth: []
+        payloadAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+              - request
+              - nonce
+              properties:
+                request:
+                  type: string
+                  description: The API endpoint path
+                  example: /v1/notionalvolume
+                nonce:
+                  type: TimestampType
+                  $ref: '#/components/schemas/TimestampType'
+                  title: The nonce, as described in [Private API Invocation](/authentication/api-key#private-api-invocation)
+                account:
+                  type: string
+                  description: Required for Master API keys as described in [Private API Invocation](/authentication/api-key#private-api-invocation). The name of the account within the subaccount group. Specifies the account on which you intend to place the order. Only available for exchange accounts.
+                  example: primary
+                symbol:
+                  type: string
+                  description: Optional. The symbol to get fee promotions or specific fee schedule rates for.
+                  example: btcusd
+            examples:
+              basic:
+                summary: Basic Request
+                description: Basic request to get notional volume
+                value:
+                  request: /v1/notionalvolume
+                  nonce: <nonce>
+              withSymbol:
+                summary: With Symbol Parameter
+                description: Request with symbol parameter for fee promotions
+                value:
+                  request: /v1/notionalvolume
+                  nonce: <nonce>
+                  symbol: btcusd
+              withAccount:
+                summary: With Account Parameter
+                description: Request with account parameter for Master API keys
+                value:
+                  request: /v1/notionalvolume
+                  nonce: <nonce>
+                  account: primary
+      responses:
+        '200':
+          description: The notional volume
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NotionalVolume'
+              examples:
+                standardResponse:
+                  summary: Standard Response
+                  description: Response with notional volume and fee information
+                  value:
+                    web_maker_fee_bps: 25
+                    web_taker_fee_bps: 35
+                    web_auction_fee_bps: 25
+                    api_maker_fee_bps: 10
+                    api_taker_fee_bps: 35
+                    api_auction_fee_bps: 20
+                    fix_maker_fee_bps: 10
+                    fix_taker_fee_bps: 35
+                    fix_auction_fee_bps: 20
+                    notional_30d_volume: 150.0
+                    last_updated_ms: 1551371446000
+                    date: '2019-02-28'
+                    notional_1d_volume:
+                    - date: '2019-02-22'
+                      notional_volume: 75.0
+                    - date: '2019-02-14'
+                      notional_volume: 75.0
+                withFeeTier:
+                  summary: With Fee Tier
+                  description: Response including fee tier information
+                  value:
+                    web_maker_fee_bps: 25
+                    web_taker_fee_bps: 35
+                    web_auction_fee_bps: 25
+                    api_maker_fee_bps: 0
+                    api_taker_fee_bps: 10
+                    api_auction_fee_bps: 10
+                    fix_maker_fee_bps: 0
+                    fix_taker_fee_bps: 10
+                    fix_auction_fee_bps: 10
+                    notional_30d_volume: 15000000.0
+                    api_notional_30d_volume: 12500000.0
+                    last_updated_ms: 1551371446000
+                    date: '2019-02-28'
+                    fee_tier:
+                      tier: 0bps
+                      api_maker_fee_bps: 0
+                      api_taker_fee_bps: 10
+                    notional_1d_volume:
+                    - date: '2019-02-28'
+                      notional_volume: 500000.0
+                    - date: '2019-02-27'
+                      notional_volume: 750000.0
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/ApiKeyIpFilteringFailure'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+        '500':
+          $ref: '#/components/responses/InternalError'
+  /v1/wrap/{symbol}:
+    post:
+      x-zudoku-playground-enabled: false
+      tags:
+      - Orders
+      summary: Wrap Order
+      operationId: wrapOrder
+      description: '### Roles
+
+        The API key you use to access this endpoint must have the Trader role assigned. See Roles for more information.
+
+
+        The OAuth scope must have `orders:create` assigned to access this endpoint. See OAuth Scopes for more information.'
+      parameters:
+      - $ref: '#/components/parameters/symbolParam'
+      - $ref: '#/components/parameters/apiKeyAuth'
+      - $ref: '#/components/parameters/signatureAuth'
+      - $ref: '#/components/parameters/payloadAuth'
+      - $ref: '#/components/parameters/contentType'
+      - $ref: '#/components/parameters/contentLength'
+      - $ref: '#/components/parameters/cacheControl'
+      security:
+      - apiKeyAuth: []
+        signatureAuth: []
+        payloadAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+              - request
+              - nonce
+              - amount
+              properties:
+                request:
+                  type: string
+                  description: The literal string "/v1/wrap/symbol"
+                nonce:
+                  $ref: '#/components/schemas/Nonce'
+                amount:
+                  type: string
+                  description: The amount to wrap
+                side:
+                  type: string
+                  enum:
+                  - buy
+                  - sell
+                  description: '"buy" or "sell"'
+                client_order_id:
+                  type: string
+                  description: A client-specified order id
+                account:
+                  type: string
+                  description: Required for Master API keys. The name of the account within the subaccount group.
+            example:
+              request: /v1/wrap/GUSDUSD
+              nonce: <nonce>
+              amount: '1'
+              side: buy
+              client_order_id: 4ac6f45f-baf1-40f8-83c5-001e3ea73c7f
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  orderId:
+                    type: string
+                    description: The order ID
+                  pair:
+                    type: string
+                    description: Trading pair symbol
+                  price:
+                    type: string
+                    description: The price of the order
+                  priceCurrency:
+                    type: string
+                    description: The currency in which the order is priced
+                  side:
+                    type: string
+                    description: Either "buy" or "sell"
+                  quantity:
+                    type: string
+                    description: The amount that was executed
+                  quantityCurrency:
+                    type: string
+                    description: The currency label for the quantity field
+                  totalSpend:
+                    type: string
+                    description: Total quantity spent for the order
+                  totalSpendCurrency:
+                    type: string
+                    description: Currency of the totalSpend
+                  fee:
+                    type: string
+                    description: The amount charged
+                  feeCurrency:
+                    type: string
+                    description: Currency that the fee was paid in
+                  depositFee:
+                    type: string
+                    description: The deposit fee quantity
+                  depositFeeCurrency:
+                    type: string
+                    description: Currency in which depositFee is taken
+              example:
+                orderId: 429135395
+                pair: GUSDUSD
+                price: '1'
+                priceCurrency: USD
+                side: buy
+                quantity: '1'
+                quantityCurrency: GUSD
+                totalSpend: '1'
+                totalSpendCurrency: USD
+                fee: '0'
+                feeCurrency: USD
+                depositFee: '0'
+                depositFeeCurrency: USD
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/ApiKeyIpFilteringFailure'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+        '500':
+          $ref: '#/components/responses/InternalError'
+components:
+  schemas:
+    TimestampType:
+      description: timestamp
+      oneOf:
+      - type: string
+        description: 'Gemini strongly recommends using milliseconds instead of seconds for timestamps.
+
+
+          | Timestamp format      | Example               | Supported request type |
+
+          |-----------------------|-----------------------|------------------------|
+
+          | string (seconds)      | `1495127793`          | `POST` only            |
+
+          | string (milliseconds) | `1495127793000`       | `POST` only            |
+
+          '
+        example: '1495127793000'
+      - type: integer
+        format: int64
+        description: 'Gemini strongly recommends using milliseconds instead of seconds for timestamps.
+
+
+          | Timestamp format            | Example                   | Supported request type |
+
+          |-----------------------------|---------------------------|------------------------|
+
+          | whole number (seconds)      | `1495127793`              | `GET`, `POST`          |
+
+          | whole number (milliseconds) | `1495127793000`           | `GET`, `POST`          |
+
+          '
+        example: 1495127793000
+    ErrorResponse:
+      type: object
+      properties:
+        result:
+          type: string
+          description: Error
+        reason:
+          type: string
+          description: A short description
+        message:
+          type: string
+          description: Detailed error message
+    LimitOrderResponse:
+      type: object
+      title: Limit Order Response
+      properties:
+        order_id:
+          type: string
+        id:
+          type: string
+        symbol:
+          type: string
+        exchange:
+          type: string
+        avg_execution_price:
+          type: string
+        side:
+          type: string
+          enum:
+          - buy
+          - sell
+        type:
+          type: string
+          enum:
+          - exchange limit
+          - exchange stop limit
+          - exchange market
+        timestamp:
+          type: TimestampType
+          $ref: '#/components/schemas/TimestampType'
+        timestampms:
+          type: TimestampType
+          $ref: '#/components/schemas/TimestampType'
+        is_live:
+          type: boolean
+        is_cancelled:
+          type: boolean
+        is_hidden:
+          type: boolean
+        was_forced:
+          type: boolean
+        executed_amount:
+          type: string
+        remaining_amount:
+          type: string
+          format: double
+        client_order_id:
+          type: string
+        options:
+          type: array
+          items:
+            type: string
+        price:
+          type: string
+          format: double
+        original_amount:
+          type: string
+          format: double
+    CancelAllOrdersBySessionRequest:
+      type: object
+      required:
+      - request
+      - nonce
+      properties:
+        request:
+          type: string
+          description: The literal string "/v1/order/cancel/session"
+          example: /v1/order/cancel/session
+        nonce:
+          type: TimestampType
+          $ref: '#/components/schemas/TimestampType'
+          title: The nonce, as described in [Private API Invocation](/authentication/api-key#private-api-invocation)
+        account:
+          type: string
+          description: Required for Master API keys as described in [Private API Invocation](/authentication/api-key#private-api-invocation). The name of the account within the subaccount group. Specifies the account on which you intend to cancel the orders. Only available for exchange accounts.
+          example: primary
+    TradeVolume:
+      type: object
+      properties:
+        symbol:
+          type: string
+          example: btcusd
+        base_currency:
+          type: string
+          example: BTC
+        quote_currency:
+          type: string
+          example: USD
+        notional_currency:
+          type: string
+          example: USD
+        data_date:
+          type: string
+          example: 2020-06-02
+        total_volume_base:
+          type: string
+          example: 10.5
+        maker_buy_sell_ratio:
+          type: string
+          example: 1.2
+        buy_maker_base:
+          type: string
+          example: 5.5
+        buy_maker_notional:
+          type: string
+          example: 50050.0
+        buy_maker_count:
+          type: integer
+          example: 10
+        sell_maker_base:
+          type: string
+          example: 5.0
+        sell_maker_notional:
+          type: string
+          example: 45500.0
+        sell_maker_count:
+          type: integer
+          example: 8
+        buy_taker_base:
+          type: string
+          example: 8.5
+        buy_taker_notional:
+          type: string
+          example: 77350.0
+        buy_taker_count:
+          type: integer
+          example: 15
+        sell_taker_base:
+          type: string
+          example: 7.5
+        sell_taker_notional:
+          type: string
+          example: 68250.0
+        sell_taker_count:
+          type: integer
+          example: 12
+    NotionalVolume:
+      type: object
+      properties:
+        date:
+          type: string
+          format: date
+          example: '2020-06-02'
+        last_updated_ms:
+          type: integer
+          example: 1591084414622
+        web_maker_fee_bps:
+          type: integer
+          example: 25
+        web_taker_fee_bps:
+          type: integer
+          example: 35
+        web_auction_fee_bps:
+          type: integer
+          example: 25
+        api_maker_fee_bps:
+          type: integer
+          example: 10
+        api_taker_fee_bps:
+          type: integer
+          example: 35
+        api_auction_fee_bps:
+          type: integer
+          example: 20
+        fix_maker_fee_bps:
+          type: integer
+          example: 10
+        fix_taker_fee_bps:
+          type: integer
+          example: 35
+        fix_auction_fee_bps:
+          type: integer
+          example: 20
+        notional_30d_volume:
+          type: string
+          example: 1000000.0
+        notional_1d_volume:
+          type: array
+          items:
+            type: object
+            properties:
+              date:
+                type: string
+                description: UTC date in `yyyy-MM-dd` format
+              notional_volume:
+                type: string
+                format: decimal
+                description: Notional volume value in USD for this single day
+        api_notional_30d_volume:
+          type: string
+          example: 750000.0
+        fee_tier:
+          type: object
+          properties:
+            tier:
+              type: string
+              example: 0bps
+            api_maker_fee_bps:
+              type: integer
+              example: 0
+            api_taker_fee_bps:
+              type: integer
+              example: 10
+    MyTrade:
+      type: object
+      properties:
+        price:
+          type: string
+          example: 9100.0
+        amount:
+          type: string
+          example: 1.5
+        timestamp:
+          $ref: '#/components/schemas/TimestampType'
+          example: 1591084414
+        timestampms:
+          $ref: '#/components/schemas/TimestampType'
+          example: 1591084414622
+        type:
+          type: string
+          enum:
+          - Buy
+          - Sell
+          example: Buy
+        aggressor:
+          type: boolean
+          example: true
+        fee_currency:
+          type: string
+          example: USD
+        fee_amount:
+          type: string
+          example: 13.65
+        tid:
+          type: integer
+          format: int64
+          example: 123456789
+        order_id:
+          type: string
+          example: 123456789
+        client_order_id:
+          type: string
+        exchange:
+          type: string
+          example: gemini
+        is_auction_fill:
+          type: boolean
+          example: false
+        break:
+          type: string
+          enum:
+          - ''
+          - trade correct
+          example: ''
+    StopLimitOrderResponse:
+      type: object
+      title: Stop-Limit Order Response
+      properties:
+        order_id:
+          type: string
+        id:
+          type: string
+        symbol:
+          type: string
+        exchange:
+          type: string
+        avg_execution_price:
+          type: string
+        side:
+          type: string
+          enum:
+          - buy
+          - sell
+        type:
+          type: string
+          enum:
+          - exchange stop limit
+        timestamp:
+          $ref: '#/components/schemas/TimestampType'
+        timestampms:
+          $ref: '#/components/schemas/TimestampType'
+        is_live:
+          type: boolean
+        is_cancelled:
+          type: boolean
+        is_hidden:
+          type: boolean
+        was_forced:
+          type: boolean
+        executed_amount:
+          type: string
+        options:
+          type: array
+          items:
+            type: string
+        stop_price:
+          type: string
+          format: double
+        price:
+          type: string
+          format: double
+        original_amount:
+          type: string
+          format: double
+    CancelOrderRequest:
+      type: object
+      required:
+      - request
+      - nonce
+      - order_id
+      properties:
+        request:
+          type: string
+          description: The literal string "/v1/order/cancel"
+          example: /v1/order/cancel
+        nonce:
+          type: TimestampType
+          $ref: '#/components/schemas/TimestampType'
+          title: The nonce, as described in [Private API Invocation](/authentication/api-key#private-api-invocation)
+        order_id:
+          type: integer
+          format: int64
+          x-unsigned-int64: true
+          description: The order ID given by `/order/new`
+          example: 106817811
+        account:
+          type: string
+          description: Required for Master API keys as described in [Private API Invocation](/authentication/api-key#private-api-invocation). The name of the account within the subaccount group. Specifies the account on which you intend to cancel the order. Only available for exchange accounts.
+          example: primary
+    MyTradesRequest:
+      type: object
+      required:
+      - request
+      - nonce
+      properties:
+        request:
+          type: string
+          description: The API endpoint path
+          example: /v1/mytrades
+        nonce:
+          type: TimestampType
+          $ref: '#/components/schemas/TimestampType'
+          title: The nonce, as described in [Private API Invocation](/authentication/api-key#private-api-invocation)
+        account:
+          type: string
+          description: Required for Master API keys as described in [Private API Invocation](/authentication/api-key#private-api-invocation). The name of the account within the subaccount group. Specifies the account on which you intend to place the order. Only available for exchange accounts.
+          example: primary
+        symbol:
+          type: string
+          description: The [symbol](/market-data/symbols-and-minimums) to retrieve trades for
+          example: btcusd
+        limit_trades:
+          type: integer
+          description: The maximum number of trades to return. Default is 50, max is 500.
+          example: 50
+        timestamp:
+          $ref: '#/components/schemas/TimestampType'
+          description: 'Only return trades on or after this timestamp. See [Data Types: Timestamps](/rest/~schemas#timestamp-type) for more information. If not present, will show the most recent orders.'
+          example: 1591084414000
+    NewOrderRequest:
+      type: object
+      required:
+      - request
+      - nonce
+      - symbol
+      - amount
+      - price
+      - side
+      - type
+      properties:
+        request:
+          type: string
+          description: The literal string "/v1/order/new"
+          example: /v1/order/new
+        nonce:
+          type: number
+          description: The nonce, as described in [Private API Invocation](/authentication/api-key#private-api-invocation)
+        client_order_id:
+          type: string
+          description: '*Recommended*. A [client-specified order id](/client-order-id)'
+        symbol:
+          type: string
+          description: The [symbol](/market-data/symbols-and-minimums) for the new order
+          example: BTCUSD
+        amount:
+          type: string
+          description: Quoted decimal amount to purchase
+          example: '5'
+        price:
+          type: string
+          description: Quoted decimal amount to spend per unit
+          example: '3633.00'
+        side:
+          type: string
+          enum:
+          - buy
+          - sell
+          example: buy
+        type:
+          type: string
+          enum:
+          - exchange limit
+          - exchange stop limit
+          - exchange market
+          description: The order type. "exchange limit" for all order types except for stop-limit orders. "exchange stop limit" for stop-limit orders.
+          example: exchange limit
+        options:
+          type: array
+          items:
+            type: string
+            enum:
+            - maker-or-cancel
+            - immediate-or-cancel
+            - fill-or-kill
+          description: An optional array containing at most one supported order execution option. See Order execution options for details.
+          example:
+          - maker-or-cancel
+        stop_price:
+          type: string
+          description: The price to trigger a stop-limit order. Only available for stop-limit orders.
+        margin_order:
+          type: boolean
+          description: Set to `true` to place this order on a margin account using borrowed funds. Defaults to `false`. Only available for margin-enabled accounts. See [Margin Trading](/margin/account-summary) for details.
+          example: false
+        account:
+          type: string
+          description: Required for Master API keys as described in [Private API Invocation](/authentication/api-key#private-api-invocation). The name of the account within the subaccount group. Specifies the account on which you intend to place the order. Only available for exchange accounts.
+    Order:
+      type: object
+      properties:
+        order_id:
+          type: string
+          format: integer
+          description: The order id
+        client_order_id:
+          type: string
+          format: integer
+          description: An optional [client-specified order id](/client-order-id#client-order-id)
+        symbol:
+          type: string
+          description: The [symbol](/market-data/symbols-and-minimums#symbols-and-minimums) of the order
+        exchange:
+          type: string
+          description: Will always be "gemini"
+        price:
+          type: string
+          format: decimal
+          description: The price the order was issued at
+        avg_execution_price:
+          type: string
+          format: decimal
+          description: The average price at which this order as been executed so far. 0 if the order has not been executed at all.
+        side:
+          type: string
+          enum:
+          - buy
+          - sell
+        type:
+          type: string
+          enum:
+          - exchange limit
+          - exchange stop limit
+          - exchange market
+          description: Description of the order
+        options:
+          type: array
+          items:
+            type: string
+          description: An array containing at most one supported order execution option. See [Order execution options](/rest/orders#create-new-order) for details.
+        timestamp:
+          $ref: '#/components/schemas/TimestampType'
+          description: The timestamp the order was submitted. Note that for compatibility reasons, this is returned as a string. We recommend using the timestampms field instead.
+        timestampms:
+          $ref: '#/components/schemas/TimestampType'
+          description: The timestamp the order was submitted in milliseconds.
+        is_live:
+          type: boolean
+          description: '`true` if the order is active on the book (has remaining quantity and has not been canceled)'
+        is_cancelled:
+          type: boolean
+          description: '`true` if the order has been canceled. Note the spelling, "cancelled" instead of "canceled". This is for compatibility reasons.'
+        reason:
+          type: string
+          description: Populated with the reason your order was canceled, if available.
+        was_forced:
+          type: boolean
+          description: Will always be `false`.
+        executed_amount:
+          type: string
+          format: decimal
+          description: The amount of the order that has been filled.
+        remaining_amount:
+          type: string
+          format: decimal
+          description: The amount of the order that has not been filled.
+        original_amount:
+          type: string
+          format: decimal
+          description: The originally submitted amount of the order.
+        is_hidden:
+          type: boolean
+          description: Will always return `false`.
+        trades:
+          type: array
+          items:
+            type: object
+            properties:
+              price:
+                type: string
+                format: decimal
+                description: The price that the execution happened at
+              amount:
+                type: string
+                format: decimal
+                description: The quantity that was executed
+              timestamp:
+                type: TimestampType
+                $ref: '#/components/schemas/TimestampType'
+                description: The time that the trade happened in epoch seconds
+              timestampms:
+                type: TimestampType
+                $ref: '#/components/schemas/TimestampType'
+                description: The time that the trade happened in milliseconds
+              type:
+                type: string
+                enum:
+                - Buy
+                - Sell
+                example: Buy
+                description: Will be either "Buy" or "Sell", indicating the side of the original order
+              aggressor:
+                type: boolean
+                description: If `true`, this order was the taker in the trade
+              fee_currency:
+                type: string
+                example: USD
+                description: Currency that the fee was paid in
+              fee_amount:
+                type: string
+                format: decimal
+                example: '1.23'
+                description: The amount charged
+              tid:
+                type: integer
+                example: 17379712930
+                description: Unique identifier for the trade
+              order_id:
+                type: string
+                example: 123456789
+                description: The order that this trade executed against
+              exchange:
+                type: string
+                example: gemini
+                description: Will always be "gemini"
+              break:
+                type: string
+                description: Will only be present if the trade is broken. See `Break Types` below for more information.
+          description: Contains an array of JSON objects with trade details.
+    Nonce:
+      oneOf:
+      - type: TimestampType
+        $ref: '#/components/schemas/TimestampType'
+        example: 1495127793000
+      - type: integer
+        example: 1495127793000
+      description: The nonce, as described in [Private API Invocation](/authentication/api-key#private-api-invocation)
+    CancelAllOrdersRequest:
+      type: object
+      required:
+      - request
+      - nonce
+      properties:
+        request:
+          type: string
+          description: The literal string "/v1/order/cancel/all"
+          example: /v1/order/cancel/all
+        nonce:
+          type: TimestampType
+          $ref: '#/components/schemas/TimestampType'
+          title: The nonce, as described in [Private API Invocation](/authentication/api-key#private-api-invocation)
+        account:
+          type: string
+          description: Required for Master API keys as described in [Private API Invocation](/authentication/api-key#private-api-invocation). The name of the account within the subaccount group. Specifies the account on which you intend to cancel the orders. Only available for exchange accounts.
+          example: primary
+    CancelOrderResponse:
+      type: object
+      properties:
+        order_id:
+          type: string
+          format: integer
+        id:
+          type: string
+          format: integer
+        symbol:
+          type: string
+        exchange:
+          type: string
+        avg_execution_price:
+          type: string
+          format: double
+        side:
+          type: string
+          enum:
+          - buy
+          - sell
+        type:
+          type: string
+          enum:
+          - exchange limit
+          - exchange stop limit
+          - exchange market
+        timestamp:
+          $ref: '#/components/schemas/TimestampType'
+        timestampms:
+          $ref: '#/components/schemas/TimestampType'
+        is_live:
+          type: boolean
+        is_cancelled:
+          type: boolean
+        is_hidden:
+          type: boolean
+        was_forced:
+          type: boolean
+        executed_amount:
+          type: string
+          format: double
+        remaining_amount:
+          type: string
+          format: double
+        reason:
+          type: string
+          enum:
+          - MakerOrCancelWouldTake
+          - ExceedsPriceLimits
+          - SelfCrossPrevented
+          - ImmediateOrCancelWouldPost
+          - FillOrKillWouldNotFill
+          - Requested
+          - MarketClosed
+          - TradingClosed
+        options:
+          type: array
+          items:
+            type: string
+        price:
+          type: string
+          format: double
+        original_amount:
+          type: string
+          format: double
+    OrderStatusRequest:
+      type: object
+      required:
+      - request
+      - nonce
+      - order_id
+      properties:
+        request:
+          type: string
+          description: The API endpoint path
+          example: /v1/order/status
+        nonce:
+          type: TimestampType
+          $ref: '#/components/schemas/TimestampType'
+          title: The nonce, as described in [Private API Invocation](/authentication/api-key#private-api-invocation)
+        account:
+          type: string
+          description: Required for Master API keys as described in [Private API Invocation](/authentication/api-key#private-api-invocation). The name of the account within the subaccount group. Specifies the account on which you intend to place the order. Only available for exchange accounts.
+          example: primary
+        order_id:
+          type: integer
+          format: int64
+          x-unsigned-int64: true
+          description: The order id to get information on. The `order_id` represents a whole number and is transmitted as an unsigned 64-bit integer in JSON format. `order_id` cannot be used in combination with `client_order_id`.
+          example: 123456789012345
+        client_order_id:
+          type: string
+          description: The `client_order_id` used when placing the order. `client_order_id` cannot be used in combination with `order_id`
+        include_trades:
+          type: boolean
+          description: Either `True` or `False`. If `True` the endpoint will return individual trade details of all fills from the order.
+    CancelAllResult:
+      type: object
+      properties:
+        result:
+          type: string
+          example: ok
+        details:
+          type: object
+          description: cancelledOrders/cancelRejects with IDs of both
+          properties:
+            cancelledOrders:
+              type: array
+              items:
+                type: integer
+            cancelRejects:
+              type: array
+              items:
+                type: integer
+  responses:
+    TooManyRequests:
+      description: Too many requests - you have exceeded the rate limit
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          example:
+            result: error
+            reason: Too Many Requests
+            message: Too Many Requests
+    ApiKeyIpFilteringFailure:
+      description: ApiKey fails IP Filtering Check
+      content:
+        application/json:
+          schema:
+            type: object
+            $ref: '#/components/schemas/ErrorResponse'
+          example:
+            result: error
+            reason: ApiKeyIpFilteringFailure
+            message: ApiKey fails IP Filtering Check for some accounts
+    BadRequest:
+      description: Bad request - malformed request or invalid parameters
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          example:
+            result: error
+            reason: InvalidSignature
+            message: Invalid signature for this request
+    InternalError:
+      description: Internal server error
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          example:
+            result: error
+            reason: Internal Server Error
+            message: Unexpected server error occurred.
+    Unauthorized:
+      description: Unauthorized - missing or invalid authentication
+      content:
+        application/json:
+          schema:
+            type: object
+            $ref: '#/components/schemas/ErrorResponse'
+          example:
+            result: error
+            reason: MissingApikeyHeader
+            message: Must provide 'X-GEMINI-APIKEY' header
+    NotFound:
+      description: Resource not found
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          example:
+            result: error
+            reason: EndpointNotFound
+            message: API entry point not found
+  parameters:
+    symbolParam:
+      name: symbol
+      in: path
+      required: true
+      schema:
+        type: string
+      description: 'Trading pair symbol <br /> <br />
+
+
+        `BTCUSD`, etc. See [<u>**symbols and minimums**</u>](/market-data/symbols-and-minimums#all-supported-symbols).
+
+        '
+    apiKeyAuth:
+      name: X-GEMINI-APIKEY
+      in: header
+      required: true
+      description: Your API key
+      schema:
+        type: string
+    cacheControl:
+      name: Cache-Control
+      in: header
+      required: false
+      schema:
+        type: string
+        default: no-cache
+    contentType:
+      name: Content-Type
+      in: header
+      required: false
+      schema:
+        type: string
+        default: text/plain
+    signatureAuth:
+      name: X-GEMINI-SIGNATURE
+      in: header
+      required: true
+      description: HEX-encoded HMAC-SHA384 of payload signed with API secret
+      schema:
+        type: string
+    contentLength:
+      name: Content-Length
+      in: header
+      required: false
+      schema:
+        type: string
+        default: '0'
+    payloadAuth:
+      name: X-GEMINI-PAYLOAD
+      in: header
+      required: true
+      description: Base64-encoded JSON payload
+      schema:
+        type: string
+  securitySchemes:
+    apiKeyAuth:
+      type: apiKey
+      in: header
+      name: X-GEMINI-APIKEY
+      description: Your API key
+    payloadAuth:
+      type: apiKey
+      in: header
+      name: X-GEMINI-PAYLOAD
+      description: Base64-encoded JSON payload
+    signatureAuth:
+      type: apiKey
+      in: header
+      name: X-GEMINI-SIGNATURE
+      description: HEX-encoded HMAC-SHA384 of payload signed with API secret

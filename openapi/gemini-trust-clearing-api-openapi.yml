@@ -1,0 +1,1290 @@
+openapi: 3.2.0
+info:
+  title: REST Clearing API
+  description: 'The Gemini Crypto Exchange REST API allows programmatic access to trade cryptocurrencies
+
+    and manage your account on the Gemini Exchange platform. The API provides both public and
+
+    private endpoints for market data, order management, and account operations.'
+  version: 1.0.0
+  contact:
+    name: Gemini Trading Support
+    email: trading@gemini.com
+servers:
+- url: https://api.gemini.com
+  description: Production server
+- url: https://api.sandbox.gemini.com
+  description: Sandbox server for testing
+tags:
+- name: Clearing
+paths:
+  /v1/clearing/new:
+    post:
+      x-zudoku-playground-enabled: false
+      tags:
+      - Clearing
+      summary: Create New Clearing Order
+      operationId: createNewClearingOrder
+      description: '### Roles
+
+        The API key you use to access this endpoint must have the Trader role assigned. See Roles for more information.
+
+
+        The OAuth scope must have `clearing:create` assigned to access this endpoint. See OAuth Scopes for more information.'
+      parameters:
+      - $ref: '#/components/parameters/apiKeyAuth'
+      - $ref: '#/components/parameters/signatureAuth'
+      - $ref: '#/components/parameters/payloadAuth'
+      - $ref: '#/components/parameters/contentType'
+      - $ref: '#/components/parameters/contentLength'
+      - $ref: '#/components/parameters/cacheControl'
+      security:
+      - apiKeyAuth: []
+        signatureAuth: []
+        payloadAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+              - request
+              - nonce
+              - symbol
+              - amount
+              - price
+              - side
+              properties:
+                request:
+                  type: string
+                  description: The literal string "/v1/clearing/new"
+                nonce:
+                  $ref: '#/components/schemas/Nonce'
+                symbol:
+                  type: string
+                  description: The trading pair
+                amount:
+                  type: string
+                  description: The amount to trade
+                price:
+                  type: string
+                  description: The price
+                side:
+                  type: string
+                  enum:
+                  - buy
+                  - sell
+                  description: The direction of the trade
+                counterparty_id:
+                  type: string
+                  description: The counterparty ID
+                expires_in_hrs:
+                  type: integer
+                  description: The number of hours until the order expires
+                account:
+                  type: string
+                  description: Required for Master API keys. The name of the account within the subaccount group.
+            examples:
+              newClearingOrder:
+                summary: New Clearing Order
+                description: JSON payload for creating a new clearing order
+                value:
+                  request: /v1/clearing/new
+                  nonce: <nonce>
+                  counterparty_id: OM9VNL1G
+                  expires_in_hrs: 24
+                  symbol: btcusd
+                  amount: '100'
+                  price: '9500.00'
+                  side: buy
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ClearingOrder'
+              example:
+                result: AwaitConfirm
+                clearing_id: 0OQGOZXW
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/ApiKeyIpFilteringFailure'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+        '500':
+          $ref: '#/components/responses/InternalError'
+  /v1/clearing/status:
+    post:
+      x-zudoku-playground-enabled: false
+      tags:
+      - Clearing
+      summary: Get Clearing Order
+      operationId: getClearingOrder
+      description: '### Roles
+
+        The API key you use to access this endpoint must have the Trader role assigned. See Roles for more information.
+
+
+        The OAuth scope must have `clearing:read` assigned to access this endpoint. See OAuth Scopes for more information.'
+      parameters:
+      - $ref: '#/components/parameters/apiKeyAuth'
+      - $ref: '#/components/parameters/signatureAuth'
+      - $ref: '#/components/parameters/payloadAuth'
+      - $ref: '#/components/parameters/contentType'
+      - $ref: '#/components/parameters/contentLength'
+      - $ref: '#/components/parameters/cacheControl'
+      security:
+      - apiKeyAuth: []
+        signatureAuth: []
+        payloadAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+              - request
+              - nonce
+              - clearing_id
+              properties:
+                request:
+                  type: string
+                  description: The literal string "/v1/clearing/status"
+                nonce:
+                  $ref: '#/components/schemas/Nonce'
+                clearing_id:
+                  type: string
+                  description: The clearing ID
+                account:
+                  type: string
+                  description: Required for Master API keys. The name of the account within the subaccount group.
+            examples:
+              orderStatusRequest:
+                summary: Order Status Request
+                description: JSON payload for checking clearing order status
+                value:
+                  request: /v1/clearing/status
+                  nonce: <nonce>
+                  clearing_id: OM9VNL1G
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ClearingOrder'
+              example:
+                result: ok
+                status: Confirmed
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/ApiKeyIpFilteringFailure'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+        '500':
+          $ref: '#/components/responses/InternalError'
+  /v1/clearing/cancel:
+    post:
+      x-zudoku-playground-enabled: false
+      tags:
+      - Clearing
+      summary: Cancel Clearing Order
+      operationId: cancelClearingOrder
+      description: '### Roles
+
+        The API key you use to access this endpoint must have the Trader role assigned. See Roles for more information.
+
+
+        The OAuth scope must have `clearing:create` assigned to access this endpoint. See OAuth Scopes for more information.'
+      parameters:
+      - $ref: '#/components/parameters/apiKeyAuth'
+      - $ref: '#/components/parameters/signatureAuth'
+      - $ref: '#/components/parameters/payloadAuth'
+      - $ref: '#/components/parameters/contentType'
+      - $ref: '#/components/parameters/contentLength'
+      - $ref: '#/components/parameters/cacheControl'
+      security:
+      - apiKeyAuth: []
+        signatureAuth: []
+        payloadAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+              - request
+              - nonce
+              - clearing_id
+              properties:
+                request:
+                  type: string
+                  description: The literal string "/v1/clearing/cancel"
+                nonce:
+                  $ref: '#/components/schemas/Nonce'
+                clearing_id:
+                  type: string
+                  description: The clearing ID
+                account:
+                  type: string
+                  description: Required for Master API keys. The name of the account within the subaccount group.
+            examples:
+              cancelOrderRequest:
+                summary: Cancel Order Request
+                description: JSON payload for canceling a clearing order
+                value:
+                  request: /v1/clearing/cancel
+                  nonce: <nonce>
+                  clearing_id: P0521QDV
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  result:
+                    type: string
+                    description: Status of the cancel operation
+                  details:
+                    type: string
+                    description: Detailed description of the result
+              examples:
+                successfulCancel:
+                  summary: Successful Cancel
+                  description: JSON response for successful order cancellation
+                  value:
+                    result: ok
+                    details: P0521QDV order canceled
+                failedCancel:
+                  summary: Failed Cancel
+                  description: JSON response for failed order cancellation
+                  value:
+                    result: failed
+                    details: Unable to cancel order P0521QDV
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/ApiKeyIpFilteringFailure'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+        '500':
+          $ref: '#/components/responses/InternalError'
+  /v1/clearing/confirm:
+    post:
+      x-zudoku-playground-enabled: false
+      tags:
+      - Clearing
+      summary: Confirm Clearing Order
+      operationId: confirmClearingOrder
+      description: '### Roles
+
+        The API key you use to access this endpoint must have the Trader role assigned. See Roles for more information.
+
+
+        The OAuth scope must have `clearing:create` assigned to access this endpoint. See OAuth Scopes for more information.'
+      parameters:
+      - $ref: '#/components/parameters/apiKeyAuth'
+      - $ref: '#/components/parameters/signatureAuth'
+      - $ref: '#/components/parameters/payloadAuth'
+      - $ref: '#/components/parameters/contentType'
+      - $ref: '#/components/parameters/contentLength'
+      - $ref: '#/components/parameters/cacheControl'
+      security:
+      - apiKeyAuth: []
+        signatureAuth: []
+        payloadAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+              - request
+              - nonce
+              - clearing_id
+              - symbol
+              - amount
+              - price
+              - side
+              properties:
+                request:
+                  type: string
+                  description: The literal string "/v1/clearing/confirm"
+                nonce:
+                  $ref: '#/components/schemas/Nonce'
+                clearing_id:
+                  type: string
+                  description: The clearing ID
+                symbol:
+                  type: string
+                  description: The trading pair
+                amount:
+                  type: string
+                  description: The amount to trade
+                price:
+                  type: string
+                  description: The price
+                side:
+                  type: string
+                  enum:
+                  - buy
+                  - sell
+                  description: The direction of the trade
+                account:
+                  type: string
+                  description: Required for Master API keys. The name of the account within the subaccount group.
+            examples:
+              confirmOrderRequest:
+                summary: Confirm Order Request
+                description: JSON payload for confirming a clearing order
+                value:
+                  request: /v1/clearing/confirm
+                  nonce: <nonce>
+                  clearing_id: OM9VNL1G
+                  symbol: btcusd
+                  amount: '100'
+                  price: '9500.00'
+                  side: sell
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  result:
+                    type: string
+                    description: Status of the confirmation operation
+              examples:
+                successfulConfirm:
+                  summary: Successful Confirmation
+                  description: JSON response for successful order confirmation
+                  value:
+                    result: confirmed
+                failedConfirm:
+                  summary: Failed Confirmation
+                  description: JSON response for failed order confirmation
+                  value:
+                    result: error
+                    reason: InvalidSide
+                    message: 'Invalid side for symbol BTCUSD: ''buy'''
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/ApiKeyIpFilteringFailure'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+        '500':
+          $ref: '#/components/responses/InternalError'
+  /v1/clearing/list:
+    post:
+      x-zudoku-playground-enabled: false
+      tags:
+      - Clearing
+      summary: List Clearing Orders
+      operationId: listClearingOrders
+      description: '### Roles
+
+        The API key you use to access this endpoint must have the Trader role assigned. See Roles for more information.
+
+
+        The OAuth scope must have `clearing:read` assigned to access this endpoint. See OAuth Scopes for more information.'
+      parameters:
+      - $ref: '#/components/parameters/apiKeyAuth'
+      - $ref: '#/components/parameters/signatureAuth'
+      - $ref: '#/components/parameters/payloadAuth'
+      - $ref: '#/components/parameters/contentType'
+      - $ref: '#/components/parameters/contentLength'
+      - $ref: '#/components/parameters/cacheControl'
+      security:
+      - apiKeyAuth: []
+        signatureAuth: []
+        payloadAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+              - request
+              - nonce
+              properties:
+                request:
+                  type: string
+                  description: The literal string "/v1/clearing/list"
+                nonce:
+                  $ref: '#/components/schemas/Nonce'
+                symbol:
+                  type: string
+                  description: Trading pair
+                counterparty:
+                  type: string
+                  description: counterparty_id or counterparty_alias
+                side:
+                  type: string
+                  enum:
+                  - buy
+                  - sell
+                  description: '"buy" or "sell"'
+                expiration_start:
+                  $ref: '#/components/schemas/TimestampType'
+                  description: UTC timestamp. Requires `expiration_end` if set
+                expiration_end:
+                  $ref: '#/components/schemas/TimestampType'
+                  description: UTC timestamp. Requires `expiration_start` if set
+                submission_start:
+                  $ref: '#/components/schemas/TimestampType'
+                  description: UTC timestamp. Requires `submission_end` if set
+                submission_end:
+                  $ref: '#/components/schemas/TimestampType'
+                  description: UTC timestamp. Requires `submission_start` if set
+                funded:
+                  type: boolean
+                  description: Default value false if not set
+                status:
+                  type: string
+                  description: Filter by status
+                timestamp:
+                  $ref: '#/components/schemas/TimestampType'
+                  description: Only return orders after this timestamp
+                limit_orders:
+                  type: integer
+                  description: The maximum number of orders to return
+                account:
+                  type: string
+                  description: Required for Master API keys. The name of the account within the subaccount group.
+            examples:
+              basic:
+                summary: Basic Request
+                description: Basic request to get clearing orders
+                value:
+                  request: /v1/clearing/list
+                  nonce: <nonce>
+              withFilters:
+                summary: With Filters
+                description: Request with multiple filters
+                value:
+                  request: /v1/clearing/list
+                  nonce: <nonce>
+                  symbol: BTCEUR
+                  counterparty: KQ4P3XWE
+                  side: buy
+                  expiration_start: 1642222800000
+                  expiration_end: 1642309200000
+                  submission_start: 1641790800000
+                  submission_end: 1641791100000
+                  funded: false
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  result:
+                    type: string
+                    description: Status of the operation
+                  orders:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        clearing_id:
+                          type: string
+                          description: A unique identifier for the clearing order
+                        order_id:
+                          type: string
+                          description: Only provided if order was submitted with it
+                        counterparty_id:
+                          type: string
+                          description: A symbol that corresponds with a counterparty
+                        counterparty_alias:
+                          type: string
+                          description: Counterparty alias
+                        broker_id:
+                          type: string
+                          description: A symbol that corresponds with a broker id
+                        symbol:
+                          type: string
+                          description: Trading pair
+                        side:
+                          type: string
+                          enum:
+                          - buy
+                          - sell
+                          description: '"buy" or "sell"'
+                        price:
+                          type: number
+                          format: decimal
+                          description: The price the clearing order was executed at
+                        quantity:
+                          type: number
+                          format: decimal
+                          description: The amount that was executed
+                        status:
+                          type: string
+                          description: A description of the status of the order
+                        submission:
+                          $ref: '#/components/schemas/TimestampType'
+                          description: UTC timestamp
+                        expiration:
+                          $ref: '#/components/schemas/TimestampType'
+                          description: UTC timestamp
+              examples:
+                successfulList:
+                  summary: Successful List
+                  description: JSON response with clearing orders
+                  value:
+                    result: success
+                    orders:
+                    - clearing_id: 9LVQE9X5
+                      counterparty_id: YZ43LX81
+                      symbol: BTCEUR
+                      side: sell
+                      price: 2
+                      quantity: 10
+                      status: AwaitTargetConfirm
+                      submission: 1641790800020
+                      expiration: 1641963600000
+                    - clearing_id: 2MYR07XP
+                      order_id: trade1SrcOrderId
+                      counterparty_id: KQ4P3XWE
+                      broker_id: WV4V1DGN
+                      symbol: BTCEUR
+                      side: buy
+                      price: 1
+                      quantity: 50
+                      status: AwaitSourceConfirm
+                      submission: 1641790800016
+                      expiration: 1642222800000
+                    - clearing_id: EM8WO7LQ
+                      order_id: trade4SrcOrderId
+                      broker_id: WV4V1DGN
+                      symbol: BTCEUR
+                      side: buy
+                      price: 4
+                      quantity: 8
+                      status: AwaitSourceTargetConfirm
+                      submission: 1641790800028
+                      expiration: 1642136400000
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/ApiKeyIpFilteringFailure'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+        '500':
+          $ref: '#/components/responses/InternalError'
+  /v1/clearing/broker/list:
+    post:
+      x-zudoku-playground-enabled: false
+      tags:
+      - Clearing
+      summary: List Clearing Brokers
+      operationId: listClearingBrokers
+      description: '### Roles
+
+        The API key you use to access this endpoint must have the Trader role assigned. See Roles for more information.
+
+
+        The OAuth scope must have `clearing:read` assigned to access this endpoint. See OAuth Scopes for more information.'
+      parameters:
+      - $ref: '#/components/parameters/apiKeyAuth'
+      - $ref: '#/components/parameters/signatureAuth'
+      - $ref: '#/components/parameters/payloadAuth'
+      - $ref: '#/components/parameters/contentType'
+      - $ref: '#/components/parameters/contentLength'
+      - $ref: '#/components/parameters/cacheControl'
+      security:
+      - apiKeyAuth: []
+        signatureAuth: []
+        payloadAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+              - request
+              - nonce
+              properties:
+                request:
+                  type: string
+                  description: The literal string "/v1/clearing/broker/list"
+                nonce:
+                  $ref: '#/components/schemas/Nonce'
+                symbol:
+                  type: string
+                  description: Trading pair
+                expiration_start:
+                  $ref: '#/components/schemas/TimestampType'
+                  description: UTC timestamp. Requires `expiration_end` if set
+                expiration_end:
+                  $ref: '#/components/schemas/TimestampType'
+                  description: UTC timestamp. Requires `expiration_start` if set
+                submission_start:
+                  $ref: '#/components/schemas/TimestampType'
+                  description: UTC timestamp. Requires `submission_end` if set
+                submission_end:
+                  $ref: '#/components/schemas/TimestampType'
+                  description: UTC timestamp. Requires `submission_start` if set
+                funded:
+                  type: boolean
+                  description: Default value false if not set
+                status:
+                  type: string
+                  description: Filter by status
+                timestamp:
+                  $ref: '#/components/schemas/TimestampType'
+                  description: Only return orders after this timestamp
+                limit_orders:
+                  type: integer
+                  description: The maximum number of orders to return
+                account:
+                  type: string
+                  description: Required for Master API keys. The name of the account within the subaccount group.
+            examples:
+              basic:
+                summary: Basic Request
+                description: Basic request to get broker clearing orders
+                value:
+                  request: /v1/clearing/broker/list
+                  nonce: <nonce>
+              withFilters:
+                summary: With Filters
+                description: Request with multiple filters
+                value:
+                  request: /v1/clearing/broker/list
+                  nonce: <nonce>
+                  symbol: BTCEUR
+                  expiration_start: 1642222800000
+                  expiration_end: 1642309200000
+                  submission_start: 1641790800000
+                  submission_end: 1641791100000
+                  funded: false
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  result:
+                    type: string
+                    description: Status of the operation
+                  orders:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        clearing_id:
+                          type: string
+                          description: A unique identifier for the clearing order
+                        source_counterparty_id:
+                          type: string
+                          description: Source counterparty id
+                        source_order_id:
+                          type: string
+                          description: Only provided if order was submitted with it
+                        target_counterparty_id:
+                          type: string
+                          description: Only provided if target counterparty was already set
+                        target_order_id:
+                          type: string
+                          description: Only provided if target counterparty set this field
+                        symbol:
+                          type: string
+                          description: Trading pair
+                        source_side:
+                          type: string
+                          enum:
+                          - buy
+                          - sell
+                          description: '"buy" or "sell"'
+                        price:
+                          type: number
+                          format: decimal
+                          description: The price the clearing order was executed at
+                        quantity:
+                          type: number
+                          format: decimal
+                          description: The amount that was executed
+                        status:
+                          type: string
+                          description: A description of the status of the order
+                        submission:
+                          type: integer
+                          description: UTC timestamp
+                        expiration:
+                          type: integer
+                          description: UTC timestamp
+              examples:
+                successfulList:
+                  summary: Successful List
+                  description: JSON response with broker clearing orders
+                  value:
+                    result: success
+                    orders:
+                    - clearing_id: 9LVQ98X5
+                      source_counterparty_id: R54L3DG1
+                      source_order_id: trade1SrcOrderId
+                      target_counterparty_id: KQ4P3XWE
+                      target_order_id: trade1TgtOrderId
+                      symbol: BTCEUR
+                      source_side: buy
+                      price: 1
+                      quantity: 50
+                      status: AwaitSourceConfirm
+                      submission: 1641790800016
+                      expiration: 1642222800000
+                    - clearing_id: VXQ341X4
+                      source_counterparty_id: R54L3DG1
+                      source_order_id: trade4SrcOrderId
+                      symbol: BTCEUR
+                      source_side: buy
+                      price: 4
+                      quantity: 8
+                      status: AwaitSourceTargetConfirm
+                      submission: 1641790800028
+                      expiration: 1642136400000
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/ApiKeyIpFilteringFailure'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+        '500':
+          $ref: '#/components/responses/InternalError'
+  /v1/clearing/broker/new:
+    post:
+      x-zudoku-playground-enabled: false
+      tags:
+      - Clearing
+      summary: Create New Broker Order
+      operationId: createNewBrokerOrder
+      description: Gemini Clearing also allows for brokers to facilitate trades between two Gemini customers. A broker can submit a new Gemini Clearing order that must then be confirmed by each counterparty before settlement.
+      parameters:
+      - $ref: '#/components/parameters/apiKeyAuth'
+      - $ref: '#/components/parameters/signatureAuth'
+      - $ref: '#/components/parameters/payloadAuth'
+      - $ref: '#/components/parameters/contentType'
+      - $ref: '#/components/parameters/contentLength'
+      - $ref: '#/components/parameters/cacheControl'
+      security:
+      - apiKeyAuth: []
+        signatureAuth: []
+        payloadAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+              - request
+              - nonce
+              - source_counterparty_id
+              - target_counterparty_id
+              - symbol
+              - amount
+              - expires_in_hrs
+              - price
+              - side
+              properties:
+                request:
+                  type: string
+                  description: The literal string "/v1/clearing/broker/new"
+                nonce:
+                  $ref: '#/components/schemas/Nonce'
+                source_counterparty_id:
+                  type: string
+                  description: A symbol that corresponds with the counterparty sourcing the clearing trade
+                target_counterparty_id:
+                  type: string
+                  description: A symbol that corresponds with the counterparty where the clearing trade is targeted
+                symbol:
+                  type: string
+                  description: The [symbol](/market-data/symbols-and-minimums) of the order
+                amount:
+                  type: string
+                  format: decimal
+                  description: Quoted decimal amount to purchase
+                expires_in_hrs:
+                  type: integer
+                  format: float
+                  description: The number of hours before the trade expires. Your counterparty will need to confirm the order before this time expires.
+                price:
+                  type: string
+                  format: decimal
+                  description: Quoted decimal amount to spend per unit
+                side:
+                  type: string
+                  enum:
+                  - buy
+                  - sell
+                  description: '"buy" or "sell". This side will be assigned to the `source_counterparty_id`. The opposite side will be sent to the `target_counterparty_id`
+
+                    '
+                account:
+                  type: string
+                  description: Required for Master API keys as described in [Private API Invocation](/authentication/api-key#private-api-invocation). The name of the account within the subaccount group. Specifies the broker account on which to place the order. Only available for exchange accounts.
+            examples:
+              brokerOrderInitiation:
+                summary: Broker order initiation sample
+                description: Sample payload for broker order initiation
+                value:
+                  request: /v1/clearing/broker/new
+                  nonce: <nonce>
+                  source_counterparty_id: R485E04Q
+                  target_counterparty_id: Z4929ZDY
+                  symbol: ethusd
+                  amount: '175.00'
+                  expires_in_hrs: 1.0
+                  price: '200'
+                  side: sell
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  result:
+                    type: string
+                    description: Will return `AwaitSourceTargetConfirm`, meaning the order is waiting for both the source and the target parties to confirm the order
+                  clearing_id:
+                    type: string
+                    description: A unique identifier for the clearing order.
+              example:
+                result: AwaitSourceTargetConfirm
+                clearing_id: 8EM7NVXD
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/ApiKeyIpFilteringFailure'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+        '500':
+          $ref: '#/components/responses/InternalError'
+  /v1/clearing/trades:
+    post:
+      x-zudoku-playground-enabled: false
+      tags:
+      - Clearing
+      summary: List Clearing Trades
+      operationId: listClearingTrades
+      description: '### Roles
+
+        The API key you use to access this endpoint must have the Trader role assigned. See Roles for more information.
+
+
+        The OAuth scope must have `clearing:read` assigned to access this endpoint. See OAuth Scopes for more information.'
+      parameters:
+      - $ref: '#/components/parameters/apiKeyAuth'
+      - $ref: '#/components/parameters/signatureAuth'
+      - $ref: '#/components/parameters/payloadAuth'
+      - $ref: '#/components/parameters/contentType'
+      - $ref: '#/components/parameters/contentLength'
+      - $ref: '#/components/parameters/cacheControl'
+      security:
+      - apiKeyAuth: []
+        signatureAuth: []
+        payloadAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+              - request
+              - nonce
+              properties:
+                request:
+                  type: string
+                  description: The literal string "/v1/clearing/trades"
+                nonce:
+                  $ref: '#/components/schemas/Nonce'
+                timestamp_nanos:
+                  type: integer
+                  description: Only return transfers on or after this timestamp in nanos
+                limit_per_account:
+                  type: integer
+                  description: The maximum number of clearing trades to return. The default is 100 and the maximum is 300.
+                account:
+                  type: string
+                  description: Only required when using a master api-key. The name of the account within the subaccount group.
+                symbol:
+                  type: string
+                  description: The trading pair
+                timestamp:
+                  $ref: '#/components/schemas/TimestampType'
+                  description: Only return trades after this timestamp
+                limit_trades:
+                  type: integer
+                  description: The maximum number of trades to return
+            examples:
+              basic:
+                summary: Basic Request
+                description: Basic request to get clearing trades
+                value:
+                  request: /v1/clearing/trades
+                  nonce: <nonce>
+              withTimestamp:
+                summary: With Timestamp
+                description: Request with timestamp filter
+                value:
+                  request: /v1/clearing/trades
+                  nonce: <nonce>
+                  timestamp_nanos: 1630382206000000000
+                  limit_per_account: 50
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  results:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        sourceAccount:
+                          type: string
+                          description: A account that corresponds with the counterparty sourcing the clearing trade
+                        targetAccount:
+                          type: string
+                          description: A account that corresponds with the counterparty where the clearing trade is targeted
+                        pair:
+                          type: string
+                          description: The trading pair of the clearing trade
+                        sourceSide:
+                          type: string
+                          enum:
+                          - buy
+                          - sell
+                          description: '"buy" or "sell"'
+                        price:
+                          type: string
+                          description: The price the clearing order was executed at
+                        quantity:
+                          type: string
+                          description: The amount that was executed
+                        clearingId:
+                          type: string
+                          description: The clearing ID
+                        status:
+                          type: string
+                          description: A description of the status of the order
+                        expirationTimeMs:
+                          $ref: '#/components/schemas/TimestampType'
+                          description: The time that the clearing trade expires
+                        createdMs:
+                          $ref: '#/components/schemas/TimestampType'
+                          description: The time that the clearing trade was created
+                        lastUpdatedMs:
+                          $ref: '#/components/schemas/TimestampType'
+                          description: The last time the clearing trade was updated
+                        hasBroker:
+                          type: boolean
+                          description: Broker trade
+                        wasNotified:
+                          type: boolean
+                          description: Broker was notified
+              examples:
+                successfulTrades:
+                  summary: Successful Trades
+                  description: JSON response with clearing trades
+                  value:
+                    results:
+                    - sourceAccount: primary
+                      targetAccount: primary
+                      pair: BTCUSD
+                      sourceSide: buy
+                      price: '1'
+                      quantity: '1000'
+                      clearingId: 41M23L5Q
+                      status: Settled
+                      expirationTimeMs: 1662567706120
+                      createdMs: 1662481306139
+                      lastUpdatedMs: 1662481561668
+                      hasBroker: false
+                      wasNotified: false
+                    - sourceAccount: primary
+                      targetAccount: primary
+                      pair: BTCUSD
+                      sourceSide: buy
+                      price: '12'
+                      quantity: '1000'
+                      clearingId: 0EMOYLJ5
+                      status: AwaitTargetConfirm
+                      expirationTimeMs: 1662567728123
+                      createdMs: 1662481328126
+                      lastUpdatedMs: 1662481561415
+                      hasBroker: false
+                      wasNotified: true
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/ApiKeyIpFilteringFailure'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+        '500':
+          $ref: '#/components/responses/InternalError'
+components:
+  schemas:
+    ErrorResponse:
+      type: object
+      properties:
+        result:
+          type: string
+          description: Error
+        reason:
+          type: string
+          description: A short description
+        message:
+          type: string
+          description: Detailed error message
+    Nonce:
+      oneOf:
+      - type: TimestampType
+        $ref: '#/components/schemas/TimestampType'
+        example: 1495127793000
+      - type: integer
+        example: 1495127793000
+      description: The nonce, as described in [Private API Invocation](/authentication/api-key#private-api-invocation)
+    ClearingOrder:
+      type: object
+      properties:
+        clearing_id:
+          type: string
+          description: The clearing ID
+        symbol:
+          type: string
+          description: The trading pair
+        price:
+          type: string
+          description: The order price
+        amount:
+          type: string
+          description: The order amount
+        side:
+          type: string
+          enum:
+          - buy
+          - sell
+        status:
+          type: string
+          description: The order status
+        timestamp:
+          $ref: '#/components/schemas/TimestampType'
+          description: The timestamp
+        timestampms:
+          type: integer
+          description: The timestamp in milliseconds
+        is_confirmed:
+          type: boolean
+          description: Whether the order is confirmed
+    TimestampType:
+      description: timestamp
+      oneOf:
+      - type: string
+        description: 'Gemini strongly recommends using milliseconds instead of seconds for timestamps.
+
+
+          | Timestamp format      | Example               | Supported request type |
+
+          |-----------------------|-----------------------|------------------------|
+
+          | string (seconds)      | `1495127793`          | `POST` only            |
+
+          | string (milliseconds) | `1495127793000`       | `POST` only            |
+
+          '
+        example: '1495127793000'
+      - type: integer
+        format: int64
+        description: 'Gemini strongly recommends using milliseconds instead of seconds for timestamps.
+
+
+          | Timestamp format            | Example                   | Supported request type |
+
+          |-----------------------------|---------------------------|------------------------|
+
+          | whole number (seconds)      | `1495127793`              | `GET`, `POST`          |
+
+          | whole number (milliseconds) | `1495127793000`           | `GET`, `POST`          |
+
+          '
+        example: 1495127793000
+  responses:
+    BadRequest:
+      description: Bad request - malformed request or invalid parameters
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          example:
+            result: error
+            reason: InvalidSignature
+            message: Invalid signature for this request
+    Unauthorized:
+      description: Unauthorized - missing or invalid authentication
+      content:
+        application/json:
+          schema:
+            type: object
+            $ref: '#/components/schemas/ErrorResponse'
+          example:
+            result: error
+            reason: MissingApikeyHeader
+            message: Must provide 'X-GEMINI-APIKEY' header
+    ApiKeyIpFilteringFailure:
+      description: ApiKey fails IP Filtering Check
+      content:
+        application/json:
+          schema:
+            type: object
+            $ref: '#/components/schemas/ErrorResponse'
+          example:
+            result: error
+            reason: ApiKeyIpFilteringFailure
+            message: ApiKey fails IP Filtering Check for some accounts
+    InternalError:
+      description: Internal server error
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          example:
+            result: error
+            reason: Internal Server Error
+            message: Unexpected server error occurred.
+    TooManyRequests:
+      description: Too many requests - you have exceeded the rate limit
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          example:
+            result: error
+            reason: Too Many Requests
+            message: Too Many Requests
+    NotFound:
+      description: Resource not found
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          example:
+            result: error
+            reason: EndpointNotFound
+            message: API entry point not found
+  parameters:
+    signatureAuth:
+      name: X-GEMINI-SIGNATURE
+      in: header
+      required: true
+      description: HEX-encoded HMAC-SHA384 of payload signed with API secret
+      schema:
+        type: string
+    contentLength:
+      name: Content-Length
+      in: header
+      required: false
+      schema:
+        type: string
+        default: '0'
+    payloadAuth:
+      name: X-GEMINI-PAYLOAD
+      in: header
+      required: true
+      description: Base64-encoded JSON payload
+      schema:
+        type: string
+    apiKeyAuth:
+      name: X-GEMINI-APIKEY
+      in: header
+      required: true
+      description: Your API key
+      schema:
+        type: string
+    cacheControl:
+      name: Cache-Control
+      in: header
+      required: false
+      schema:
+        type: string
+        default: no-cache
+    contentType:
+      name: Content-Type
+      in: header
+      required: false
+      schema:
+        type: string
+        default: text/plain
+  securitySchemes:
+    apiKeyAuth:
+      type: apiKey
+      in: header
+      name: X-GEMINI-APIKEY
+      description: Your API key
+    payloadAuth:
+      type: apiKey
+      in: header
+      name: X-GEMINI-PAYLOAD
+      description: Base64-encoded JSON payload
+    signatureAuth:
+      type: apiKey
+      in: header
+      name: X-GEMINI-SIGNATURE
+      description: HEX-encoded HMAC-SHA384 of payload signed with API secret

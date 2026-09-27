@@ -1,0 +1,62 @@
+{
+  "provider": "gemini-trust",
+  "sources": [
+    "_original/gemini-trust-prediction-markets-openapi.yml",
+    "gemini-trust-prediction-markets-openapi.yml",
+    "gemini-trust-rest-openapi.yml"
+  ],
+  "outputs": [
+    "gemini-trust-combos-api-openapi.yml",
+    "gemini-trust-markets-api-openapi.yml",
+    "gemini-trust-positions-api-openapi.yml",
+    "gemini-trust-rewards-api-openapi.yml",
+    "gemini-trust-terms-api-openapi.yml",
+    "gemini-trust-trading-api-openapi.yml",
+    "gemini-trust-volume-api-openapi.yml",
+    "gemini-trust-account-administration-api-openapi.yml",
+    "gemini-trust-clearing-api-openapi.yml",
+    "gemini-trust-derivatives-api-openapi.yml",
+    "gemini-trust-fund-management-api-openapi.yml",
+    "gemini-trust-instant-api-openapi.yml",
+    "gemini-trust-margin-trading-api-openapi.yml",
+    "gemini-trust-market-data-api-openapi.yml",
+    "gemini-trust-oauth-api-openapi.yml",
+    "gemini-trust-orders-api-openapi.yml",
+    "gemini-trust-session-api-openapi.yml",
+    "gemini-trust-staking-api-openapi.yml"
+  ],
+  "archived": [
+    "archived openapi/gemini-trust-prediction-markets-openapi.yml",
+    "archived openapi/gemini-trust-rest-openapi.yml"
+  ],
+  "errors": [],
+  "warnings": [],
+  "notes": [
+    "sourced from openapi/_original/ (1 archived document(s)); previously refined output at the top level was skipped rather than re-split",
+    "gemini-trust-prediction-markets-openapi.yml: upgraded openapi 3.0.3 -> OpenAPI 3.2.0",
+    "gemini-trust-prediction-markets-openapi.yml: upgraded openapi 3.0.3 -> OpenAPI 3.2.0",
+    "gemini-trust-rest-openapi.yml: upgraded openapi 3.0.3 -> OpenAPI 3.2.0",
+    "gemini-trust-rest-openapi.yml: declared missing tag: Account Administration",
+    "gemini-trust-rest-openapi.yml: declared missing tag: Clearing",
+    "gemini-trust-rest-openapi.yml: declared missing tag: Derivatives",
+    "gemini-trust-rest-openapi.yml: declared missing tag: Fund Management",
+    "gemini-trust-rest-openapi.yml: declared missing tag: Instant",
+    "gemini-trust-rest-openapi.yml: declared missing tag: Margin Trading",
+    "gemini-trust-rest-openapi.yml: declared missing tag: Market Data",
+    "gemini-trust-rest-openapi.yml: declared missing tag: OAuth",
+    "gemini-trust-rest-openapi.yml: declared missing tag: Orders",
+    "gemini-trust-rest-openapi.yml: declared missing tag: Session",
+    "gemini-trust-rest-openapi.yml: declared missing tag: Staking",
+    "tag 'Combos' spans 2 source specs (gemini-trust-prediction-markets-openapi.yml, gemini-trust-prediction-markets-openapi.yml): per-path servers applied",
+    "tag 'Markets' spans 2 source specs (gemini-trust-prediction-markets-openapi.yml, gemini-trust-prediction-markets-openapi.yml): per-path servers applied",
+    "tag 'Positions' spans 2 source specs (gemini-trust-prediction-markets-openapi.yml, gemini-trust-prediction-markets-openapi.yml): per-path servers applied",
+    "tag 'Rewards' spans 2 source specs (gemini-trust-prediction-markets-openapi.yml, gemini-trust-prediction-markets-openapi.yml): per-path servers applied",
+    "tag 'Terms' spans 2 source specs (gemini-trust-prediction-markets-openapi.yml, gemini-trust-prediction-markets-openapi.yml): per-path servers applied",
+    "tag 'Trading' spans 2 source specs (gemini-trust-prediction-markets-openapi.yml, gemini-trust-prediction-markets-openapi.yml): per-path servers applied",
+    "tag 'Volume' spans 2 source specs (gemini-trust-prediction-markets-openapi.yml, gemini-trust-prediction-markets-openapi.yml): per-path servers applied",
+    "apis.yml register: written (+18 apis, 20 total)"
+  ],
+  "skipped": [
+    "gemini-trust-rest-openapi.yml: parse error ScannerError: while scanning for the next token"
+  ]
+}

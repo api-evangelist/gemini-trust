@@ -1,0 +1,818 @@
+openapi: 3.2.0
+info:
+  title: REST Margin Trading API
+  description: 'The Gemini Crypto Exchange REST API allows programmatic access to trade cryptocurrencies
+
+    and manage your account on the Gemini Exchange platform. The API provides both public and
+
+    private endpoints for market data, order management, and account operations.'
+  version: 1.0.0
+  contact:
+    name: Gemini Trading Support
+    email: trading@gemini.com
+servers:
+- url: https://api.gemini.com
+  description: Production server
+- url: https://api.sandbox.gemini.com
+  description: Sandbox server for testing
+tags:
+- name: Margin Trading
+paths:
+  /v1/margin/account:
+    post:
+      x-zudoku-playground-enabled: false
+      tags:
+      - Margin Trading
+      summary: Get Margin Account Summary
+      operationId: getMarginAccount
+      description: 'Retrieves comprehensive margin account information including collateral, leverage, buying/selling power, and liquidation risk.
+
+
+        This endpoint provides real-time margin statistics for spot margin trading accounts, helping you monitor your account health and manage risk.
+
+        Buying power and selling power are calculated for the requested trading pair and reflect the account''s current collateral, positions, orders, and margin settings. All monetary risk values in the response are denominated in USD.
+
+
+        ### Roles
+
+        The API key you use to access this endpoint must have the Trader, Fund Manager or Auditor role assigned. See Roles for more information.
+
+
+        The OAuth scope must have `balances:read` assigned to access this endpoint. See OAuth Scopes for more information.
+
+
+        ### Account Type
+
+        This endpoint is only available for margin trading accounts. Standard exchange accounts will receive an error.'
+      parameters:
+      - $ref: '#/components/parameters/apiKeyAuth'
+      - $ref: '#/components/parameters/signatureAuth'
+      - $ref: '#/components/parameters/payloadAuth'
+      - $ref: '#/components/parameters/contentType'
+      - $ref: '#/components/parameters/contentLength'
+      - $ref: '#/components/parameters/cacheControl'
+      security:
+      - apiKeyAuth: []
+        signatureAuth: []
+        payloadAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+              - request
+              - nonce
+              - symbol
+              properties:
+                request:
+                  type: string
+                  description: The literal string "/v1/margin/account"
+                nonce:
+                  $ref: '#/components/schemas/Nonce'
+                symbol:
+                  type: string
+                  description: The trading pair for which to calculate pair-specific buying and selling power (for example, "btcusd").
+                  example: btcusd
+                account:
+                  type: string
+                  description: Required for Master API keys as described in [Private API Invocation](/authentication/api-key#private-api-invocation). The name of the account within the subaccount group.
+            example:
+              request: /v1/margin/account
+              nonce: <nonce>
+              symbol: btcusd
+      responses:
+        '200':
+          description: Margin account summary with risk statistics
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MarginAccountSummary'
+              example:
+                marginAssetValue:
+                  currency: USD
+                  value: '10000.00'
+                availableCollateral:
+                  currency: USD
+                  value: '8500.00'
+                notionalValue:
+                  currency: USD
+                  value: '15000.00'
+                totalBorrowed:
+                  currency: USD
+                  value: '5000.00'
+                leverage: '1.5'
+                buyingPower:
+                  currency: USD
+                  value: '8500.00'
+                sellingPower:
+                  currency: USD
+                  value: '8500.00'
+                liquidationRisk:
+                  lossPercentage: '0.1550'
+                  liquidationPrice:
+                    currency: USD
+                    value: '50000.00'
+                interestRate:
+                  rate: '0.00001141552511'
+                  interval: hour
+                reservedBuyOrders:
+                  currency: USD
+                  value: '1000.00'
+                reservedSellOrders:
+                  currency: USD
+                  value: '500.00'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/ApiKeyIpFilteringFailure'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+        '500':
+          $ref: '#/components/responses/InternalError'
+  /v1/margin/rates:
+    post:
+      x-zudoku-playground-enabled: false
+      tags:
+      - Margin Trading
+      summary: Get Margin Interest Rates
+      operationId: getMarginRates
+      description: 'Retrieves current margin interest rates for all borrowable assets.
+
+
+        Returns hourly, daily, and annual borrow rates for each currency that can be borrowed on margin. Interest is charged on borrowed amounts at the hourly rate and compounds over time.
+
+
+        ### Roles
+
+        The API key you use to access this endpoint must have the Trader, Fund Manager or Auditor role assigned. See Roles for more information.
+
+
+        The OAuth scope must have `balances:read` assigned to access this endpoint. See OAuth Scopes for more information.
+
+
+        ### Account Type
+
+        This endpoint is only available for margin trading accounts.'
+      parameters:
+      - $ref: '#/components/parameters/apiKeyAuth'
+      - $ref: '#/components/parameters/signatureAuth'
+      - $ref: '#/components/parameters/payloadAuth'
+      - $ref: '#/components/parameters/contentType'
+      - $ref: '#/components/parameters/contentLength'
+      - $ref: '#/components/parameters/cacheControl'
+      security:
+      - apiKeyAuth: []
+        signatureAuth: []
+        payloadAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+              - request
+              - nonce
+              properties:
+                request:
+                  type: string
+                  description: The literal string "/v1/margin/rates"
+                nonce:
+                  $ref: '#/components/schemas/Nonce'
+                account:
+                  type: string
+                  description: Required for Master API keys as described in [Private API Invocation](/authentication/api-key#private-api-invocation). The name of the account within the subaccount group.
+            example:
+              request: /v1/margin/rates
+              nonce: <nonce>
+      responses:
+        '200':
+          description: Current margin interest rates for all borrowable assets
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MarginRatesResponse'
+              example:
+                rates:
+                - currency: BTC
+                  borrowRate: '0.00001141552511'
+                  borrowRateDaily: '0.00027397260264'
+                  borrowRateAnnual: '0.1'
+                  lastUpdated: 1700000000000
+                - currency: ETH
+                  borrowRate: '0.00001141552511'
+                  borrowRateDaily: '0.00027397260264'
+                  borrowRateAnnual: '0.1'
+                  lastUpdated: 1700000000000
+                - currency: USD
+                  borrowRate: '0.00000913242009'
+                  borrowRateDaily: '0.00021917808216'
+                  borrowRateAnnual: '0.08'
+                  lastUpdated: 1700000000000
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/ApiKeyIpFilteringFailure'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+        '500':
+          $ref: '#/components/responses/InternalError'
+  /v1/margin/order/preview:
+    post:
+      x-zudoku-playground-enabled: false
+      tags:
+      - Margin Trading
+      summary: Preview Margin Order Impact
+      operationId: previewMarginOrder
+      description: 'Previews the margin impact of a hypothetical spot order without actually placing it.
+
+
+        Returns both pre-order and post-order margin risk statistics, allowing you to understand how an order would affect your margin account before execution. This is useful for risk management and planning trades.
+
+
+        ### Roles
+
+        The API key you use to access this endpoint must have the Trader or Auditor role assigned. See Roles for more information.
+
+
+        The OAuth scope must have `orders:read` assigned to access this endpoint. See OAuth Scopes for more information.
+
+
+        ### Account Type
+
+        This endpoint is only available for margin trading accounts.'
+      parameters:
+      - $ref: '#/components/parameters/apiKeyAuth'
+      - $ref: '#/components/parameters/signatureAuth'
+      - $ref: '#/components/parameters/payloadAuth'
+      - $ref: '#/components/parameters/contentType'
+      - $ref: '#/components/parameters/contentLength'
+      - $ref: '#/components/parameters/cacheControl'
+      security:
+      - apiKeyAuth: []
+        signatureAuth: []
+        payloadAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+              - request
+              - nonce
+              - symbol
+              - side
+              - type
+              properties:
+                request:
+                  type: string
+                  description: The literal string "/v1/margin/order/preview"
+                nonce:
+                  $ref: '#/components/schemas/Nonce'
+                symbol:
+                  type: string
+                  description: The trading pair symbol (e.g., "btcusd")
+                  example: btcusd
+                side:
+                  type: string
+                  enum:
+                  - buy
+                  - sell
+                  description: The order side
+                  example: buy
+                type:
+                  type: string
+                  enum:
+                  - market
+                  - limit
+                  description: The order type
+                  example: limit
+                amount:
+                  type: string
+                  format: decimal
+                  description: The order amount in base currency (required for limit orders and sell market orders)
+                  example: '0.5'
+                price:
+                  type: string
+                  format: decimal
+                  description: The limit price (required for limit orders)
+                  example: '50000.00'
+                totalSpend:
+                  type: string
+                  format: decimal
+                  description: Total spend in quote currency (required for buy market orders)
+                  example: '25000.00'
+                account:
+                  type: string
+                  description: Required for Master API keys as described in [Private API Invocation](/authentication/api-key#private-api-invocation). The name of the account within the subaccount group.
+            examples:
+              limitBuy:
+                summary: Limit Buy Order Preview
+                description: Preview a limit buy order
+                value:
+                  request: /v1/margin/order/preview
+                  nonce: <nonce>
+                  symbol: btcusd
+                  side: buy
+                  type: limit
+                  amount: '0.5'
+                  price: '50000.00'
+              marketBuy:
+                summary: Market Buy Order Preview
+                description: Preview a market buy order using total spend
+                value:
+                  request: /v1/margin/order/preview
+                  nonce: <nonce>
+                  symbol: ethusd
+                  side: buy
+                  type: market
+                  totalSpend: '5000.00'
+              marketSell:
+                summary: Market Sell Order Preview
+                description: Preview a market sell order
+                value:
+                  request: /v1/margin/order/preview
+                  nonce: <nonce>
+                  symbol: btcusd
+                  side: sell
+                  type: market
+                  amount: '0.25'
+      responses:
+        '200':
+          description: Pre-order and post-order margin risk statistics
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MarginOrderPreview'
+              example:
+                preorder:
+                  marginAssetValue:
+                    currency: USD
+                    value: '10000.00'
+                  availableCollateral:
+                    currency: USD
+                    value: '8500.00'
+                  notionalValue:
+                    currency: USD
+                    value: '15000.00'
+                  totalBorrowed:
+                    currency: USD
+                    value: '5000.00'
+                  leverage: '1.5'
+                  reservedBuyOrders:
+                    currency: USD
+                    value: '0.00'
+                  reservedSellOrders:
+                    currency: USD
+                    value: '0.00'
+                  buyingPower:
+                    currency: USD
+                    value: '8500.00'
+                  sellingPower:
+                    currency: USD
+                    value: '8500.00'
+                postorder:
+                  marginAssetValue:
+                    currency: USD
+                    value: '10000.00'
+                  availableCollateral:
+                    currency: USD
+                    value: '6000.00'
+                  notionalValue:
+                    currency: USD
+                    value: '40000.00'
+                  totalBorrowed:
+                    currency: USD
+                    value: '30000.00'
+                  leverage: '4.0'
+                  reservedBuyOrders:
+                    currency: USD
+                    value: '0.00'
+                  reservedSellOrders:
+                    currency: USD
+                    value: '0.00'
+                  buyingPower:
+                    currency: USD
+                    value: '6000.00'
+                  sellingPower:
+                    currency: USD
+                    value: '6000.00'
+                  liquidationRisk:
+                    lossPercentage: '0.6000'
+                    liquidationPrice:
+                      currency: USD
+                      value: '30000.00'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/ApiKeyIpFilteringFailure'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+        '500':
+          $ref: '#/components/responses/InternalError'
+components:
+  schemas:
+    MarginRiskStats:
+      type: object
+      properties:
+        marginAssetValue:
+          allOf:
+          - $ref: '#/components/schemas/MoneyAmount'
+          description: The total value of all assets available in the margin account
+        availableCollateral:
+          allOf:
+          - $ref: '#/components/schemas/MoneyAmount'
+          description: The amount of collateral available for new positions
+        notionalValue:
+          allOf:
+          - $ref: '#/components/schemas/MoneyAmount'
+          description: The total value of all open positions
+        totalBorrowed:
+          allOf:
+          - $ref: '#/components/schemas/MoneyAmount'
+          description: The total amount currently borrowed
+        leverage:
+          type: string
+          format: decimal
+          description: The leverage ratio
+          example: '1.5'
+        reservedBuyOrders:
+          allOf:
+          - $ref: '#/components/schemas/MoneyAmount'
+          description: Collateral reserved for open buy orders
+        reservedSellOrders:
+          allOf:
+          - $ref: '#/components/schemas/MoneyAmount'
+          description: Collateral reserved for open sell orders
+        buyingPower:
+          allOf:
+          - $ref: '#/components/schemas/MoneyAmount'
+          description: The maximum value that can be purchased
+        sellingPower:
+          allOf:
+          - $ref: '#/components/schemas/MoneyAmount'
+          description: The maximum value that can be sold
+        liquidationRisk:
+          allOf:
+          - $ref: '#/components/schemas/LiquidationRisk'
+          description: Liquidation risk information (only present if applicable)
+      required:
+      - marginAssetValue
+      - availableCollateral
+      - notionalValue
+      - totalBorrowed
+      - leverage
+      - reservedBuyOrders
+      - reservedSellOrders
+      - buyingPower
+      - sellingPower
+    TimestampType:
+      description: timestamp
+      oneOf:
+      - type: string
+        description: 'Gemini strongly recommends using milliseconds instead of seconds for timestamps.
+
+
+          | Timestamp format      | Example               | Supported request type |
+
+          |-----------------------|-----------------------|------------------------|
+
+          | string (seconds)      | `1495127793`          | `POST` only            |
+
+          | string (milliseconds) | `1495127793000`       | `POST` only            |
+
+          '
+        example: '1495127793000'
+      - type: integer
+        format: int64
+        description: 'Gemini strongly recommends using milliseconds instead of seconds for timestamps.
+
+
+          | Timestamp format            | Example                   | Supported request type |
+
+          |-----------------------------|---------------------------|------------------------|
+
+          | whole number (seconds)      | `1495127793`              | `GET`, `POST`          |
+
+          | whole number (milliseconds) | `1495127793000`           | `GET`, `POST`          |
+
+          '
+        example: 1495127793000
+    MarginOrderPreview:
+      type: object
+      properties:
+        preorder:
+          allOf:
+          - $ref: '#/components/schemas/MarginRiskStats'
+          description: Margin risk statistics before the order would be executed
+        postorder:
+          allOf:
+          - $ref: '#/components/schemas/MarginRiskStats'
+          description: Margin risk statistics after the order would be executed
+      required:
+      - preorder
+      - postorder
+    ErrorResponse:
+      type: object
+      properties:
+        result:
+          type: string
+          description: Error
+        reason:
+          type: string
+          description: A short description
+        message:
+          type: string
+          description: Detailed error message
+    LiquidationRisk:
+      type: object
+      properties:
+        lossPercentage:
+          type: string
+          format: decimal
+          description: The percentage loss from current value that would trigger liquidation, formatted as decimal (e.g., "0.1550" = 15.50%)
+          example: '0.1550'
+        liquidationPrice:
+          allOf:
+          - $ref: '#/components/schemas/MoneyAmount'
+          description: The estimated price at which liquidation would occur (optional, may not be present for all positions)
+      required:
+      - lossPercentage
+    MarginInterestRate:
+      type: object
+      properties:
+        currency:
+          type: string
+          description: The currency code (e.g., "BTC", "ETH", "USD")
+          example: BTC
+        borrowRate:
+          type: string
+          format: decimal
+          description: The hourly borrow rate as a decimal
+          example: '0.00001141552511'
+        borrowRateDaily:
+          type: string
+          format: decimal
+          description: The daily borrow rate (hourly rate × 24)
+          example: '0.00027397260264'
+        borrowRateAnnual:
+          type: string
+          format: decimal
+          description: The annualized borrow rate (daily rate × 365)
+          example: '0.1'
+        lastUpdated:
+          type: integer
+          format: int64
+          description: Unix timestamp in milliseconds when the rate was last updated
+          example: 1700000000000
+      required:
+      - currency
+      - borrowRate
+      - borrowRateDaily
+      - borrowRateAnnual
+      - lastUpdated
+    MarginAccountSummary:
+      type: object
+      properties:
+        marginAssetValue:
+          allOf:
+          - $ref: '#/components/schemas/MoneyAmount'
+          description: The total value of all assets available in the margin account that can contribute to funding positions
+        availableCollateral:
+          allOf:
+          - $ref: '#/components/schemas/MoneyAmount'
+          description: The amount of collateral available for new positions or withdrawals
+        notionalValue:
+          allOf:
+          - $ref: '#/components/schemas/MoneyAmount'
+          description: The total value of all open positions
+        totalBorrowed:
+          allOf:
+          - $ref: '#/components/schemas/MoneyAmount'
+          description: The total amount currently borrowed across all currencies
+        leverage:
+          type: string
+          format: decimal
+          description: The current leverage ratio (notionalValue / marginAssetValue)
+          example: '1.5'
+        buyingPower:
+          allOf:
+          - $ref: '#/components/schemas/MoneyAmount'
+          description: The maximum notional value, denominated in USD, that can be purchased for the requested trading pair with available collateral
+        sellingPower:
+          allOf:
+          - $ref: '#/components/schemas/MoneyAmount'
+          description: The maximum notional value, denominated in USD, that can be sold for the requested trading pair with available collateral
+        liquidationRisk:
+          allOf:
+          - $ref: '#/components/schemas/LiquidationRisk'
+          description: Liquidation risk information (only present if positions exist)
+        interestRate:
+          allOf:
+          - $ref: '#/components/schemas/InterestRateInfo'
+          description: Current interest rate on borrowed amounts (only present if borrows exist)
+        reservedBuyOrders:
+          allOf:
+          - $ref: '#/components/schemas/MoneyAmount'
+          description: Collateral reserved for open buy orders
+        reservedSellOrders:
+          allOf:
+          - $ref: '#/components/schemas/MoneyAmount'
+          description: Collateral reserved for open sell orders
+      required:
+      - marginAssetValue
+      - availableCollateral
+      - notionalValue
+      - totalBorrowed
+      - leverage
+      - buyingPower
+      - sellingPower
+      - reservedBuyOrders
+      - reservedSellOrders
+    InterestRateInfo:
+      type: object
+      properties:
+        rate:
+          type: string
+          format: decimal
+          description: The interest rate as a decimal string
+          example: '0.00001141552511'
+        interval:
+          type: string
+          enum:
+          - hour
+          description: The time interval for the rate (currently only "hour" is supported)
+          example: hour
+      required:
+      - rate
+      - interval
+    Nonce:
+      oneOf:
+      - type: TimestampType
+        $ref: '#/components/schemas/TimestampType'
+        example: 1495127793000
+      - type: integer
+        example: 1495127793000
+      description: The nonce, as described in [Private API Invocation](/authentication/api-key#private-api-invocation)
+    MoneyAmount:
+      type: object
+      properties:
+        currency:
+          type: string
+          description: The currency code (e.g., "USD", "BTC", "ETH")
+          example: USD
+        value:
+          type: string
+          format: decimal
+          description: The amount in the specified currency
+          example: '10000.00'
+      required:
+      - currency
+      - value
+    MarginRatesResponse:
+      type: object
+      properties:
+        rates:
+          type: array
+          items:
+            $ref: '#/components/schemas/MarginInterestRate'
+          description: Array of interest rates for all borrowable currencies
+      required:
+      - rates
+  responses:
+    TooManyRequests:
+      description: Too many requests - you have exceeded the rate limit
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          example:
+            result: error
+            reason: Too Many Requests
+            message: Too Many Requests
+    ApiKeyIpFilteringFailure:
+      description: ApiKey fails IP Filtering Check
+      content:
+        application/json:
+          schema:
+            type: object
+            $ref: '#/components/schemas/ErrorResponse'
+          example:
+            result: error
+            reason: ApiKeyIpFilteringFailure
+            message: ApiKey fails IP Filtering Check for some accounts
+    BadRequest:
+      description: Bad request - malformed request or invalid parameters
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          example:
+            result: error
+            reason: InvalidSignature
+            message: Invalid signature for this request
+    InternalError:
+      description: Internal server error
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          example:
+            result: error
+            reason: Internal Server Error
+            message: Unexpected server error occurred.
+    Unauthorized:
+      description: Unauthorized - missing or invalid authentication
+      content:
+        application/json:
+          schema:
+            type: object
+            $ref: '#/components/schemas/ErrorResponse'
+          example:
+            result: error
+            reason: MissingApikeyHeader
+            message: Must provide 'X-GEMINI-APIKEY' header
+    NotFound:
+      description: Resource not found
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          example:
+            result: error
+            reason: EndpointNotFound
+            message: API entry point not found
+  parameters:
+    apiKeyAuth:
+      name: X-GEMINI-APIKEY
+      in: header
+      required: true
+      description: Your API key
+      schema:
+        type: string
+    cacheControl:
+      name: Cache-Control
+      in: header
+      required: false
+      schema:
+        type: string
+        default: no-cache
+    contentType:
+      name: Content-Type
+      in: header
+      required: false
+      schema:
+        type: string
+        default: text/plain
+    signatureAuth:
+      name: X-GEMINI-SIGNATURE
+      in: header
+      required: true
+      description: HEX-encoded HMAC-SHA384 of payload signed with API secret
+      schema:
+        type: string
+    contentLength:
+      name: Content-Length
+      in: header
+      required: false
+      schema:
+        type: string
+        default: '0'
+    payloadAuth:
+      name: X-GEMINI-PAYLOAD
+      in: header
+      required: true
+      description: Base64-encoded JSON payload
+      schema:
+        type: string
+  securitySchemes:
+    apiKeyAuth:
+      type: apiKey
+      in: header
+      name: X-GEMINI-APIKEY
+      description: Your API key
+    payloadAuth:
+      type: apiKey
+      in: header
+      name: X-GEMINI-PAYLOAD
+      description: Base64-encoded JSON payload
+    signatureAuth:
+      type: apiKey
+      in: header
+      name: X-GEMINI-SIGNATURE
+      description: HEX-encoded HMAC-SHA384 of payload signed with API secret

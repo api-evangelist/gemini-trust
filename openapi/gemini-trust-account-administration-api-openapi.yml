@@ -1,0 +1,693 @@
+openapi: 3.2.0
+info:
+  title: REST Account Administration API
+  description: 'The Gemini Crypto Exchange REST API allows programmatic access to trade cryptocurrencies
+
+    and manage your account on the Gemini Exchange platform. The API provides both public and
+
+    private endpoints for market data, order management, and account operations.'
+  version: 1.0.0
+  contact:
+    name: Gemini Trading Support
+    email: trading@gemini.com
+servers:
+- url: https://api.gemini.com
+  description: Production server
+- url: https://api.sandbox.gemini.com
+  description: Sandbox server for testing
+tags:
+- name: Account Administration
+paths:
+  /v1/account:
+    post:
+      x-zudoku-playground-enabled: false
+      tags:
+      - Account Administration
+      summary: Get Account Detail
+      operationId: getAccountDetail
+      description: 'The account API will return detail about the specific account requested such as users, country codes, etc.
+
+
+        ### Roles
+
+        The API key you use to access this endpoint can be either a Master or Account level key with any role assigned. See Roles for more information.'
+      parameters:
+      - $ref: '#/components/parameters/apiKeyAuth'
+      - $ref: '#/components/parameters/signatureAuth'
+      - $ref: '#/components/parameters/payloadAuth'
+      - $ref: '#/components/parameters/contentType'
+      - $ref: '#/components/parameters/contentLength'
+      - $ref: '#/components/parameters/cacheControl'
+      security:
+      - apiKeyAuth: []
+        signatureAuth: []
+        payloadAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+              - request
+              - nonce
+              properties:
+                request:
+                  type: string
+                  description: The literal string "/v1/account"
+                nonce:
+                  $ref: '#/components/schemas/Nonce'
+                account:
+                  type: string
+                  description: Required for Master API keys as described in [Private API Invocation](/authentication/api-key#private-api-invocation). The name of the account within the subaccount group. Master API keys can get all account names using the [Get Accounts endpoint](/rest/account-administration#list-accounts-in-group).
+            example:
+              request: /v1/account
+              account: primary
+              nonce: <nonce>
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  account:
+                    type: object
+                    description: Contains information on the requested account
+                    properties:
+                      accountName:
+                        type: string
+                        description: The name of the account provided upon creation. Will default to `Primary`
+                      shortName:
+                        type: string
+                        description: Nickname of the specific account (will take the name given, remove all symbols, replace all " " with "-" and make letters lowercase)
+                      type:
+                        type: string
+                        description: The type of account. Will return either `exchange` or `custody`
+                      created:
+                        $ref: '#/components/schemas/TimestampType'
+                        description: The timestamp of account creation, displayed as number of milliseconds since 1970-01-01 UTC. This will be transmitted as a JSON number
+                  users:
+                    type: array
+                    description: Contains an array of JSON objects with user information for the requested account
+                    items:
+                      type: object
+                      properties:
+                        name:
+                          type: string
+                          description: Full legal name of the user
+                        lastSignIn:
+                          type: string
+                          description: Timestamp of the last sign for the user. Formatted as yyyy-MM-dd'T'HH:mm:ss.SSS'Z'
+                        status:
+                          type: string
+                          description: Returns user status. Will inform of `active` users or otherwise not active
+                        countryCode:
+                          type: string
+                          description: 2 Letter country code indicating residence of user
+                        isVerified:
+                          type: boolean
+                          description: Returns verification status of user
+                  memo_reference_code:
+                    type: string
+                    description: Returns wire memo reference code for linked bank account
+                  virtual_account_number:
+                    type: string
+                    description: Virtual account number for the account. Only populated if applicable for the account
+              example:
+                account:
+                  accountName: Primary
+                  shortName: primary
+                  type: exchange
+                  created: '1498245007981'
+                users:
+                - name: Satoshi Nakamoto
+                  lastSignIn: '2020-07-21T13:37:39.453Z'
+                  status: Active
+                  countryCode: US
+                  isVerified: true
+                - name: Gemini Support
+                  lastSignIn: '2018-07-11T20:04:36.073Z'
+                  status: Suspended
+                  countryCode: US
+                  isVerified: false
+                memo_reference_code: GEMPJBRDZ
+                virtual_account_number: '123456'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/ApiKeyIpFilteringFailure'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+        '500':
+          $ref: '#/components/responses/InternalError'
+  /v1/account/create:
+    post:
+      x-zudoku-playground-enabled: false
+      tags:
+      - Account Administration
+      summary: Create New Account
+      operationId: createNewAccount
+      description: 'A Master API key can create a new exchange account within the group. This API will return the name of your new account for use with the account parameter in when using Master API keys to perform account level functions. Please see the example.
+
+
+        ### Roles
+
+        The API key you use to access this endpoint must be a Master level key and have the Administrator role assigned. See Roles for more information.'
+      parameters:
+      - $ref: '#/components/parameters/apiKeyAuth'
+      - $ref: '#/components/parameters/signatureAuth'
+      - $ref: '#/components/parameters/payloadAuth'
+      - $ref: '#/components/parameters/contentType'
+      - $ref: '#/components/parameters/contentLength'
+      - $ref: '#/components/parameters/cacheControl'
+      security:
+      - apiKeyAuth: []
+        signatureAuth: []
+        payloadAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+              - request
+              - nonce
+              - name
+              properties:
+                request:
+                  type: string
+                  description: The literal string "/v1/account/create"
+                nonce:
+                  $ref: '#/components/schemas/Nonce'
+                name:
+                  type: string
+                  description: A unique name for the new account
+                type:
+                  type: string
+                  description: Either `exchange` or `custody` is accepted. Will generate an exchange account if `exchange` or parameter is missing. Will generate a custody account if `custody`.
+            examples:
+              createAccount:
+                summary: Create Account Example
+                description: JSON payload to create a new account
+                value:
+                  request: /v1/account/create
+                  nonce: <nonce>
+                  name: My Secondary Account
+                  type: exchange
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  account:
+                    type: string
+                    description: Account reference string for use in APIs based off the provided `name` field
+                  type:
+                    type: string
+                    description: Will return the type of account generated. `exchange` if an exchange account was created, `custody` if a custody account was created
+              example:
+                account: my-secondary-account
+                type: exchange
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/ApiKeyIpFilteringFailure'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+        '500':
+          $ref: '#/components/responses/InternalError'
+  /v1/account/rename:
+    post:
+      x-zudoku-playground-enabled: false
+      tags:
+      - Account Administration
+      summary: Rename Account
+      operationId: renameAccount
+      description: 'A Master or Account level API key can rename an account within the group.
+
+
+        ### Roles
+
+        The API key you use to access this endpoint can be either a Master or Account level API key and must have the Administrator role assigned. See Roles for more information.'
+      parameters:
+      - $ref: '#/components/parameters/apiKeyAuth'
+      - $ref: '#/components/parameters/signatureAuth'
+      - $ref: '#/components/parameters/payloadAuth'
+      - $ref: '#/components/parameters/contentType'
+      - $ref: '#/components/parameters/contentLength'
+      - $ref: '#/components/parameters/cacheControl'
+      security:
+      - apiKeyAuth: []
+        signatureAuth: []
+        payloadAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+              - request
+              - nonce
+              properties:
+                request:
+                  type: string
+                  description: The literal string "/v1/account/rename".
+                nonce:
+                  $ref: '#/components/schemas/Nonce'
+                account:
+                  type: string
+                  description: Only required when using a master api-key. The shortname of the account within the subaccount group. Master API keys can get all account shortnames from the `account` field returned by the [Get Accounts endpoint](/rest/account-administration#list-accounts-in-group).
+                newName:
+                  type: string
+                  description: A unique name for the new account. If not provided, name will not change.
+                newAccount:
+                  type: string
+                  description: A unique shortname for the new account. If not provided, shortname will not change.
+            examples:
+              renameAccount:
+                summary: Rename Account Example
+                description: JSON payload to rename an account
+                value:
+                  request: /v1/account/rename
+                  nonce: <nonce>
+                  account: my-exchange-account
+                  newName: My Exchange Account New Name
+                  newAccount: my-exchange-account-new-name
+      responses:
+        '200':
+          description: An element containing the updated name of the account.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  name:
+                    type: string
+                    description: New name for the account based off the provided `newName` field. Only returned if `newName` was provided in the request.
+                  account:
+                    type: string
+                    description: New shortname for the account based off the provided `newAccount` field. Only returned if `newAccount` was provided in the request.
+              example:
+                name: My Exchange Account New Name
+                account: my-exchange-account-new-name
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/ApiKeyIpFilteringFailure'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+        '500':
+          $ref: '#/components/responses/InternalError'
+  /v1/account/list:
+    post:
+      x-zudoku-playground-enabled: false
+      tags:
+      - Account Administration
+      summary: List Accounts in Group
+      operationId: listAccountsInGroup
+      description: 'A Master API key can be used to get the accounts within the group. A maximum of 500 accounts can be listed in a single API call.
+
+
+        ### Roles
+
+        The API key you use to access this endpoint must be a Master level key. See Roles for more information.
+
+
+        The OAuth scope must have `account:read` assigned to access this endpoint. See OAuth Scopes for more information.'
+      parameters:
+      - $ref: '#/components/parameters/apiKeyAuth'
+      - $ref: '#/components/parameters/signatureAuth'
+      - $ref: '#/components/parameters/payloadAuth'
+      - $ref: '#/components/parameters/contentType'
+      - $ref: '#/components/parameters/contentLength'
+      - $ref: '#/components/parameters/cacheControl'
+      security:
+      - apiKeyAuth: []
+        signatureAuth: []
+        payloadAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+              - request
+              - nonce
+              properties:
+                request:
+                  type: string
+                  description: The literal string "/v1/account/list"
+                nonce:
+                  $ref: '#/components/schemas/Nonce'
+                limit_accounts:
+                  type: integer
+                  description: The maximum number of accounts to return. Maximum and default values are both 500.
+                timestamp:
+                  $ref: '#/components/schemas/TimestampType'
+                  description: Only return accounts created on or before the supplied timestamp. If not provided, the 500 most recently created accounts are returned.
+            example:
+              request: /v1/account/list
+              nonce: <nonce>
+              limit_accounts: 100
+              timestamp: 1632485834721
+      responses:
+        '200':
+          description: The response will be a JSON object containing all accounts within the master group
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    name:
+                      type: string
+                      description: The name of the account provided upon creation
+                    account:
+                      type: string
+                      description: Nickname of the specific account (will take the name given, remove all symbols, replace all " " with "-" and make letters lowercase)
+                    type:
+                      type: string
+                      description: Either "exchange" or "custody" depending on type of account
+                    counterparty_id:
+                      type: string
+                      description: The Gemini clearing counterparty ID associated with the API key making the request. Will return `None` for custody accounts
+                    created:
+                      $ref: '#/components/schemas/TimestampType'
+                      description: The timestamp of account creation, displayed as number of milliseconds since 1970-01-01 UTC. This will be transmitted as a JSON number
+                    status:
+                      type: string
+                      description: Either "open" or "closed"
+              example:
+              - name: Primary
+                account: primary
+                type: exchange
+                counterparty_id: EMONNYXH
+                created: 1495127793000
+                status: open
+              - name: My Custody Account
+                account: my-custody-account
+                type: custody
+                counterparty_id: null
+                created: 1565970772000
+                status: open
+              - name: Other exchange account!
+                account: other-exchange-account
+                type: exchange
+                counterparty_id: EMONNYXK
+                created: 1565970772000
+                status: closed
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/ApiKeyIpFilteringFailure'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+        '500':
+          $ref: '#/components/responses/InternalError'
+  /v1/roles:
+    post:
+      x-zudoku-playground-enabled: false
+      tags:
+      - Account Administration
+      summary: Roles Endpoint
+      operationId: getRoles
+      description: The `v1/roles` endpoint will return a string of the role of the current API key. The response fields will be different for account-level and master-level API keys.
+      parameters:
+      - $ref: '#/components/parameters/apiKeyAuth'
+      - $ref: '#/components/parameters/signatureAuth'
+      - $ref: '#/components/parameters/payloadAuth'
+      - $ref: '#/components/parameters/contentType'
+      - $ref: '#/components/parameters/contentLength'
+      - $ref: '#/components/parameters/cacheControl'
+      security:
+      - apiKeyAuth: []
+        signatureAuth: []
+        payloadAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+              - request
+              - nonce
+              properties:
+                request:
+                  type: string
+                  description: The literal string "/v1/roles"
+                  example: /v1/roles
+                nonce:
+                  type: TimestampType
+                  $ref: '#/components/schemas/TimestampType'
+                  title: The nonce, as described in [Private API Invocation](/authentication/api-key#private-api-invocation)
+            example:
+              request: /v1/roles
+              nonce: <nonce>
+      responses:
+        '200':
+          description: The response will be a JSON object indicating the assigned roles to the set of API keys used to call `/v1/roles`. The `Auditor` role cannot be combined with other roles. `Fund Manager` and `Trader` can be combined.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RoleResponse'
+              examples:
+                accountLevel:
+                  summary: Account-scoped key
+                  description: Successful response for account-scoped key
+                  value:
+                    isAuditor: false
+                    isFundManager: true
+                    isTrader: true
+                masterLevel:
+                  summary: Master-scoped key
+                  description: Successful response for master-scoped key
+                  value:
+                    counterparty_id: EMONNYXJ
+                    isAuditor: false
+                    isFundManager: true
+                    isTrader: true
+                    isAccountAdmin: true
+components:
+  schemas:
+    ErrorResponse:
+      type: object
+      properties:
+        result:
+          type: string
+          description: Error
+        reason:
+          type: string
+          description: A short description
+        message:
+          type: string
+          description: Detailed error message
+    Nonce:
+      oneOf:
+      - type: TimestampType
+        $ref: '#/components/schemas/TimestampType'
+        example: 1495127793000
+      - type: integer
+        example: 1495127793000
+      description: The nonce, as described in [Private API Invocation](/authentication/api-key#private-api-invocation)
+    RoleResponse:
+      type: object
+      required:
+      - isAuditor
+      - isFundManager
+      - isTrader
+      properties:
+        isAuditor:
+          type: boolean
+          description: '`True` if the Auditor role is assigned to the API keys. `False` otherwise.'
+        isFundManager:
+          type: boolean
+          description: '`True` if the Fund Manager role is assigned to the API keys. `False` otherwise.'
+        isTrader:
+          type: boolean
+          description: '`True` if the Trader role is assigned to the API keys. `False` otherwise.'
+        counterparty_id:
+          type: string
+          description: _Only returned for master-level API keys_. The Gemini clearing counterparty ID associated with the API key making the request.
+        isAccountAdmin:
+          type: boolean
+          description: _Only returned for master-level API keys_.`True` if the Administrator role is assigned to the API keys. `False` otherwise.
+    TimestampType:
+      description: timestamp
+      oneOf:
+      - type: string
+        description: 'Gemini strongly recommends using milliseconds instead of seconds for timestamps.
+
+
+          | Timestamp format      | Example               | Supported request type |
+
+          |-----------------------|-----------------------|------------------------|
+
+          | string (seconds)      | `1495127793`          | `POST` only            |
+
+          | string (milliseconds) | `1495127793000`       | `POST` only            |
+
+          '
+        example: '1495127793000'
+      - type: integer
+        format: int64
+        description: 'Gemini strongly recommends using milliseconds instead of seconds for timestamps.
+
+
+          | Timestamp format            | Example                   | Supported request type |
+
+          |-----------------------------|---------------------------|------------------------|
+
+          | whole number (seconds)      | `1495127793`              | `GET`, `POST`          |
+
+          | whole number (milliseconds) | `1495127793000`           | `GET`, `POST`          |
+
+          '
+        example: 1495127793000
+  responses:
+    BadRequest:
+      description: Bad request - malformed request or invalid parameters
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          example:
+            result: error
+            reason: InvalidSignature
+            message: Invalid signature for this request
+    Unauthorized:
+      description: Unauthorized - missing or invalid authentication
+      content:
+        application/json:
+          schema:
+            type: object
+            $ref: '#/components/schemas/ErrorResponse'
+          example:
+            result: error
+            reason: MissingApikeyHeader
+            message: Must provide 'X-GEMINI-APIKEY' header
+    ApiKeyIpFilteringFailure:
+      description: ApiKey fails IP Filtering Check
+      content:
+        application/json:
+          schema:
+            type: object
+            $ref: '#/components/schemas/ErrorResponse'
+          example:
+            result: error
+            reason: ApiKeyIpFilteringFailure
+            message: ApiKey fails IP Filtering Check for some accounts
+    InternalError:
+      description: Internal server error
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          example:
+            result: error
+            reason: Internal Server Error
+            message: Unexpected server error occurred.
+    TooManyRequests:
+      description: Too many requests - you have exceeded the rate limit
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          example:
+            result: error
+            reason: Too Many Requests
+            message: Too Many Requests
+    NotFound:
+      description: Resource not found
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          example:
+            result: error
+            reason: EndpointNotFound
+            message: API entry point not found
+  parameters:
+    signatureAuth:
+      name: X-GEMINI-SIGNATURE
+      in: header
+      required: true
+      description: HEX-encoded HMAC-SHA384 of payload signed with API secret
+      schema:
+        type: string
+    contentLength:
+      name: Content-Length
+      in: header
+      required: false
+      schema:
+        type: string
+        default: '0'
+    payloadAuth:
+      name: X-GEMINI-PAYLOAD
+      in: header
+      required: true
+      description: Base64-encoded JSON payload
+      schema:
+        type: string
+    apiKeyAuth:
+      name: X-GEMINI-APIKEY
+      in: header
+      required: true
+      description: Your API key
+      schema:
+        type: string
+    cacheControl:
+      name: Cache-Control
+      in: header
+      required: false
+      schema:
+        type: string
+        default: no-cache
+    contentType:
+      name: Content-Type
+      in: header
+      required: false
+      schema:
+        type: string
+        default: text/plain
+  securitySchemes:
+    apiKeyAuth:
+      type: apiKey
+      in: header
+      name: X-GEMINI-APIKEY
+      description: Your API key
+    payloadAuth:
+      type: apiKey
+      in: header
+      name: X-GEMINI-PAYLOAD
+      description: Base64-encoded JSON payload
+    signatureAuth:
+      type: apiKey
+      in: header
+      name: X-GEMINI-SIGNATURE
+      description: HEX-encoded HMAC-SHA384 of payload signed with API secret

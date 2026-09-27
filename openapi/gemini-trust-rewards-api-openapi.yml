@@ -1,0 +1,1032 @@
+openapi: 3.2.0
+info:
+  title: Gemini Trust Rewards API
+  version: 1.0.0
+  contact:
+    name: Gemini API Support
+  description: 'Operations tagged Rewards across 2 of this provider''s published API definitions: gemini-trust-prediction-markets-openapi.yml, gemini-trust-prediction-markets-openapi.yml. Each path carries the servers of the definition it was published in.'
+servers:
+- url: https://api.gemini.com
+  description: Production
+- url: https://api.sandbox.gemini.com
+  description: Sandbox
+tags:
+- name: Rewards
+  description: Endpoints for the Maker Rebate and Liquidity Rewards programs.
+paths:
+  /v1/prediction-markets/maker-rebate/rates:
+    get:
+      tags:
+      - Rewards
+      summary: Get maker-rebate rate schedule
+      description: 'Returns the current Maker Rebate rate rules. Public endpoint; no authentication required.
+
+
+        Each rule defines a `rebate_multiplier_bps` (basis points of the maker fee that is rebated) and an `effective_from` timestamp. An optional `category` scopes the rule to a single market category (omitted rules apply to all categories). An optional `effective_to` marks a rule as superseded.
+
+
+        Returns `503` with `error: "Maker rebate program is not currently available"` when the program is disabled.'
+      operationId: getMakerRebateRates
+      parameters:
+      - name: category
+        in: query
+        description: Filter to rules that apply to this category (e.g. `Crypto`, `Sports`). When omitted, returns all rules.
+        required: false
+        schema:
+          type: string
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MakerRebateRatesResponse'
+              examples:
+                allCategories:
+                  summary: Full rate schedule
+                  value:
+                    rate_rules:
+                    - id: 12
+                      rebate_multiplier_bps: 5000
+                      effective_from: '2026-03-19T00:00:00Z'
+                      category: Crypto
+                    - id: 13
+                      rebate_multiplier_bps: 2500
+                      effective_from: '2026-03-19T00:00:00Z'
+                      category: Sports
+                      effective_to: '2026-04-19T00:00:00Z'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                error: An unexpected error occurred
+        '503':
+          description: Maker rebate program is not currently available
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                error: Maker rebate program is not currently available
+    servers:
+    - url: https://api.gemini.com
+      description: Production
+    - url: https://api.sandbox.gemini.com
+      description: Sandbox
+  /v1/prediction-markets/maker-rebate/payouts:
+    post:
+      tags:
+      - Rewards
+      summary: List maker-rebate payouts
+      description: 'Returns the authenticated account''s Maker Rebate payout history. Most recent payout first.
+
+
+        Pagination is read from the `limit` and `offset` query parameters: `limit` is clamped to `[1, 100]` (default 50), `offset` is clamped to `[0, +∞)` (default 0).
+
+
+        Requires authentication with `OrderStatus` permission. Returns `503` when the program is disabled.'
+      operationId: listMakerRebatePayouts
+      security:
+      - apiKey: []
+        payloadAuth: []
+        signatureAuth: []
+      parameters:
+      - name: limit
+        in: query
+        description: Maximum number of payouts to return (default 50, clamped to [1, 100]).
+        required: false
+        schema:
+          type: integer
+          default: 50
+          minimum: 1
+          maximum: 100
+      - name: offset
+        in: query
+        description: Number of payouts to skip (default 0).
+        required: false
+        schema:
+          type: integer
+          default: 0
+          minimum: 0
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MakerRebatePayoutsResponse'
+              examples:
+                samplePayouts:
+                  summary: Two recent payouts
+                  value:
+                    payouts:
+                    - id: 9182
+                      total_volume_usd: '12450.00'
+                      total_rebate_usd: '6.23'
+                      total_fill_count: 187
+                      status: PAID
+                      paid_at: '2026-05-20T21:00:00Z'
+                      created_at: '2026-05-20T20:55:12Z'
+                    - id: 9173
+                      total_volume_usd: '8920.50'
+                      total_rebate_usd: '4.46'
+                      total_fill_count: 124
+                      status: PAID
+                      paid_at: '2026-05-19T21:00:00Z'
+                      created_at: '2026-05-19T20:55:08Z'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                error: An unexpected error occurred
+        '503':
+          description: Maker rebate program is not currently available
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                error: Maker rebate program is not currently available
+    servers:
+    - url: https://api.gemini.com
+      description: Production
+    - url: https://api.sandbox.gemini.com
+      description: Sandbox
+  /v1/prediction-markets/maker-rebate/summary/total:
+    get:
+      tags:
+      - Rewards
+      summary: Get maker-rebate lifetime summary
+      description: 'Returns lifetime totals for the authenticated account''s Maker Rebate payouts. When both `dateFrom` and `dateTo` are provided, the totals are restricted to payouts paid within that inclusive Eastern Time window.
+
+
+        Either provide both date parameters or omit both. Dates must be in `YYYY-MM-DD` format, `dateTo` must be on or after `dateFrom`, and the range must not exceed 5 years.
+
+
+        Requires authentication with `OrderStatus` permission. Returns `503` when the program is disabled.'
+      operationId: getMakerRebateLifetimeSummary
+      security:
+      - apiKey: []
+        payloadAuth: []
+        signatureAuth: []
+      parameters:
+      - name: dateFrom
+        in: query
+        description: Inclusive start of the payout date window (`YYYY-MM-DD`, Eastern Time). Must be provided together with `dateTo`.
+        required: false
+        schema:
+          type: string
+          format: date
+          example: '2026-04-01'
+      - name: dateTo
+        in: query
+        description: Inclusive end of the payout date window (`YYYY-MM-DD`, Eastern Time). Must be on or after `dateFrom` and within 5 years of it.
+        required: false
+        schema:
+          type: string
+          format: date
+          example: '2026-05-01'
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MakerRebateLifetimeSummary'
+              examples:
+                lifetime:
+                  summary: Lifetime totals (no date filter)
+                  value:
+                    total_earned_usd: '152.40'
+                    total_fill_count: 4218
+                    total_volume_usd: '304800.00'
+                    payout_count: 27
+                    first_payout_date: '2026-03-19'
+                    last_payout_date: '2026-05-20'
+                emptyHistory:
+                  summary: Account has never received a payout
+                  value:
+                    total_earned_usd: '0'
+                    total_fill_count: 0
+                    total_volume_usd: '0'
+                    payout_count: 0
+                    first_payout_date: null
+                    last_payout_date: null
+        '400':
+          description: Invalid date parameters
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                error: BAD_REQUEST
+                message: date_to must be on or after date_from
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                error: INTERNAL_ERROR
+                message: An unexpected error occurred
+        '503':
+          description: Maker rebate program is not currently available
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                error: SERVICE_UNAVAILABLE
+                message: Maker rebate program is not currently available
+    servers:
+    - url: https://api.gemini.com
+      description: Production
+    - url: https://api.sandbox.gemini.com
+      description: Sandbox
+  /v1/prediction-markets/liquidity-rewards/config:
+    get:
+      tags:
+      - Rewards
+      summary: Get liquidity-rewards program config
+      description: 'Returns the Liquidity Rewards program configuration. Public endpoint; no authentication required.
+
+
+        When the program is fully configured the response includes `max_spread_cents`, `min_payout_threshold_usd`, and `enabled: true`. When the program is not yet fully configured, the response collapses to `{ "enabled": false }` only.
+
+
+        Returns `503` when the program is not currently available.'
+      operationId: getLiquidityRewardsConfig
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LiquidityRewardsConfig'
+              examples:
+                enabled:
+                  summary: Program enabled and configured
+                  value:
+                    max_spread_cents: 10
+                    min_payout_threshold_usd: '1.00'
+                    enabled: true
+                disabledShape:
+                  summary: Program flag on but config incomplete upstream
+                  value:
+                    enabled: false
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                error: INTERNAL_ERROR
+                message: An unexpected error occurred
+        '503':
+          description: Liquidity rewards program is not currently available
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                error: SERVICE_UNAVAILABLE
+                message: Liquidity rewards program is not currently available
+    servers:
+    - url: https://api.gemini.com
+      description: Production
+    - url: https://api.sandbox.gemini.com
+      description: Sandbox
+  /v1/prediction-markets/liquidity-rewards/events:
+    get:
+      tags:
+      - Rewards
+      summary: List liquidity-rewards events
+      description: 'Returns the paginated list of events currently participating in the Liquidity Rewards program. Public endpoint; no authentication required.
+
+
+        `category` accepts a comma-separated list of category names (whitespace trimmed, empty entries dropped). `sort` controls ordering. `limit` is clamped to `[1, 100]` (default 50); `offset` is clamped to `[0, +∞)` (default 0). `last_score_date` is the most recent date for which scoring data has been written, or `null` when no scoring has run yet.
+
+
+        Returns `503` when the program is not currently available.'
+      operationId: listLiquidityRewardsEvents
+      parameters:
+      - name: category
+        in: query
+        description: Comma-separated list of category names. Whitespace is trimmed and empty entries are dropped.
+        required: false
+        schema:
+          type: string
+          example: Crypto,Sports
+      - name: search
+        in: query
+        description: Filter events by title substring (case-insensitive).
+        required: false
+        schema:
+          type: string
+      - name: sort
+        in: query
+        description: Sort order for the returned events. Defaults to `daily_pool_desc`.
+        required: false
+        schema:
+          type: string
+          default: daily_pool_desc
+          enum:
+          - daily_pool_desc
+          - daily_pool_asc
+          - ends_soonest
+          - ends_latest
+          - title_asc
+          - title_desc
+          - category_asc
+          - category_desc
+          - competition_asc
+          - competition_desc
+      - name: limit
+        in: query
+        description: Maximum number of events to return (default 50, clamped to [1, 100]).
+        required: false
+        schema:
+          type: integer
+          default: 50
+          minimum: 1
+          maximum: 100
+      - name: offset
+        in: query
+        description: Number of events to skip (default 0).
+        required: false
+        schema:
+          type: integer
+          default: 0
+          minimum: 0
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LiquidityRewardsEventsResponse'
+              examples:
+                sampleEvents:
+                  summary: Two scored events
+                  value:
+                    events:
+                    - event_ticker: BTC2605202100
+                      title: BTC above $95,000?
+                      category: Crypto
+                      daily_pool_usd: '500.00'
+                      pool_source: event_override
+                      ends_at: '2026-05-20T21:00:00Z'
+                      qualifying_maker_count: 14
+                      icon_url: https://example.com/btc.png
+                    - event_ticker: FRENCHOPEN-FINAL
+                      title: French Open 2026 — Men's Final winner
+                      category: Sports
+                      daily_pool_usd: '250.00'
+                      pool_source: category_default
+                      ends_at: '2026-06-07T15:00:00Z'
+                      qualifying_maker_count: 7
+                    pagination:
+                      limit: 50
+                      offset: 0
+                      total: 2
+                    last_score_date: '2026-05-19'
+                emptyBeforeScoring:
+                  summary: Program just turned on, no scoring yet
+                  value:
+                    events: []
+                    pagination:
+                      limit: 50
+                      offset: 0
+                      total: 0
+                    last_score_date: null
+        '400':
+          description: Invalid sort or pagination parameters
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                error: BAD_REQUEST
+                message: 'sort must be one of: daily_pool_desc, daily_pool_asc, ends_soonest, ends_latest, title_asc, title_desc, category_asc, category_desc, competition_asc, competition_desc (got ''foo'')'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                error: INTERNAL_ERROR
+                message: An unexpected error occurred
+        '503':
+          description: Liquidity rewards program is not currently available
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                error: SERVICE_UNAVAILABLE
+                message: Liquidity rewards program is not currently available
+    servers:
+    - url: https://api.gemini.com
+      description: Production
+    - url: https://api.sandbox.gemini.com
+      description: Sandbox
+  /v1/prediction-markets/liquidity-rewards/summary/daily:
+    get:
+      tags:
+      - Rewards
+      summary: Get liquidity-rewards daily summary
+      description: 'Returns daily Liquidity Rewards payouts for the authenticated account within the requested date window. Both `dateFrom` and `dateTo` are required and must be in `YYYY-MM-DD` format; `dateTo` must be on or after `dateFrom`.
+
+
+        Each daily entry includes the total USD reward for that day, the payout status (e.g. `PENDING`, `PAID`), the paid-at timestamp (if paid), and per-event score breakdowns showing how the day''s reward was distributed across events the account scored on.
+
+
+        Requires authentication with `OrderStatus` permission. Returns `503` when the program is not currently available.'
+      operationId: getLiquidityRewardsDailySummary
+      security:
+      - apiKey: []
+        payloadAuth: []
+        signatureAuth: []
+      parameters:
+      - name: dateFrom
+        in: query
+        description: Inclusive start of the date window (`YYYY-MM-DD`, Eastern Time).
+        required: true
+        schema:
+          type: string
+          format: date
+          example: '2026-05-01'
+      - name: dateTo
+        in: query
+        description: Inclusive end of the date window (`YYYY-MM-DD`, Eastern Time). Must be on or after `dateFrom`.
+        required: true
+        schema:
+          type: string
+          format: date
+          example: '2026-05-07'
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LiquidityRewardsDailySummaryResponse'
+              examples:
+                sampleWeek:
+                  summary: One week of daily summaries
+                  value:
+                    daily_summaries:
+                    - payout_date: '2026-05-07'
+                      total_reward_usd: '12.45'
+                      payout_status: PAID
+                      paid_at: '2026-05-08T21:00:00Z'
+                      events:
+                      - event_id: 1234567890
+                        event_name: BTC above $95,000?
+                        category_name: Crypto
+                        normalized_score: '0.4521'
+                        snapshot_count: 1180
+                        total_snapshots: 1440
+                        event_reward_usd: '8.20'
+                      - event_id: 9876543210
+                        event_name: ETH above $4,000?
+                        category_name: Crypto
+                        normalized_score: '0.2341'
+                        snapshot_count: 920
+                        total_snapshots: 1440
+                        event_reward_usd: '4.25'
+                    - payout_date: '2026-05-06'
+                      total_reward_usd: '0'
+                      payout_status: ZERO_AMOUNT
+                      paid_at: null
+                      events: []
+        '400':
+          description: Invalid date parameters
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                error: date_to must be on or after date_from
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                error: An unexpected error occurred
+        '503':
+          description: Liquidity rewards program is not currently available
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                error: Liquidity incentive program is not currently available
+    servers:
+    - url: https://api.gemini.com
+      description: Production
+    - url: https://api.sandbox.gemini.com
+      description: Sandbox
+  /v1/prediction-markets/liquidity-rewards/summary/total:
+    get:
+      tags:
+      - Rewards
+      summary: Get liquidity-rewards lifetime summary
+      description: 'Returns lifetime totals for the authenticated account''s Liquidity Rewards payouts. When both `dateFrom` and `dateTo` are provided, the totals are restricted to payouts paid within that inclusive Eastern Time window.
+
+
+        Either provide both date parameters or omit both. Dates must be in `YYYY-MM-DD` format, `dateTo` must be on or after `dateFrom`, and the range must not exceed 5 years.
+
+
+        Requires authentication with `OrderStatus` permission. Returns `503` when the program is not currently available.'
+      operationId: getLiquidityRewardsLifetimeSummary
+      security:
+      - apiKey: []
+        payloadAuth: []
+        signatureAuth: []
+      parameters:
+      - name: dateFrom
+        in: query
+        description: Inclusive start of the payout date window (`YYYY-MM-DD`, Eastern Time). Must be provided together with `dateTo`.
+        required: false
+        schema:
+          type: string
+          format: date
+          example: '2026-04-01'
+      - name: dateTo
+        in: query
+        description: Inclusive end of the payout date window (`YYYY-MM-DD`, Eastern Time). Must be on or after `dateFrom` and within 5 years of it.
+        required: false
+        schema:
+          type: string
+          format: date
+          example: '2026-05-01'
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LiquidityRewardsLifetimeSummary'
+              examples:
+                lifetime:
+                  summary: Lifetime totals
+                  value:
+                    total_earned_usd: '84.20'
+                    payout_count: 12
+                    first_payout_date: '2026-05-08'
+                    last_payout_date: '2026-05-20'
+                emptyHistory:
+                  summary: Account has never received a payout
+                  value:
+                    total_earned_usd: '0'
+                    payout_count: 0
+                    first_payout_date: null
+                    last_payout_date: null
+        '400':
+          description: Invalid date parameters
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                error: BAD_REQUEST
+                message: date_to must be on or after date_from
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                error: INTERNAL_ERROR
+                message: An unexpected error occurred
+        '503':
+          description: Liquidity rewards program is not currently available
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                error: SERVICE_UNAVAILABLE
+                message: Liquidity rewards program is not currently available
+    servers:
+    - url: https://api.gemini.com
+      description: Production
+    - url: https://api.sandbox.gemini.com
+      description: Sandbox
+components:
+  schemas:
+    MakerRebatePayoutsResponse:
+      type: object
+      required:
+      - payouts
+      properties:
+        payouts:
+          type: array
+          items:
+            $ref: '#/components/schemas/MakerRebatePayout'
+    LiquidityRewardsLifetimeSummary:
+      type: object
+      required:
+      - total_earned_usd
+      - payout_count
+      - first_payout_date
+      - last_payout_date
+      properties:
+        total_earned_usd:
+          type: string
+          description: Sum of `total_reward_usd` across daily payouts in the window.
+          example: '84.20'
+        payout_count:
+          type: integer
+          format: int32
+          description: Number of daily payouts in the window. Always present; `0` when no payouts exist in the window.
+          example: 12
+        first_payout_date:
+          type:
+          - string
+          - 'null'
+          format: date
+          description: Date of the earliest payout in the window, or `null` if no payouts exist.
+          example: '2026-05-08'
+        last_payout_date:
+          type:
+          - string
+          - 'null'
+          format: date
+          description: Date of the most recent payout in the window, or `null` if no payouts exist.
+          example: '2026-05-20'
+    Error:
+      type: object
+      properties:
+        error:
+          type: string
+          description: Error code
+          example: InvalidInput
+        message:
+          type: string
+          description: Human-readable error message
+          example: orderId is required
+    LiquidityEventScore:
+      type: object
+      required:
+      - event_id
+      - event_name
+      - category_name
+      - normalized_score
+      - snapshot_count
+      - total_snapshots
+      - event_reward_usd
+      properties:
+        event_id:
+          type: integer
+          format: int64
+          description: Stable event identifier.
+          example: 1234567890
+        event_name:
+          type: string
+          description: Event title.
+          example: BTC above $95,000?
+        category_name:
+          type: string
+          description: Market category.
+          example: Crypto
+        normalized_score:
+          type: string
+          description: This account's normalized score for the event on the scoring date (0-1 range as a decimal string).
+          example: '0.4521'
+        snapshot_count:
+          type: integer
+          format: int32
+          description: Number of snapshots in which this account had a qualifying quote.
+          example: 1180
+        total_snapshots:
+          type: integer
+          format: int32
+          description: Total snapshots taken for the event on the scoring date.
+          example: 1440
+        event_reward_usd:
+          type: string
+          description: Portion of the day's total reward attributed to this event.
+          example: '8.20'
+    MakerRebateRatesResponse:
+      type: object
+      required:
+      - rate_rules
+      properties:
+        rate_rules:
+          type: array
+          items:
+            $ref: '#/components/schemas/MakerRebateRateRule'
+    MakerRebatePayout:
+      type: object
+      required:
+      - id
+      - total_volume_usd
+      - total_rebate_usd
+      - total_fill_count
+      - status
+      - paid_at
+      - created_at
+      properties:
+        id:
+          type: integer
+          format: int64
+          description: Stable payout identifier.
+          example: 9182
+        total_volume_usd:
+          type: string
+          description: Total qualifying maker volume contributing to this payout, in USD.
+          example: '12450.00'
+        total_rebate_usd:
+          type: string
+          description: Total rebate paid, in USD.
+          example: '6.23'
+        total_fill_count:
+          type: integer
+          format: int32
+          description: Number of qualifying maker fills that contributed to the payout.
+          example: 187
+        status:
+          type: string
+          description: Payout status (e.g. `PENDING`, `PAID`).
+          example: PAID
+        paid_at:
+          type:
+          - string
+          - 'null'
+          format: date-time
+          description: ISO-8601 timestamp at which the rebate was credited. Always present; `null` for payouts that have not yet been paid.
+          example: '2026-05-20T21:00:00Z'
+        created_at:
+          type:
+          - string
+          - 'null'
+          format: date-time
+          description: ISO-8601 timestamp at which the payout row was created. Always present.
+          example: '2026-05-20T20:55:12Z'
+    MakerRebateRateRule:
+      type: object
+      required:
+      - id
+      - rebate_multiplier_bps
+      - effective_from
+      properties:
+        id:
+          type: integer
+          format: int64
+          description: Stable identifier for this rate rule.
+          example: 12
+        rebate_multiplier_bps:
+          type: integer
+          format: int32
+          description: Portion of the maker fee that is rebated, in basis points (10000 bps = 100%).
+          example: 5000
+        effective_from:
+          type:
+          - string
+          - 'null'
+          format: date-time
+          description: ISO-8601 timestamp at which this rule becomes effective. Always present; in practice never `null`.
+          example: '2026-03-19T00:00:00Z'
+        category:
+          type: string
+          description: Market category this rule applies to. When absent, the rule applies to all categories.
+          example: Crypto
+        effective_to:
+          type: string
+          format: date-time
+          description: ISO-8601 timestamp after which this rule is superseded. Omitted when the rule is still current.
+          example: '2026-04-19T00:00:00Z'
+    LiquidityRewardsDailySummaryResponse:
+      type: object
+      required:
+      - daily_summaries
+      properties:
+        daily_summaries:
+          type: array
+          items:
+            $ref: '#/components/schemas/LiquidityDailySummary'
+    MakerRebateLifetimeSummary:
+      type: object
+      required:
+      - total_earned_usd
+      - total_fill_count
+      - total_volume_usd
+      - payout_count
+      - first_payout_date
+      - last_payout_date
+      properties:
+        total_earned_usd:
+          type: string
+          description: Sum of `total_rebate_usd` across payouts in the window.
+          example: '152.40'
+        total_fill_count:
+          type: integer
+          format: int64
+          description: Sum of qualifying maker fills across payouts in the window.
+          example: 4218
+        total_volume_usd:
+          type: string
+          description: Sum of qualifying maker volume (USD) across payouts in the window.
+          example: '304800.00'
+        payout_count:
+          type: integer
+          format: int32
+          description: Number of payouts in the window. Always present; `0` when no payouts exist in the window.
+          example: 27
+        first_payout_date:
+          type:
+          - string
+          - 'null'
+          format: date
+          description: Date of the earliest payout in the window, or `null` if no payouts exist.
+          example: '2026-03-19'
+        last_payout_date:
+          type:
+          - string
+          - 'null'
+          format: date
+          description: Date of the most recent payout in the window, or `null` if no payouts exist.
+          example: '2026-05-20'
+    LiquidityRewardsEventsResponse:
+      type: object
+      required:
+      - events
+      - pagination
+      - last_score_date
+      properties:
+        events:
+          type: array
+          items:
+            $ref: '#/components/schemas/LiquidityRewardEvent'
+        pagination:
+          $ref: '#/components/schemas/Pagination'
+        last_score_date:
+          type:
+          - string
+          - 'null'
+          format: date
+          description: Most recent date for which scoring has been written. `null` when no scoring has run yet.
+          example: '2026-05-19'
+    LiquidityRewardEvent:
+      type: object
+      required:
+      - event_ticker
+      - title
+      - category
+      - daily_pool_usd
+      - pool_source
+      - ends_at
+      - qualifying_maker_count
+      properties:
+        event_ticker:
+          type: string
+          description: Event ticker (e.g. `BTC2605202100`).
+          example: BTC2605202100
+        title:
+          type: string
+          description: Event title.
+          example: BTC above $95,000?
+        category:
+          type: string
+          description: Market category.
+          example: Crypto
+        daily_pool_usd:
+          type: string
+          description: Daily USD reward pool budgeted for this event.
+          example: '500.00'
+        pool_source:
+          type: string
+          enum:
+          - event_override
+          - category_default
+          - unspecified
+          description: Whether the pool came from a per-event override or the category default.
+          example: event_override
+        ends_at:
+          type:
+          - string
+          - 'null'
+          format: date-time
+          description: ISO-8601 timestamp at which the event ends and stops scoring. `null` when the underlying event has no end timestamp set.
+          example: '2026-05-20T21:00:00Z'
+        qualifying_maker_count:
+          type: integer
+          format: int32
+          description: Number of accounts that met qualifying-maker criteria in the most recent snapshot window for this event.
+          example: 14
+        icon_url:
+          type: string
+          description: Optional URL for the event icon. Omitted when not configured.
+          example: https://example.com/btc.png
+    LiquidityRewardsConfig:
+      type: object
+      required:
+      - enabled
+      properties:
+        max_spread_cents:
+          type: integer
+          format: int32
+          description: Quotes wider than this spread score zero in the scoring algorithm. Only present when `enabled` is `true`.
+          example: 10
+        min_payout_threshold_usd:
+          type: string
+          description: Daily reward amounts below this threshold are suppressed (sub-threshold accounts get no row at all). Only present when `enabled` is `true`.
+          example: '1.00'
+        enabled:
+          type: boolean
+          description: 'True when the program is fully configured upstream. When false, the response collapses to `{ "enabled": false }` only.'
+          example: true
+    LiquidityDailySummary:
+      type: object
+      required:
+      - payout_date
+      - total_reward_usd
+      - payout_status
+      - paid_at
+      - events
+      properties:
+        payout_date:
+          type: string
+          format: date
+          description: Date the payout applies to (Eastern Time).
+          example: '2026-05-07'
+        total_reward_usd:
+          type: string
+          description: Total USD reward for the day across all events the account scored on.
+          example: '12.45'
+        payout_status:
+          type: string
+          description: Status of the day's payout (e.g. `PENDING`, `PAID`, `ZERO_AMOUNT`).
+          example: PAID
+        paid_at:
+          type:
+          - string
+          - 'null'
+          format: date-time
+          description: ISO-8601 timestamp the day's payout was credited. Always present; `null` if not yet paid.
+          example: '2026-05-08T21:00:00Z'
+        events:
+          type: array
+          description: Per-event score breakdown showing how the day's total was distributed.
+          items:
+            $ref: '#/components/schemas/LiquidityEventScore'
+    Pagination:
+      type: object
+      properties:
+        limit:
+          type: integer
+          example: 50
+        offset:
+          type: integer
+          example: 0
+        total:
+          type: integer
+          example: 100
+  responses:
+    Unauthorized:
+      description: Authentication required or invalid credentials
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+  securitySchemes:
+    apiKey:
+      type: apiKey
+      in: header
+      name: X-GEMINI-APIKEY
+      description: Gemini API key with appropriate permissions
+    payloadAuth:
+      type: apiKey
+      in: header
+      name: X-GEMINI-PAYLOAD
+      description: Base64-encoded private REST payload. See Gemini private REST authentication.
+    signatureAuth:
+      type: apiKey
+      in: header
+      name: X-GEMINI-SIGNATURE
+      description: Hex HMAC-SHA384 signature of the payload using the API secret.
+x-refined-from:
+- gemini-trust-prediction-markets-openapi.yml
+- gemini-trust-prediction-markets-openapi.yml

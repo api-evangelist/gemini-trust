@@ -1,0 +1,1664 @@
+openapi: 3.2.0
+info:
+  title: REST Market Data API
+  description: 'The Gemini Crypto Exchange REST API allows programmatic access to trade cryptocurrencies
+
+    and manage your account on the Gemini Exchange platform. The API provides both public and
+
+    private endpoints for market data, order management, and account operations.'
+  version: 1.0.0
+  contact:
+    name: Gemini Trading Support
+    email: trading@gemini.com
+servers:
+- url: https://api.gemini.com
+  description: Production server
+- url: https://api.sandbox.gemini.com
+  description: Sandbox server for testing
+tags:
+- name: Market Data
+paths:
+  /v1/symbols:
+    get:
+      tags:
+      - Market Data
+      summary: List Symbols
+      operationId: listSymbols
+      description: This endpoint retrieves all available symbols for trading.
+      responses:
+        '200':
+          description: The full list of supported symbols.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: string
+                  description: An array of supported [symbols](/market-data/symbols-and-minimums#all-supported-symbols).
+              example:
+              - aavegusd
+              - aaveusd
+              - aligusd
+              - aliusd
+              - ampgusd
+              - ampusd
+              - ankrgusd
+              - ankrusd
+              - apegusd
+              - apeusd
+              - api3gusd
+              - api3usd
+              - arbgusd
+              - arbusd
+              - atomgusd
+              - atomusd
+              - avaxgusd
+              - avaxgusdperp
+              - avaxusd
+              - axsgusd
+              - axsusd
+              - batgusd
+              - batusd
+              - bchgusd
+              - bchgusdperp
+              - bchusd
+              - bnbgusdperp
+              - bomegusd
+              - bomegusdperp
+              - bomeusd
+              - bonkgusd
+              - bonkgusdperp
+              - bonkusd
+              - btceur
+              - btcgbp
+              - btcgusd
+              - btcgusdperp
+              - btcsgd
+              - btcusd
+              - btcusdt
+              - chillguygusd
+              - chillguyusd
+              - chzgusd
+              - chzusd
+              - compgusd
+              - compusd
+              - crvgusd
+              - crvusd
+              - ctxgusd
+              - ctxusd
+              - cubegusd
+              - cubeusd
+              - daigusd
+              - daiusd
+              - dogebtc
+              - dogeeth
+              - dogegusd
+              - dogegusdperp
+              - dogeusd
+              - dotgusd
+              - dotgusdperp
+              - dotusd
+              - efilfil
+              - elongusd
+              - elonusd
+              - ensgusd
+              - ensusd
+              - ethbtc
+              - etheur
+              - ethgbp
+              - ethgusd
+              - ethgusdperp
+              - ethsgd
+              - ethusd
+              - ethusdt
+              - fetgusd
+              - fetusd
+              - filgusd
+              - filusd
+              - flokigusd
+              - flokigusdperp
+              - flokiusd
+              - ftmgusd
+              - ftmusd
+              - galagusd
+              - galausd
+              - gmtgusd
+              - gmtusd
+              - goatgusd
+              - goatgusdperp
+              - goatusd
+              - grtgusd
+              - grtusd
+              - gusdgbp
+              - gusdsgd
+              - gusdusd
+              - hntgusd
+              - hntusd
+              - hypegusdperp
+              - imxgusd
+              - imxusd
+              - injgusd
+              - injgusdperp
+              - injusd
+              - iotxgusd
+              - iotxusd
+              - ksl2gusdperp
+              - kt5gusdperp
+              - ldogusd
+              - ldousd
+              - linkbtc
+              - linketh
+              - linkgusd
+              - linkgusdperp
+              - linkusd
+              - lptgusd
+              - lptusd
+              - lrcgusd
+              - lrcusd
+              - ltcbtc
+              - ltceth
+              - ltcgusd
+              - ltcgusdperp
+              - ltcusd
+              - managusd
+              - manausd
+              - maskgusd
+              - maskusd
+              - maticgusd
+              - maticusd
+              - mewgusd
+              - mewgusdperp
+              - mewusd
+              - mkrgusd
+              - mkrusd
+              - moodenggusd
+              - moodenggusdperp
+              - moodengusd
+              - opgusd
+              - opgusdperp
+              - opusd
+              - oxtgusd
+              - oxtusd
+              - paxggusd
+              - paxgusd
+              - pepegusd
+              - pepegusdperp
+              - pepeusd
+              - pnutgusd
+              - pnutgusdperp
+              - pnutusd
+              - polgusdperp
+              - popcatgusd
+              - popcatgusdperp
+              - popcatusd
+              - pythgusd
+              - pythgusdperp
+              - pythusd
+              - qntgusd
+              - qntusd
+              - raregusd
+              - rareusd
+              - rengusd
+              - renusd
+              - rlusdusd
+              - rndrgusd
+              - rndrusd
+              - samogusd
+              - samousd
+              - sandgusd
+              - sandusd
+              - shibgusd
+              - shibgusdperp
+              - shibusd
+              - sklgusd
+              - sklusd
+              - solbtc
+              - soleth
+              - solgusd
+              - solgusdperp
+              - solusd
+              - storjgusd
+              - storjusd
+              - sushigusd
+              - sushiusd
+              - trumpgusdperp
+              - umagusd
+              - umausd
+              - unigusd
+              - unigusdperp
+              - uniusd
+              - usdcusd
+              - usdtgusd
+              - usdtusd
+              - wifgusd
+              - wifgusdperp
+              - wifusd
+              - xrpgusd
+              - xrpgusdperp
+              - xrpusd
+              - xtzgusd
+              - xtzusd
+              - yfigusd
+              - yfiusd
+              - zecgusd
+              - zecusd
+              - zrxgusd
+              - zrxusd
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+        '500':
+          $ref: '#/components/responses/InternalError'
+  /v1/symbols/details/{symbol}:
+    get:
+      tags:
+      - Market Data
+      summary: Get Symbol Details
+      operationId: getSymbolDetails
+      description: This endpoint retrieves extra detail on supported symbols, such as minimum order size, tick size, quote increment and more.
+      parameters:
+      - $ref: '#/components/parameters/symbolParam'
+      responses:
+        '200':
+          description: Instrument responses examples
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SymbolDetails'
+              examples:
+                spot:
+                  summary: Spot instrument
+                  description: Spot instrument response
+                  value:
+                    symbol: BTCUSD
+                    base_currency: BTC
+                    quote_currency: USD
+                    tick_size: 1.0e-08
+                    quote_increment: 0.01
+                    min_order_size: '0.00001'
+                    status: open
+                    wrap_enabled: false
+                    product_type: spot
+                    contract_type: vanilla
+                    contract_price_currency: USD
+                perpetual:
+                  summary: Perpetual Swap instrument
+                  description: Perpetual Swap instrument response
+                  value:
+                    symbol: BTCETHPERP
+                    base_currency: BTC
+                    quote_currency: ETH
+                    tick_size: 0.0001
+                    quote_increment: 0.5
+                    min_order_size: '0.0001'
+                    status: open
+                    wrap_enabled: false
+                    product_type: swap
+                    contract_type: linear
+                    contract_price_currency: GUSD
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+        '500':
+          $ref: '#/components/responses/InternalError'
+  /v2/networks/{network}/assets:
+    get:
+      tags:
+      - Market Data
+      summary: Get Assets for Network
+      operationId: getAssetsForNetwork
+      description: 'This endpoint retrieves the enabled assets (tokens) available on a specified blockchain network, filtered by your account''s access permissions.
+
+
+        This authenticated endpoint returns only the assets where your account has deposit and withdraw access enabled on the specified network.
+
+
+        Use this endpoint to discover all tokens that support deposits and withdrawals on a particular blockchain network.
+
+
+        The `assets` field in the response is always an array, sorted alphabetically, containing one or more enabled asset codes.
+
+
+        ### Roles
+
+        The API key you use to access this endpoint must have the Fund Manager or Auditor role assigned. See Roles for more information.'
+      parameters:
+      - $ref: '#/components/parameters/apiKeyAuth'
+      - $ref: '#/components/parameters/signatureAuth'
+      - $ref: '#/components/parameters/payloadAuth'
+      - $ref: '#/components/parameters/contentType'
+      - $ref: '#/components/parameters/contentLength'
+      - $ref: '#/components/parameters/cacheControl'
+      - name: network
+        in: path
+        required: true
+        schema:
+          type: string
+        description: 'Blockchain network identifier (lowercase). Supported networks include: `ethereum`, `solana`, `bitcoin`, `optimism`, `arbitrum`, `base`, `monad`, `avalanche`, `litecoin`, `bitcoincash`, `dogecoin`, `zcash`, `filecoin`, `tezos`, `polkadot`, `cosmos`, `xrpl`, `linea`, and more.
+
+          '
+        example: ethereum
+      security:
+      - apiKeyAuth: []
+        signatureAuth: []
+        payloadAuth: []
+      responses:
+        '200':
+          description: The response will be a JSON object containing the network name and its supported assets.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NetworkAssets'
+              examples:
+                multi-asset-network:
+                  summary: Network with many assets (Ethereum)
+                  value:
+                    network: ethereum
+                    assets:
+                    - AAVE
+                    - BAT
+                    - DAI
+                    - ETH
+                    - LINK
+                    - MATIC
+                    - UNI
+                    - USDC
+                    - USDT
+                    - WBTC
+                single-asset-network:
+                  summary: Network with single asset (Bitcoin)
+                  value:
+                    network: bitcoin
+                    assets:
+                    - BTC
+                stablecoin-network:
+                  summary: Network popular for stablecoins (Solana)
+                  value:
+                    network: solana
+                    assets:
+                    - BONK
+                    - JTO
+                    - JUP
+                    - PYTH
+                    - RAY
+                    - RENDER
+                    - SOL
+                    - USDC
+        '400':
+          description: The supplied network is not supported or has no enabled assets.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  errorMessage:
+                    type: string
+              examples:
+                unsupported-network:
+                  summary: Unsupported network
+                  value:
+                    errorMessage: Supplied value 'foochain' is not a supported network. Please refer to the Supported Networks section at docs.gemini.com and correct your API request.
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+        '500':
+          $ref: '#/components/responses/InternalError'
+  /v2/network/{token}:
+    get:
+      tags:
+      - Market Data
+      summary: Get Network
+      operationId: getTokenNetworkV2
+      description: 'The v1 network endpoint is being retired. This v2 endpoint is the recommended replacement, offering account-level filtering for deposit and withdraw access. Please migrate to this endpoint at your earliest convenience.
+
+
+        This endpoint retrieves the associated network(s) for a requested token, filtered by your account''s access permissions.
+
+
+        This authenticated endpoint returns only the networks where your account has both deposit and withdraw access enabled. This supports the multinetwork deposit and withdrawal flow.
+
+
+        Many tokens are available on multiple blockchain networks. For example, USDC is available on Optimism, Solana, Base, Arbitrum, Avalanche, and Ethereum. Use this endpoint to discover which networks your account can deposit to and withdraw from for a given token.
+
+
+        The `network` field in the response is always an array, which may contain one or more supported networks.
+
+
+        ### Roles
+
+        The API key you use to access this endpoint must have the Fund Manager or Auditor role assigned. See Roles for more information.'
+      parameters:
+      - $ref: '#/components/parameters/apiKeyAuth'
+      - $ref: '#/components/parameters/signatureAuth'
+      - $ref: '#/components/parameters/payloadAuth'
+      - $ref: '#/components/parameters/contentType'
+      - $ref: '#/components/parameters/contentLength'
+      - $ref: '#/components/parameters/cacheControl'
+      - name: token
+        in: path
+        required: true
+        schema:
+          type: string
+        description: Token identifier. `BTC`, `ETH`, `USDC`, `SOL` etc. See [<u>**symbols and minimums**</u>](/market-data/symbols-and-minimums)
+        example: USDC
+      security:
+      - apiKeyAuth: []
+        signatureAuth: []
+        payloadAuth: []
+      responses:
+        '200':
+          description: The response will be a JSON object containing the token and its available networks for the authenticated account.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NetworkToken'
+              examples:
+                single-network:
+                  summary: Single network token (BTC)
+                  value:
+                    token: BTC
+                    network:
+                    - bitcoin
+                multi-network:
+                  summary: Multi-network token (USDC)
+                  value:
+                    token: USDC
+                    network:
+                    - optimism
+                    - solana
+                    - base
+                    - arbitrum
+                    - avalanche
+                    - ethereum
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          description: Returned when the token is not supported or the account has no available networks for the requested token.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  result:
+                    type: string
+                    example: error
+                  reason:
+                    type: string
+                    example: UnsupportedNetwork
+                  message:
+                    type: string
+                    example: 'UnsupportedNetwork: INVALIDTOKEN'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+        '500':
+          $ref: '#/components/responses/InternalError'
+  /v1/pubticker/{symbol}:
+    get:
+      tags:
+      - Market Data
+      summary: Get Ticker
+      operationId: getTicker
+      description: 'This endpoint retrieves information about recent trading activity for the symbol.
+
+
+        We recommend using Version 2 to retrieve recent ticker activty.'
+      parameters:
+      - $ref: '#/components/parameters/symbolParam'
+      responses:
+        '200':
+          description: The current ticker for the symbol
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Ticker'
+              example:
+                bid: '977.59'
+                ask: '977.35'
+                last: '977.65'
+                volume:
+                  BTC: '2210.505328803'
+                  USD: '2135477.463379586263'
+                  timestamp: 1483018200000
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+        '500':
+          $ref: '#/components/responses/InternalError'
+  /v1/book/{symbol}:
+    get:
+      tags:
+      - Market Data
+      summary: Get Current Order Book
+      operationId: getCurrentOrderBook
+      x-zudoku-playground-enabled: false
+      description: 'This will return the current order book as two arrays (bids / asks).
+
+
+        The quantities and prices returned are returned as strings rather than numbers. The numbers returned are exact, not rounded, and it can be dangerous to treat them as floating point numbers.'
+      parameters:
+      - $ref: '#/components/parameters/symbolParam'
+      - name: limit_bids
+        in: query
+        description: Limit the number of bid (offers to buy) price levels returned. Default is 50. May be 0 to return the full order book on this side.
+        required: false
+        schema:
+          type: number
+          minimum: 1
+      - name: limit_asks
+        in: query
+        description: Limit the number of ask (offers to sell) price levels returned. Default is 50. May be 0 to return the full order book on this side.
+        required: false
+        schema:
+          type: number
+          minimum: 1
+      responses:
+        '200':
+          description: The response will be two arrays. The bids and the asks are grouped by price, so each entry may represent multiple orders at that price. Each element of the array will be a JSON object.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OrderBook'
+              example:
+                bids:
+                - price: '3607.85'
+                  amount: '6.643373'
+                  timestamp: '1547147541'
+                asks:
+                - price: '3607.86'
+                  amount: '14.68205084'
+                  timestamp: '1547147541'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+        '500':
+          $ref: '#/components/responses/InternalError'
+  /v1/trades/{symbol}:
+    get:
+      tags:
+      - Market Data
+      summary: List Trades
+      operationId: listTrades
+      x-zudoku-playground-enabled: false
+      description: 'This public API endpoint is limited to retrieving seven calendar days of data.
+
+
+        Please contact us through this form for information about Gemini market data.
+
+
+        This will return the trades that have executed since the specified timestamp. Timestamps are either seconds or milliseconds since the epoch (1970-01-01). See the Data Types section about `timestamp` for information on this.
+
+
+        Each request will show at most 500 records.
+
+
+        If no `since` or `timestamp` is specified, then it will show the most recent trades; otherwise, it will show the most recent trades that occurred after that timestamp.'
+      parameters:
+      - $ref: '#/components/parameters/symbolParam'
+      - name: timestamp
+        in: query
+        description: 'Only return trades after this timestamp. See [<u>**Timestamps**</u>](/rest/~schemas#timestamp-type) for more information. If not present, will show the most recent trades. For backwards compatibility, you may also use the alias `since`. With timestamp, there is a 90-day hard limit.
+
+          '
+        required: false
+        schema:
+          $ref: '#/components/schemas/TimestampType'
+          description: Timestamp in milliseconds
+      - name: since_tid
+        in: query
+        description: 'Only retuns trades that executed after this tid. since_tid trumps timestamp parameter which has no effect if provided too. You may set since_tid to zero to get the earliest available trade history data.
+
+          '
+        required: false
+        schema:
+          type: number
+      - name: limit_trades
+        in: query
+        description: 'The maximum number of trades to return. The default is 50.
+
+          '
+        required: false
+        schema:
+          type: number
+          minimum: 0
+          default: 50
+      - name: include_breaks
+        in: query
+        description: 'Whether to display broken trades. False by default. Can be `1` or `true` to activate
+
+          '
+        required: false
+        schema:
+          type: boolean
+          default: false
+      responses:
+        '200':
+          description: The response will be an array of JSON objects, sorted by timestamp, with the newest trade shown first.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Trade'
+              example:
+                timestamp: 1547146811
+                timestampms: 1547146811357
+                tid: 5335307668
+                price: '3610.85'
+                amount: '0.27413495'
+                exchange: gemini
+                type: buy
+                broken: true
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+        '500':
+          $ref: '#/components/responses/InternalError'
+  /v1/pricefeed:
+    get:
+      tags:
+      - Market Data
+      summary: List Prices
+      operationId: listPrices
+      responses:
+        '200':
+          description: Response is a list of objects, one for each pair.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PriceFeedResponse'
+              example:
+              - pair: BTCUSD
+                price: '9500.00'
+                percentChange24h: '5.23'
+              - pair: ETHUSD
+                price: '257.54'
+                percentChange24h: '4.85'
+              - pair: BCHUSD
+                price: '450.10'
+                percentChange24h: '-2.91'
+              - pair: LTCUSD
+                price: '79.50'
+                percentChange24h: '7.63'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+        '500':
+          $ref: '#/components/responses/InternalError'
+  /v1/fundingamount/{symbol}:
+    get:
+      tags:
+      - Market Data
+      summary: Get Funding Amount
+      operationId: getFundingAmount
+      parameters:
+      - name: symbol
+        in: path
+        required: true
+        schema:
+          type: string
+        description: 'Trading pair symbol <br /> <br />
+
+
+          `BTCGUSDPERP`, etc. See [<u>**symbols and minimums**</u>](/market-data/symbols-and-minimums#all-supported-symbols).
+
+          '
+        example: BTCGUSDPERP
+      responses:
+        '200':
+          description: The response will be an object
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FundingAmountResponse'
+              example:
+                symbol: BTCGUSDPERP
+                fundingDateTime: '2025-04-22T18:00:00.000Z'
+                fundingTimestampMilliSecs: 1745344800000
+                nextFundingTimestamp: 1745348400000
+                fundingAmount: -1.50991
+                estimatedFundingAmount: -2.10595
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+        '500':
+          $ref: '#/components/responses/InternalError'
+  /v1/nextfundingtimestamp/{symbol}:
+    get:
+      tags:
+      - Market Data
+      summary: Get Next Funding Timestamp
+      operationId: getNextFundingTimestamp
+      parameters:
+      - name: symbol
+        in: path
+        required: true
+        schema:
+          type: string
+        description: 'Trading pair symbol <br /> <br />
+
+
+          `BTCGUSDPERP`, etc. See [<u>**symbols and minimums**</u>](/market-data/symbols-and-minimums#all-supported-symbols).
+
+          '
+        example: BTCGUSDPERP
+      responses:
+        '200':
+          description: The response will be an integer timestamp in milliseconds.
+          content:
+            application/json:
+              schema:
+                type: integer
+                format: int64
+              example: 1745348400000
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+        '500':
+          $ref: '#/components/responses/InternalError'
+  /v1/fundingamountreport/records.xlsx:
+    get:
+      tags:
+      - Market Data
+      summary: Get Funding Amount Report File
+      operationId: getFundingAmountReportFile
+      description: '### Examples
+
+        - `symbol=BTCGUSDPERP&fromDate=2024-04-10&toDate=2024-04-25&numRows=1000`
+
+
+        Compare and obtain the minimum records between (2024-04-10 to 2024-04-25) and 1000. If (2024-04-10 to 2024-04-25) contains 360 records. Then fetch the minimum between 360 and 1000 records only.
+
+
+        - `symbol=BTCGUSDPERP&numRows=2024-04-10&toDate=2024-04-25`
+
+
+        If (2024-04-10 to 2024-04-25) contains 360 records. Then fetch 360 records only.
+
+
+        - `symbol=BTCGUSDPERP&numRows=1000`
+
+
+        Fetch maximum 1000 records starting from Now to a historical date
+
+
+        - `symbol=BTCGUSDPERP`
+
+
+        Fetch maximum 8760 records starting from Now to a historical date'
+      parameters:
+      - name: symbol
+        in: query
+        description: 'Trading pair symbol <br /> <br />
+
+
+          `BTCGUSDPERP`, etc. See [<u>**symbols and minimums**</u>](/market-data/symbols-and-minimums#all-supported-symbols).
+
+          '
+        required: true
+        schema:
+          type: string
+      - name: fromDate
+        in: query
+        description: Mandatory if `toDate` is specified, else optional. If empty, will only fetch records by numRows value.
+        required: false
+        schema:
+          type: string
+          format: date
+      - name: toDate
+        in: query
+        description: Mandatory if `fromDate` is specified, else optional. If empty, will only fetch records by numRows value.
+        required: false
+        schema:
+          type: string
+          format: date
+      - name: numRows
+        in: query
+        description: If empty, default value '8760'
+        required: false
+        schema:
+          type: integer
+      responses:
+        '200':
+          description: The response will be an excel / csv file. filename=FundingAmount_{SYMBOL}.{xlsx,csv}
+          headers:
+            Content-Disposition:
+              schema:
+                type: string
+                example: attachment; filename=FundingAmount_{SYMBOL}.{xlsx,csv}
+          content:
+            application/vnd.openxmlformats-officedocument.spreadsheetml.sheet:
+              schema:
+                type: string
+                format: binary
+            text/csv:
+              schema:
+                type: string
+                format: binary
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+        '500':
+          $ref: '#/components/responses/InternalError'
+  /v2/ticker/{symbol}:
+    get:
+      tags:
+      - Market Data
+      summary: Get Ticker V2
+      operationId: getTickerV2
+      description: This endpoint retrieves information about recent trading activity for the provided symbol.
+      parameters:
+      - name: symbol
+        in: path
+        required: true
+        schema:
+          type: string
+        description: Trading pair symbol
+        example: BTCUSD
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TickerInfo'
+              example:
+                symbol: BTCUSD
+                open: '9121.76'
+                high: '9440.66'
+                low: '9106.51'
+                close: '9347.66'
+                changes:
+                - '9365.1'
+                - '9386.16'
+                - '9373.41'
+                - '9322.56'
+                - '9268.89'
+                - '9265.38'
+                - '9245'
+                - '9231.43'
+                - '9235.88'
+                - '9265.8'
+                - '9295.18'
+                - '9295.47'
+                - '9310.82'
+                - '9335.38'
+                - '9344.03'
+                - '9261.09'
+                - '9265.18'
+                - '9282.65'
+                - '9260.01'
+                - '9225'
+                - '9159.5'
+                - '9150.81'
+                - '9118.6'
+                - '9148.01'
+                bid: '9345.70'
+                ask: '9347.67'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+        '500':
+          $ref: '#/components/responses/InternalError'
+  /v2/candles/{symbol}/{time_frame}:
+    get:
+      tags:
+      - Market Data
+      summary: List Candles
+      operationId: listCandles
+      description: This endpoint retrieves time-intervaled data for the provided symbol.
+      parameters:
+      - name: symbol
+        in: path
+        required: true
+        schema:
+          type: string
+        description: Trading pair symbol
+        example: BTCUSD
+      - name: time_frame
+        in: path
+        required: true
+        schema:
+          type: string
+          enum:
+          - 1m
+          - 5m
+          - 15m
+          - 30m
+          - 1h
+          - 6h
+          - 1d
+        description: 'Time range for each candle:
+
+          * `1m` - 1 minute
+
+          * `5m` - 5 minutes
+
+          * `15m` - 15 minutes
+
+          * `30m` - 30 minutes
+
+          * `1h` - 1 hour
+
+          * `6h` - 6 hours
+
+          * `1day` - 1 day
+
+          '
+        example: 15m
+      responses:
+        '200':
+          description: The response will be an array of arrays
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CandleResponse'
+              example:
+              - - 1559755800000
+                - 7781.6
+                - 7820.23
+                - 7776.56
+                - 7819.39
+                - 34.7624802159
+              - - 1559755800000
+                - 7781.6
+                - 7829.46
+                - 7776.56
+                - 7817.28
+                - 43.4228281059
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+        '500':
+          $ref: '#/components/responses/InternalError'
+  /v2/derivatives/candles/{symbol}/{time_frame}:
+    get:
+      tags:
+      - Market Data
+      summary: List Derivative Candles
+      operationId: listDerivativeCandles
+      description: This endpoint retrieves time-intervaled data for the provided perpetual symbol.
+      parameters:
+      - name: symbol
+        in: path
+        required: true
+        schema:
+          type: string
+        description: Trading pair symbol. Available only for perpetual pairs like `BTCGUSDPERP`
+        example: BTCGUSDPERP
+      - name: time_frame
+        in: path
+        required: true
+        schema:
+          type: string
+          enum:
+          - 1m
+        description: 'Time range for each candle. `1m`: 1 minute (only)'
+        example: 1m
+      responses:
+        '200':
+          description: The response will be an array of arrays
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CandleResponse'
+              example:
+              - - 1714126740000
+                - 68038
+                - 68038
+                - 68038
+                - 68038
+                - 0
+              - - 1714126680000
+                - 68038
+                - 68038
+                - 68038
+                - 68038
+                - 0
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+        '500':
+          $ref: '#/components/responses/InternalError'
+  /v2/fxrate/{symbol}/{timestamp}:
+    get:
+      tags:
+      - Market Data
+      summary: FX Rate
+      operationId: getFXRate
+      description: 'We have a growing international institutional customer base. When pulling market data for charting, it can be useful to have access to our FX rate for the relevant currency at that time.
+
+
+        Please note, Gemini does not offer foreign exchange services. This endpoint is for historical reference only and does not provide any guarantee of future exchange rates.
+
+
+        **Roles**
+
+        The API key you use to access this endpoint must have the Auditor role assigned. See Roles for more information.
+
+
+        **Supported Pairs**
+
+
+        `
+
+        [AUDUSD, CADUSD, COPUSD, EURUSD, CHFUSD, HKDUSD, NZDUSD, GBPUSD, BRLUSD, INRUSD, SGDUSD, KRWUSD, JPYUSD, CNYUSD]
+
+        `'
+      parameters:
+      - $ref: '#/components/parameters/symbolParam'
+      - $ref: '#/components/parameters/timestampParam'
+      - $ref: '#/components/parameters/apiKeyAuth'
+      - $ref: '#/components/parameters/signatureAuth'
+      - $ref: '#/components/parameters/payloadAuth'
+      - $ref: '#/components/parameters/contentType'
+      - $ref: '#/components/parameters/contentLength'
+      - $ref: '#/components/parameters/cacheControl'
+      security:
+      - apiKeyAuth: []
+        signatureAuth: []
+        payloadAuth: []
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FxRate'
+              example:
+                fxPair: AUDUSD
+                rate: '0.69'
+                asOf: 1594651859000
+                provider: bcb
+                benchmark: Spot
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/ApiKeyIpFilteringFailure'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+        '500':
+          $ref: '#/components/responses/InternalError'
+components:
+  schemas:
+    NetworkToken:
+      type: object
+      properties:
+        token:
+          type: string
+          description: The requested token identifier.
+        network:
+          type: array
+          items:
+            type: string
+          description: 'Array of supported blockchain networks for the token. Many tokens (especially stablecoins like USDC, USDT) are available on multiple networks.
+
+
+            Supported networks include: `bitcoin`, `ethereum`, `solana`, `optimism`, `arbitrum`, `base`, `monad`, `avalanche`, `litecoin`, `bitcoincash`, `dogecoin`, `zcash`, `filecoin`, `tezos`, `polkadot`, `cosmos`, `xrpl`, `linea`, and more.
+
+            '
+          example:
+          - optimism
+          - solana
+          - base
+          - arbitrum
+          - monad
+          - avalanche
+          - ethereum
+    Ticker:
+      type: object
+      properties:
+        bid:
+          type: string
+          format: decimal
+          description: The highest bid currently available
+          example: '977.59'
+        ask:
+          type: string
+          format: decimal
+          description: The lowest ask currently available
+          example: '977.35'
+        last:
+          type: string
+          format: decimal
+          description: The price of the last executed trade
+          example: '977.65'
+        volume:
+          type: object
+          description: Information about the 24 hour volume on the exchange. See properties below
+          properties:
+            timestamp:
+              $ref: '#/components/schemas/TimestampType'
+              example: 1483018200000
+              description: The end of the 24-hour period over which volume was measured. [timestamp (ms)](/rest/~schemas#timestamp-type)
+            price_symbol:
+              type: string
+              format: decimal
+              description: The volume denominated in the price currency
+              example: '2210.505328803'
+            quantity_symbol:
+              type: string
+              format: decimal
+              description: The volume denominated in the quantity currency
+              example: '2135477.463379586263'
+    TimestampType:
+      description: timestamp
+      oneOf:
+      - type: string
+        description: 'Gemini strongly recommends using milliseconds instead of seconds for timestamps.
+
+
+          | Timestamp format      | Example               | Supported request type |
+
+          |-----------------------|-----------------------|------------------------|
+
+          | string (seconds)      | `1495127793`          | `POST` only            |
+
+          | string (milliseconds) | `1495127793000`       | `POST` only            |
+
+          '
+        example: '1495127793000'
+      - type: integer
+        format: int64
+        description: 'Gemini strongly recommends using milliseconds instead of seconds for timestamps.
+
+
+          | Timestamp format            | Example                   | Supported request type |
+
+          |-----------------------------|---------------------------|------------------------|
+
+          | whole number (seconds)      | `1495127793`              | `GET`, `POST`          |
+
+          | whole number (milliseconds) | `1495127793000`           | `GET`, `POST`          |
+
+          '
+        example: 1495127793000
+    FundingAmountResponse:
+      type: object
+      properties:
+        symbol:
+          type: string
+          description: The requested symbol. See [**symbols and minimums**](/market-data/symbols-and-minimums#all-supported-symbols)
+        fundingDateTime:
+          type: string
+          description: UTC date time in format `yyyy-MM-ddThh:mm:ss.SSSZ` format
+        fundingTimestampMilliSecs:
+          type: number
+          format: long
+          description: Current funding amount Epoc time.
+        nextFundingTimestamp:
+          type: number
+          format: long
+          description: Next funding amount Epoc time.
+        amount:
+          type: number
+          format: decimal
+          description: The dollar amount for a Long 1 position held in the symbol for funding period (1 hour)
+        estimatedFundingAmount:
+          type: number
+          format: decimal
+          description: The estimated dollar amount for a Long 1 position held in the symbol for next funding period (1 hour)
+    ErrorResponse:
+      type: object
+      properties:
+        result:
+          type: string
+          description: Error
+        reason:
+          type: string
+          description: A short description
+        message:
+          type: string
+          description: Detailed error message
+    TickerInfo:
+      type: object
+      properties:
+        symbol:
+          type: string
+          description: The trading pair symbol
+          example: BTCUSD
+        open:
+          type: string
+          format: decimal
+          description: Open price from 24 hours ago
+          example: '9121.76'
+        high:
+          type: string
+          format: decimal
+          description: High price from 24 hours ago
+          example: '9440.66'
+        low:
+          type: string
+          format: decimal
+          description: Low price from 24 hours ago
+          example: '9106.51'
+        close:
+          type: string
+          format: decimal
+          description: Close price (most recent trade)
+          example: '9347.66'
+        changes:
+          type: array
+          description: Hourly prices descending for past 24 hours
+          items:
+            type: string
+            format: decimal
+          example:
+          - '9365.1'
+          - '9386.16'
+          - '9373.41'
+          - '9322.56'
+          - '9268.89'
+          - '9265.38'
+        bid:
+          type: string
+          format: decimal
+          description: Current best bid
+          example: '9345.70'
+        ask:
+          type: string
+          format: decimal
+          description: Current best offer
+          example: '9347.67'
+    Candle:
+      type: array
+      items:
+        type: number
+        format: double
+        minItems: 6
+        maxItems: 6
+        description: Array of [timestamp (ms), open, high, low, close, volume]
+      example:
+      - - 1559755800000
+        - 7781.6
+        - 7820.23
+        - 7776.56
+        - 7819.39
+        - 34.7624802159
+      - - 1559755800000
+        - 7781.6
+        - 7829.46
+        - 7776.56
+        - 7817.28
+        - 43.4228281059
+    SymbolDetails:
+      type: object
+      properties:
+        symbol:
+          type: string
+          example: BTCUSD
+          description: The requested symbol. See [**symbols and minimums**](/market-data/symbols-and-minimums#all-supported-symbols)
+        base_currency:
+          type: string
+          example: BTC
+          description: CCY1 or the top currency. (i.e `BTC` in `BTCUSD`)
+        quote_currency:
+          type: string
+          example: USD
+          description: CCY2 or the quote currency. (i.e `USD` in `BTCUSD`)
+        tick_size:
+          type: number
+          format: decimal
+          example: 1.0e-08
+          description: The number of decimal places in the `base_currency`. (i.e `1e-8`)
+        quote_increment:
+          type: number
+          format: decimal
+          example: 0.01
+          description: The number of decimal places in the `quote_currency` (i.e `0.01`)
+        min_order_size:
+          type: string
+          example: '0.00001'
+          description: The minimum order size in `base_currency` units (i.e `0.00001`)
+        status:
+          type: string
+          example: open
+          description: Status of the current order book. Can be `open`, `closed`, `cancel_only`, `post_only`, `limit_only`.
+        wrap_enabled:
+          type: boolean
+          example: false
+          description: "When `True`, symbol can be wrapped using this endpoint:  \n`POST https://api.gemini.com/v1/wrap/:symbol`\n"
+        product_type:
+          type: string
+          example: spot
+          description: Instrument type `spot` / `swap` -- where `swap` signifies `perpetual swap`.
+        contract_type:
+          type: string
+          example: vanilla
+          description: '`vanilla` / `linear` / `inverse` where `vanilla` is for spot
+
+            while `linear` is for perpetual swap and `inverse` is a special case perpetual swap where the perpetual contract will be settled in base currency.
+
+            '
+        contract_price_currency:
+          type: string
+          example: USD
+          description: 'CCY2 or the quote currency for spot instrument (i.e. `USD` in `BTCUSD`)
+
+            Or collateral currency of the contract in case of perpetual swap instrument.
+
+            '
+    Trade:
+      type: object
+      properties:
+        timestamp:
+          $ref: '#/components/schemas/TimestampType'
+          example: 1547146811
+          description: The time that the trade was executed
+        timestampms:
+          $ref: '#/components/schemas/TimestampType'
+          example: 1547146811357
+          description: The time that the trade was executed in milliseconds
+        tid:
+          type: integer
+          format: int64
+          example: 5335307668
+          description: The trade ID number
+        price:
+          type: string
+          format: decimal
+          example: '3610.85'
+          description: The price the trade was executed at
+        amount:
+          type: string
+          format: decimal
+          example: '0.27413495'
+          description: The amount that was traded
+        exchange:
+          type: string
+          example: gemini
+          description: Will always be "gemini"
+        type:
+          type: string
+          enum:
+          - buy
+          - sell
+          example: buy
+          description: '- `buy` means that an ask was removed from the book by an incoming buy order.
+
+            - `sell` means that a bid was removed from the book by an incoming sell order.
+
+            '
+        broken:
+          type: boolean
+          example: 'false'
+          description: Whether the trade was broken or not. Broken trades will not be displayed by default; use the `include_breaks` to display them.
+    PriceFeedResponse:
+      type: array
+      items:
+        type: object
+        properties:
+          pair:
+            type: string
+            description: Trading pair symbol. See [**symbols and minimums**](/market-data/symbols-and-minimums#all-supported-symbols)
+          price:
+            type: string
+            description: Current price of the pair on the Gemini order book
+          percentChange24h:
+            type: string
+            description: 24 hour change in price of the pair on the Gemini order book
+    OrderBook:
+      type: object
+      properties:
+        bids:
+          type: array
+          description: The bid price levels currently on the book. These are offers to buy at a given price.
+          items:
+            $ref: '#/components/schemas/OrderBookEntry'
+        asks:
+          type: array
+          description: The ask price levels currently on the book. These are offers to sell at a given price.
+          items:
+            $ref: '#/components/schemas/OrderBookEntry'
+    OrderBookEntry:
+      type: object
+      properties:
+        price:
+          type: string
+          format: decimal
+          description: The price
+        amount:
+          type: string
+          format: decimal
+          description: The total quantity remaining at the price
+        timestamp:
+          type: string
+          description: '**DO NOT USE** - this field is included for compatibility reasons only and is just populated with a dummy value.'
+    NetworkAssets:
+      type: object
+      properties:
+        network:
+          type: string
+          description: The blockchain network identifier.
+          example: ethereum
+        assets:
+          type: array
+          items:
+            type: string
+          description: 'Alphabetically sorted array of enabled asset/token codes available on this network. Assets include both exchange-tradable and custody-supported tokens.
+
+            '
+          example:
+          - AAVE
+          - BAT
+          - DAI
+          - ETH
+          - LINK
+          - MATIC
+          - UNI
+          - USDC
+          - USDT
+          - WBTC
+    FxRate:
+      type: object
+      properties:
+        fxPair:
+          type: string
+          description: The requested currency pair
+          example: AUDUSD
+        rate:
+          type: number
+          format: double
+          description: The exchange rate
+          example: 0.69
+        asOf:
+          $ref: '#/components/schemas/TimestampType'
+          description: The timestamp (in Epoch time format) that the requested fxrate has been retrieved for
+          example: 1594651859000
+        provider:
+          type: string
+          description: The market data provider
+          example: bcb
+        benchmark:
+          type: string
+          description: The market for which the retrieved price applies to
+          example: Spot
+    CandleResponse:
+      type: array
+      items:
+        $ref: '#/components/schemas/Candle'
+  responses:
+    TooManyRequests:
+      description: Too many requests - you have exceeded the rate limit
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          example:
+            result: error
+            reason: Too Many Requests
+            message: Too Many Requests
+    ApiKeyIpFilteringFailure:
+      description: ApiKey fails IP Filtering Check
+      content:
+        application/json:
+          schema:
+            type: object
+            $ref: '#/components/schemas/ErrorResponse'
+          example:
+            result: error
+            reason: ApiKeyIpFilteringFailure
+            message: ApiKey fails IP Filtering Check for some accounts
+    BadRequest:
+      description: Bad request - malformed request or invalid parameters
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          example:
+            result: error
+            reason: InvalidSignature
+            message: Invalid signature for this request
+    InternalError:
+      description: Internal server error
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          example:
+            result: error
+            reason: Internal Server Error
+            message: Unexpected server error occurred.
+    Unauthorized:
+      description: Unauthorized - missing or invalid authentication
+      content:
+        application/json:
+          schema:
+            type: object
+            $ref: '#/components/schemas/ErrorResponse'
+          example:
+            result: error
+            reason: MissingApikeyHeader
+            message: Must provide 'X-GEMINI-APIKEY' header
+    NotFound:
+      description: Resource not found
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          example:
+            result: error
+            reason: EndpointNotFound
+            message: API entry point not found
+  parameters:
+    symbolParam:
+      name: symbol
+      in: path
+      required: true
+      schema:
+        type: string
+      description: 'Trading pair symbol <br /> <br />
+
+
+        `BTCUSD`, etc. See [<u>**symbols and minimums**</u>](/market-data/symbols-and-minimums#all-supported-symbols).
+
+        '
+    apiKeyAuth:
+      name: X-GEMINI-APIKEY
+      in: header
+      required: true
+      description: Your API key
+      schema:
+        type: string
+    timestampParam:
+      name: timestamp
+      in: path
+      required: true
+      schema:
+        $ref: '#/components/schemas/TimestampType'
+      description: 'The timestamp to pull the FX rate for.
+
+
+        Gemini strongly recommends using milliseconds instead of seconds for timestamps.
+
+        '
+      example: 1591084414622
+    cacheControl:
+      name: Cache-Control
+      in: header
+      required: false
+      schema:
+        type: string
+        default: no-cache
+    contentType:
+      name: Content-Type
+      in: header
+      required: false
+      schema:
+        type: string
+        default: text/plain
+    signatureAuth:
+      name: X-GEMINI-SIGNATURE
+      in: header
+      required: true
+      description: HEX-encoded HMAC-SHA384 of payload signed with API secret
+      schema:
+        type: string
+    contentLength:
+      name: Content-Length
+      in: header
+      required: false
+      schema:
+        type: string
+        default: '0'
+    payloadAuth:
+      name: X-GEMINI-PAYLOAD
+      in: header
+      required: true
+      description: Base64-encoded JSON payload
+      schema:
+        type: string
+  securitySchemes:
+    apiKeyAuth:
+      type: apiKey
+      in: header
+      name: X-GEMINI-APIKEY
+      description: Your API key
+    payloadAuth:
+      type: apiKey
+      in: header
+      name: X-GEMINI-PAYLOAD
+      description: Base64-encoded JSON payload
+    signatureAuth:
+      type: apiKey
+      in: header
+      name: X-GEMINI-SIGNATURE
+      description: HEX-encoded HMAC-SHA384 of payload signed with API secret

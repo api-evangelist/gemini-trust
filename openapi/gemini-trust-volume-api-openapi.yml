@@ -1,0 +1,257 @@
+openapi: 3.2.0
+info:
+  title: Gemini Trust Volume API
+  version: 1.0.0
+  contact:
+    name: Gemini API Support
+  description: 'Operations tagged Volume across 2 of this provider''s published API definitions: gemini-trust-prediction-markets-openapi.yml, gemini-trust-prediction-markets-openapi.yml. Each path carries the servers of the definition it was published in.'
+servers:
+- url: https://api.gemini.com
+  description: Production
+- url: https://api.sandbox.gemini.com
+  description: Sandbox
+tags:
+- name: Volume
+  description: Public, unauthenticated prediction-market trade volume by category and UTC period.
+paths:
+  /v1/prediction-markets/volume/{date}:
+    get:
+      tags:
+      - Volume
+      summary: Get daily prediction market trade volume
+      description: 'Returns prediction-market trade volume by category for one completed UTC day. This is a public, unauthenticated endpoint.
+
+
+        `date` must use the `YYYY-MM-DD` UTC calendar-date format. Requests may select one day in the rolling one-year UTC window ending before the current UTC day; the current UTC day is not available. The exact earliest supported date is evaluated for each request.
+
+
+        Prediction-market volume begins at `2025-12-15`. A pre-launch date, or a post-launch date with any missing source hour, returns `404 NOT_FOUND`. The endpoint never synthesizes zero-volume rows for time before launch.
+
+
+        All volume values are non-negative decimal strings. Category rows are flat and ordered with each parent before its descendants. Each category row''s `volume` includes trades assigned directly to that category and to all descendant categories.'
+      operationId: getPredictionMarketDailyVolume
+      parameters:
+      - name: date
+        in: path
+        required: true
+        description: Completed UTC calendar date in `YYYY-MM-DD` format.
+        schema:
+          type: string
+          format: date
+      responses:
+        '200':
+          description: Category volume for the requested UTC day
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/PredictionMarketVolumeCategory'
+              examples:
+                dailyVolume:
+                  summary: Daily category volume
+                  value:
+                  - categoryPath:
+                    - Sports
+                    volume: '200097'
+                  - categoryPath:
+                    - Sports
+                    - Soccer
+                    volume: '3952'
+        '400':
+          description: Invalid or unsupported date. The message includes the current one-year UTC date bounds.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              examples:
+                invalidDate:
+                  summary: Date must use the required UTC calendar-date format
+                  value:
+                    error: BAD_REQUEST
+                    message: 'date must use YYYY-MM-DD. Supported one-year UTC date range: <earliest UTC date> <= date < <current UTC date>'
+        '404':
+          description: No complete volume data is available for the requested date. This includes dates before prediction markets launched and post-launch dates with a missing source hour.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                error: NOT_FOUND
+                message: Prediction market volume data is not available for the requested date
+        '503':
+          description: The canonical source is invalid or temporarily unavailable. The endpoint does not return a partial result.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                error: SERVICE_UNAVAILABLE
+                message: Prediction market volume data is temporarily unavailable
+    servers:
+    - url: https://api.gemini.com
+      description: Production
+    - url: https://api.sandbox.gemini.com
+      description: Sandbox
+  /v1/prediction-markets/volume/{date}/hourly:
+    get:
+      tags:
+      - Volume
+      summary: Get hourly prediction market trade volume
+      description: 'Returns prediction-market trade volume by category and UTC hour for one completed UTC day. This is a public, unauthenticated endpoint.
+
+
+        `date` must use the `YYYY-MM-DD` UTC calendar-date format. Requests may select one day in the rolling one-year UTC window ending before the current UTC day; the current UTC day is not available. The exact earliest supported date is evaluated for each request.
+
+
+        Prediction-market volume begins at `2025-12-15`. A pre-launch date, or a post-launch date with any missing source hour, returns `404 NOT_FOUND`. The endpoint never synthesizes zero-volume rows for time before launch or completed zero-volume hours.
+
+
+        All volume values are non-negative decimal strings. Rows are ordered by UTC hour, then with each category parent before its descendants. Each category row''s `volume` includes trades assigned directly to that category and to all descendant categories.'
+      operationId: getPredictionMarketHourlyVolume
+      parameters:
+      - name: date
+        in: path
+        required: true
+        description: Completed UTC calendar date in `YYYY-MM-DD` format.
+        schema:
+          type: string
+          format: date
+      responses:
+        '200':
+          description: Hourly category volume for the requested UTC day
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/PredictionMarketHourlyVolumeCategory'
+              examples:
+                hourlyVolume:
+                  summary: Hourly category volume
+                  value:
+                  - periodStart: '2026-07-20T00:00:00Z'
+                    categoryPath:
+                    - Sports
+                    volume: '200097'
+                  - periodStart: '2026-07-20T00:00:00Z'
+                    categoryPath:
+                    - Sports
+                    - Soccer
+                    volume: '3952'
+        '400':
+          description: Invalid or unsupported date. The message includes the current one-year UTC date bounds.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              examples:
+                invalidDate:
+                  summary: Date must use the required UTC calendar-date format
+                  value:
+                    error: BAD_REQUEST
+                    message: 'date must use YYYY-MM-DD. Supported one-year UTC date range: <earliest UTC date> <= date < <current UTC date>'
+        '404':
+          description: No complete volume data is available for the requested date. This includes dates before prediction markets launched and post-launch dates with a missing source hour.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                error: NOT_FOUND
+                message: Prediction market volume data is not available for the requested date
+        '503':
+          description: The canonical source is invalid or temporarily unavailable. The endpoint does not return a partial result.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                error: SERVICE_UNAVAILABLE
+                message: Prediction market volume data is temporarily unavailable
+    servers:
+    - url: https://api.gemini.com
+      description: Production
+    - url: https://api.sandbox.gemini.com
+      description: Sandbox
+components:
+  schemas:
+    Error:
+      type: object
+      properties:
+        error:
+          type: string
+          description: Error code
+          example: InvalidInput
+        message:
+          type: string
+          description: Human-readable error message
+          example: orderId is required
+    PredictionMarketVolumeDecimal:
+      type: string
+      pattern: ^(?:0|[1-9][0-9]*)(?:\.[0-9]+)?$
+      description: Non-negative decimal string. Preserve it as a string to avoid floating-point precision loss.
+      example: '143567.25'
+    PredictionMarketHourlyVolumeCategory:
+      type: object
+      required:
+      - periodStart
+      - categoryPath
+      - volume
+      properties:
+        periodStart:
+          type: string
+          format: date-time
+          description: Inclusive UTC start of this hourly period.
+          example: '2026-07-20T00:00:00Z'
+        categoryPath:
+          type: array
+          description: Display-name path from the top-level category to this category. It replaces recursive child nodes.
+          items:
+            type: string
+          example:
+          - Sports
+          - Football
+          - Pro Football
+        volume:
+          allOf:
+          - $ref: '#/components/schemas/PredictionMarketVolumeDecimal'
+          description: Total volume for this category in this hour, including all descendant categories.
+    PredictionMarketVolumeCategory:
+      type: object
+      required:
+      - categoryPath
+      - volume
+      properties:
+        categoryPath:
+          type: array
+          description: Display-name path from the top-level category to this category. It replaces recursive child nodes.
+          items:
+            type: string
+          example:
+          - Sports
+          - Football
+          - Pro Football
+        volume:
+          allOf:
+          - $ref: '#/components/schemas/PredictionMarketVolumeDecimal'
+          description: Total volume for this category, including all descendant categories.
+  securitySchemes:
+    apiKey:
+      type: apiKey
+      in: header
+      name: X-GEMINI-APIKEY
+      description: Gemini API key with appropriate permissions
+    payloadAuth:
+      type: apiKey
+      in: header
+      name: X-GEMINI-PAYLOAD
+      description: Base64-encoded private REST payload. See Gemini private REST authentication.
+    signatureAuth:
+      type: apiKey
+      in: header
+      name: X-GEMINI-SIGNATURE
+      description: Hex HMAC-SHA384 signature of the payload using the API secret.
+x-refined-from:
+- gemini-trust-prediction-markets-openapi.yml
+- gemini-trust-prediction-markets-openapi.yml

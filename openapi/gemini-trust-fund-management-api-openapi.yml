@@ -1837,165 +1837,70 @@ paths:
         '500':
           $ref: '#/components/responses/InternalError'
 components:
+  responses:
+    BadRequest:
+      description: Bad request - malformed request or invalid parameters
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          example:
+            result: error
+            reason: InvalidSignature
+            message: Invalid signature for this request
+    NotFound:
+      description: Resource not found
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          example:
+            result: error
+            reason: EndpointNotFound
+            message: API entry point not found
+    TooManyRequests:
+      description: Too many requests - you have exceeded the rate limit
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          example:
+            result: error
+            reason: Too Many Requests
+            message: Too Many Requests
+    InternalError:
+      description: Internal server error
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          example:
+            result: error
+            reason: Internal Server Error
+            message: Unexpected server error occurred.
+    ApiKeyIpFilteringFailure:
+      description: ApiKey fails IP Filtering Check
+      content:
+        application/json:
+          schema:
+            type: object
+            $ref: '#/components/schemas/ErrorResponse'
+          example:
+            result: error
+            reason: ApiKeyIpFilteringFailure
+            message: ApiKey fails IP Filtering Check for some accounts
+    Unauthorized:
+      description: Unauthorized - missing or invalid authentication
+      content:
+        application/json:
+          schema:
+            type: object
+            $ref: '#/components/schemas/ErrorResponse'
+          example:
+            result: error
+            reason: MissingApikeyHeader
+            message: Must provide 'X-GEMINI-APIKEY' header
   schemas:
-    PaymentMethodsResponse:
-      type: object
-      properties:
-        balances:
-          type: array
-          description: Array of JSON objects with available fiat currencies and their balances.
-          items:
-            $ref: '#/components/schemas/PaymentMethodBalance'
-        banks:
-          type: array
-          description: Array of JSON objects with banking information
-          items:
-            $ref: '#/components/schemas/PaymentMethodBank'
-    TimestampType:
-      description: timestamp
-      oneOf:
-      - type: string
-        description: 'Gemini strongly recommends using milliseconds instead of seconds for timestamps.
-
-
-          | Timestamp format      | Example               | Supported request type |
-
-          |-----------------------|-----------------------|------------------------|
-
-          | string (seconds)      | `1495127793`          | `POST` only            |
-
-          | string (milliseconds) | `1495127793000`       | `POST` only            |
-
-          '
-        example: '1495127793000'
-      - type: integer
-        format: int64
-        description: 'Gemini strongly recommends using milliseconds instead of seconds for timestamps.
-
-
-          | Timestamp format            | Example                   | Supported request type |
-
-          |-----------------------------|---------------------------|------------------------|
-
-          | whole number (seconds)      | `1495127793`              | `GET`, `POST`          |
-
-          | whole number (milliseconds) | `1495127793000`           | `GET`, `POST`          |
-
-          '
-        example: 1495127793000
-    WithdrawCryptoFundsResponse:
-      type: object
-      description: Response returned after submitting a v2 cryptocurrency withdrawal.
-      properties:
-        withdrawalId:
-          type: string
-          description: A unique ID for the withdrawal
-        address:
-          type: string
-          description: Standard string format of the withdrawal destination address
-        amount:
-          type: string
-          description: The withdrawal amount
-        currency:
-          type: string
-          description: The currency code of the withdrawn asset
-        fee:
-          type: string
-          description: The fee charged for the withdrawal
-    Balance:
-      type: object
-      properties:
-        type:
-          type: string
-          enum:
-          - exchange
-          example: exchange
-        currency:
-          type: string
-          example: BTC
-          description: The currency symbol
-        amount:
-          type: number
-          example: 10.5
-          description: 'The confirmed balance for the currency (also referred to as `confirmedBalance`). For crypto withdrawals, this value is **not** reduced until the withdrawal has been confirmed on the blockchain. This delay protects against blockchain reorganizations. Use the `available` field instead if you need balances that immediately reflect holds.
-
-            '
-        available:
-          type: number
-          example: 9.0
-          description: 'The amount available for trading. This value is reduced **immediately** when an order hold or withdrawal hold is placed, making it the recommended field for tracking real-time spendable balances.
-
-            '
-        availableForWithdrawal:
-          type: number
-          example: 9.0
-          description: The amount available for withdrawal
-        pendingWithdrawal:
-          type: number
-          example: 1.0
-          description: The amount pending withdrawal
-        pendingDeposit:
-          type: number
-          example: 0.5
-          description: The amount pending deposit
-        _timestamp:
-          type: string
-          format: date-time
-          example: '2024-03-16T00:00:00.000000Z'
-          description: Server-side monotonically increasing clock value as an ISO 8601 timestamp. Clients can use this value to detect and filter out stale responses that may occur due to load balancing or potential stale servers.
-    FeeEstimateV2Request:
-      type: object
-      required:
-      - request
-      - nonce
-      - address
-      - amount
-      properties:
-        request:
-          type: string
-          description: The string `/v2/withdraw/{network}/{ticker}/feeEstimate` where `{network}` is the blockchain network (e.g. `ethereum`, `bitcoin`, `solana`) and `{ticker}` is the currency code (e.g. `eth`, `btc`, `sol`). See [Symbols and minimums](/market-data/symbols-and-minimums)
-          example: /v2/withdraw/ethereum/eth/feeEstimate
-        nonce:
-          $ref: '#/components/schemas/Nonce'
-        address:
-          type: string
-          description: Standard string format of the destination cryptocurrency address
-          example: '0x31c2105b8dea834167f32f7ea7d877812e059230'
-        amount:
-          type: string
-          description: Quoted decimal amount to withdraw
-          example: '0.01'
-        account:
-          type: string
-          description: Required for Master API keys. The name of the account within the subaccount group.
-          example: primary
-        memo:
-          type: string
-          description: It would be present if applicable, it will be present for cosmos address.
-    FeeEstimateV2Response:
-      type: object
-      properties:
-        currency:
-          type: string
-          description: Currency code, see [symbols](/market-data/symbols-and-minimums).
-          example: ETH
-        fee:
-          type: number
-          format: decimal
-          description: The estimated withdrawal fee as a decimal amount
-          example: 0.001
-        isOverride:
-          type: boolean
-          description: Whether an override on the customer's account for free withdrawals exists
-          example: false
-        monthlyLimit:
-          type: integer
-          description: Total number of allowable fee-free withdrawals
-          example: 1
-        monthlyRemaining:
-          type: integer
-          description: Total number of allowable fee-free withdrawals remaining
-          example: 1
     ErrorResponse:
       type: object
       properties:
@@ -2008,154 +1913,6 @@ components:
         message:
           type: string
           description: Detailed error message
-    CustodyFeeTransfer:
-      type: object
-      properties:
-        txTime:
-          type: integer
-          description: Time of Custody fee record in milliseconds
-        feeAmount:
-          type: string
-          description: The fee amount charged
-        feeCurrency:
-          type: string
-          description: Currency that the fee was paid in
-        eid:
-          type: integer
-          description: Custody fee event id
-        eventType:
-          type: string
-          description: Custody fee event type
-    NotionalBalance:
-      type: object
-      properties:
-        currency:
-          type: string
-          description: Currency code, see symbols and minimums
-        amount:
-          type: string
-          description: The current balance
-        amountNotional:
-          type: string
-          description: Amount, in notional
-        available:
-          type: string
-          description: The amount that is available to trade
-        availableNotional:
-          type: string
-          description: Available, in notional
-        availableForWithdrawal:
-          type: string
-          description: The amount that is available to withdraw
-        availableForWithdrawalNotional:
-          type: string
-          description: AvailableForWithdrawal, in notional
-    PaymentMethodBank:
-      type: object
-      properties:
-        bank:
-          type: string
-          description: Name of bank account
-        bankId:
-          type: string
-          description: Unique identifier for bank account
-    V2Transfer:
-      type: object
-      properties:
-        type:
-          type: string
-          enum:
-          - Deposit
-          - Withdrawal
-          - Reward
-          - AdminDebit
-          - AdminCredit
-          description: The type of the transfer
-        status:
-          type: string
-          enum:
-          - Complete
-          - Pending
-          - Advanced
-          description: The status of the transfer
-        timestampms:
-          $ref: '#/components/schemas/TimestampType'
-          description: The timestamp in milliseconds
-        eid:
-          type: integer
-          format: int64
-          description: The transfer event ID
-        currency:
-          type: string
-          description: The currency transferred
-        amount:
-          type: string
-          description: The amount transferred
-        network:
-          type: string
-          description: The blockchain network the transfer was executed on (e.g., `ethereum`, `solana`, `arbitrum`, `optimism`, `base`, `avalanche`). Not present for fiat or administrative transfers.
-        feeAmount:
-          type: string
-          description: The fee charged for the transfer
-        feeCurrency:
-          type: string
-          description: The currency in which the fee was charged
-        txHash:
-          type: string
-          description: The on-chain transaction hash, if applicable
-        method:
-          type: string
-          description: The transfer method (e.g., `ACH`, `CreditCard`)
-        destination:
-          type: string
-          description: The destination address for withdrawals
-        withdrawalId:
-          type: string
-          description: The unique withdrawal identifier
-        outputIdx:
-          type: integer
-          description: The output index for withdrawals
-        purpose:
-          type: string
-          description: The purpose or reason for administrative transfers
-    ApprovedAddress:
-      type: object
-      properties:
-        network:
-          type: string
-          description: The network of the approved address. Network can be `bitcoin`, `ethereum`, `bitcoincash`, `litecoin`, `zcash`, `filecoin`, `dogecoin`, `tezos`, `solana`, `polkadot`, `avalanche`, `cosmos`, or `xrpl`
-        scope:
-          type: string
-          description: Will return the scope of the address as either "account" or "group"
-        label:
-          type: string
-          description: The label assigned to the address
-        status:
-          type: string
-          description: The status of the address that will return as "active", "pending-time" or "pending-mua". The remaining time is exactly 7 days after the initial request. "pending-mua" is for multi-user accounts and will require another administator or fund manager on the account to approve the address.
-        createdAt:
-          type: string
-          description: UTC timestamp in millisecond of when the address was created.
-        address:
-          type: string
-          description: The address on the approved address list.
-    Nonce:
-      oneOf:
-      - type: TimestampType
-        $ref: '#/components/schemas/TimestampType'
-        example: 1495127793000
-      - type: integer
-        example: 1495127793000
-      description: The nonce, as described in [Private API Invocation](/authentication/api-key#private-api-invocation)
-    AddBankResponse:
-      type: object
-      properties:
-        referenceId:
-          type: string
-          description: Reference ID for the new bank addition request. Once received, send in a wire from the requested bank account to verify it and enable withdrawals to that account.
-        result:
-          type: string
-          description: Status result (e.g. ok).
     Transaction:
       oneOf:
       - type: object
@@ -2281,15 +2038,6 @@ components:
           feeId:
             type: string
             description: Fee ID.
-    ApprovedAddressMessage:
-      type: object
-      properties:
-        message:
-          type: string
-          description: Status or confirmation message for the approved address request or removal.
-        result:
-          type: string
-          description: Result status (e.g. ok).
     ApprovedAddressesResponse:
       type: object
       description: Response envelope containing the approved withdrawal addresses.
@@ -2299,6 +2047,24 @@ components:
           description: Array of approved addresses on both the account and group level.
           items:
             $ref: '#/components/schemas/ApprovedAddress'
+    CustodyFeeTransfer:
+      type: object
+      properties:
+        txTime:
+          type: integer
+          description: Time of Custody fee record in milliseconds
+        feeAmount:
+          type: string
+          description: The fee amount charged
+        feeCurrency:
+          type: string
+          description: Currency that the fee was paid in
+        eid:
+          type: integer
+          description: Custody fee event id
+        eventType:
+          type: string
+          description: Custody fee event type
     PaymentMethodBalance:
       type: object
       properties:
@@ -2317,6 +2083,62 @@ components:
         availableForWithdrawal:
           type: string
           description: Total amount available for withdrawal
+    FeeEstimateV2Response:
+      type: object
+      properties:
+        currency:
+          type: string
+          description: Currency code, see [symbols](/market-data/symbols-and-minimums).
+          example: ETH
+        fee:
+          type: number
+          format: decimal
+          description: The estimated withdrawal fee as a decimal amount
+          example: 0.001
+        isOverride:
+          type: boolean
+          description: Whether an override on the customer's account for free withdrawals exists
+          example: false
+        monthlyLimit:
+          type: integer
+          description: Total number of allowable fee-free withdrawals
+          example: 1
+        monthlyRemaining:
+          type: integer
+          description: Total number of allowable fee-free withdrawals remaining
+          example: 1
+    WithdrawCryptoFundsResponse:
+      type: object
+      description: Response returned after submitting a v2 cryptocurrency withdrawal.
+      properties:
+        withdrawalId:
+          type: string
+          description: A unique ID for the withdrawal
+        address:
+          type: string
+          description: Standard string format of the withdrawal destination address
+        amount:
+          type: string
+          description: The withdrawal amount
+        currency:
+          type: string
+          description: The currency code of the withdrawn asset
+        fee:
+          type: string
+          description: The fee charged for the withdrawal
+    PaymentMethodsResponse:
+      type: object
+      properties:
+        balances:
+          type: array
+          description: Array of JSON objects with available fiat currencies and their balances.
+          items:
+            $ref: '#/components/schemas/PaymentMethodBalance'
+        banks:
+          type: array
+          description: Array of JSON objects with banking information
+          items:
+            $ref: '#/components/schemas/PaymentMethodBank'
     Address:
       type: object
       properties:
@@ -2335,26 +2157,253 @@ components:
         network:
           type: string
           description: The blockchain network for the address
+    FeeEstimateV2Request:
+      type: object
+      required:
+      - request
+      - nonce
+      - address
+      - amount
+      properties:
+        request:
+          type: string
+          description: The string `/v2/withdraw/{network}/{ticker}/feeEstimate` where `{network}` is the blockchain network (e.g. `ethereum`, `bitcoin`, `solana`) and `{ticker}` is the currency code (e.g. `eth`, `btc`, `sol`). See [Symbols and minimums](/market-data/symbols-and-minimums)
+          example: /v2/withdraw/ethereum/eth/feeEstimate
+        nonce:
+          $ref: '#/components/schemas/Nonce'
+        address:
+          type: string
+          description: Standard string format of the destination cryptocurrency address
+          example: '0x31c2105b8dea834167f32f7ea7d877812e059230'
+        amount:
+          type: string
+          description: Quoted decimal amount to withdraw
+          example: '0.01'
+        account:
+          type: string
+          description: Required for Master API keys. The name of the account within the subaccount group.
+          example: primary
+        memo:
+          type: string
+          description: It would be present if applicable, it will be present for cosmos address.
+    Balance:
+      type: object
+      properties:
+        type:
+          type: string
+          enum:
+          - exchange
+          example: exchange
+        currency:
+          type: string
+          example: BTC
+          description: The currency symbol
+        amount:
+          type: number
+          example: 10.5
+          description: 'The confirmed balance for the currency (also referred to as `confirmedBalance`). For crypto withdrawals, this value is **not** reduced until the withdrawal has been confirmed on the blockchain. This delay protects against blockchain reorganizations. Use the `available` field instead if you need balances that immediately reflect holds.
+
+            '
+        available:
+          type: number
+          example: 9.0
+          description: 'The amount available for trading. This value is reduced **immediately** when an order hold or withdrawal hold is placed, making it the recommended field for tracking real-time spendable balances.
+
+            '
+        availableForWithdrawal:
+          type: number
+          example: 9.0
+          description: The amount available for withdrawal
+        pendingWithdrawal:
+          type: number
+          example: 1.0
+          description: The amount pending withdrawal
+        pendingDeposit:
+          type: number
+          example: 0.5
+          description: The amount pending deposit
+        _timestamp:
+          type: string
+          format: date-time
+          example: '2024-03-16T00:00:00.000000Z'
+          description: Server-side monotonically increasing clock value as an ISO 8601 timestamp. Clients can use this value to detect and filter out stale responses that may occur due to load balancing or potential stale servers.
+    NotionalBalance:
+      type: object
+      properties:
+        currency:
+          type: string
+          description: Currency code, see symbols and minimums
+        amount:
+          type: string
+          description: The current balance
+        amountNotional:
+          type: string
+          description: Amount, in notional
+        available:
+          type: string
+          description: The amount that is available to trade
+        availableNotional:
+          type: string
+          description: Available, in notional
+        availableForWithdrawal:
+          type: string
+          description: The amount that is available to withdraw
+        availableForWithdrawalNotional:
+          type: string
+          description: AvailableForWithdrawal, in notional
+    Nonce:
+      oneOf:
+      - type: TimestampType
+        $ref: '#/components/schemas/TimestampType'
+        example: 1495127793000
+      - type: integer
+        example: 1495127793000
+      description: The nonce, as described in [Private API Invocation](/authentication/api-key#private-api-invocation)
+    ApprovedAddress:
+      type: object
+      properties:
+        network:
+          type: string
+          description: The network of the approved address. Network can be `bitcoin`, `ethereum`, `bitcoincash`, `litecoin`, `zcash`, `filecoin`, `dogecoin`, `tezos`, `solana`, `polkadot`, `avalanche`, `cosmos`, or `xrpl`
+        scope:
+          type: string
+          description: Will return the scope of the address as either "account" or "group"
+        label:
+          type: string
+          description: The label assigned to the address
+        status:
+          type: string
+          description: The status of the address that will return as "active", "pending-time" or "pending-mua". The remaining time is exactly 7 days after the initial request. "pending-mua" is for multi-user accounts and will require another administator or fund manager on the account to approve the address.
+        createdAt:
+          type: string
+          description: UTC timestamp in millisecond of when the address was created.
+        address:
+          type: string
+          description: The address on the approved address list.
+    AddBankResponse:
+      type: object
+      properties:
+        referenceId:
+          type: string
+          description: Reference ID for the new bank addition request. Once received, send in a wire from the requested bank account to verify it and enable withdrawals to that account.
+        result:
+          type: string
+          description: Status result (e.g. ok).
+    TimestampType:
+      description: timestamp
+      oneOf:
+      - type: string
+        description: 'Gemini strongly recommends using milliseconds instead of seconds for timestamps.
+
+
+          | Timestamp format      | Example               | Supported request type |
+
+          |-----------------------|-----------------------|------------------------|
+
+          | string (seconds)      | `1495127793`          | `POST` only            |
+
+          | string (milliseconds) | `1495127793000`       | `POST` only            |
+
+          '
+        example: '1495127793000'
+      - type: integer
+        format: int64
+        description: 'Gemini strongly recommends using milliseconds instead of seconds for timestamps.
+
+
+          | Timestamp format            | Example                   | Supported request type |
+
+          |-----------------------------|---------------------------|------------------------|
+
+          | whole number (seconds)      | `1495127793`              | `GET`, `POST`          |
+
+          | whole number (milliseconds) | `1495127793000`           | `GET`, `POST`          |
+
+          '
+        example: 1495127793000
+    V2Transfer:
+      type: object
+      properties:
+        type:
+          type: string
+          enum:
+          - Deposit
+          - Withdrawal
+          - Reward
+          - AdminDebit
+          - AdminCredit
+          description: The type of the transfer
+        status:
+          type: string
+          enum:
+          - Complete
+          - Pending
+          - Advanced
+          description: The status of the transfer
+        timestampms:
+          $ref: '#/components/schemas/TimestampType'
+          description: The timestamp in milliseconds
+        eid:
+          type: integer
+          format: int64
+          description: The transfer event ID
+        currency:
+          type: string
+          description: The currency transferred
+        amount:
+          type: string
+          description: The amount transferred
+        network:
+          type: string
+          description: The blockchain network the transfer was executed on (e.g., `ethereum`, `solana`, `arbitrum`, `optimism`, `base`, `avalanche`). Not present for fiat or administrative transfers.
+        feeAmount:
+          type: string
+          description: The fee charged for the transfer
+        feeCurrency:
+          type: string
+          description: The currency in which the fee was charged
+        txHash:
+          type: string
+          description: The on-chain transaction hash, if applicable
+        method:
+          type: string
+          description: The transfer method (e.g., `ACH`, `CreditCard`)
+        destination:
+          type: string
+          description: The destination address for withdrawals
+        withdrawalId:
+          type: string
+          description: The unique withdrawal identifier
+        outputIdx:
+          type: integer
+          description: The output index for withdrawals
+        purpose:
+          type: string
+          description: The purpose or reason for administrative transfers
+    ApprovedAddressMessage:
+      type: object
+      properties:
+        message:
+          type: string
+          description: Status or confirmation message for the approved address request or removal.
+        result:
+          type: string
+          description: Result status (e.g. ok).
+    PaymentMethodBank:
+      type: object
+      properties:
+        bank:
+          type: string
+          description: Name of bank account
+        bankId:
+          type: string
+          description: Unique identifier for bank account
   parameters:
-    currencyParam:
-      name: currency
-      in: path
-      required: true
-      schema:
-        type: string
-      description: Either a fiat currency, e.g. `usd` or `gbp`, or a supported crypto-currency, e.g. `gusd`, `btc`, `eth`, `aave`, etc.
-    networkParam:
-      name: network
-      in: path
-      required: true
-      schema:
-        type: string
-      description: Can be `bitcoin`, `ethereum`, `bitcoincash`, `litecoin`, `zcash`, `filecoin`, `dogecoin`, `tezos`, `solana`, `polkadot`, `avalanche`, `cosmos`, or `xrpl`
-    apiKeyAuth:
-      name: X-GEMINI-APIKEY
+    payloadAuth:
+      name: X-GEMINI-PAYLOAD
       in: header
       required: true
-      description: Your API key
+      description: Base64-encoded JSON payload
       schema:
         type: string
     cacheControl:
@@ -2364,20 +2413,6 @@ components:
       schema:
         type: string
         default: no-cache
-    contentType:
-      name: Content-Type
-      in: header
-      required: false
-      schema:
-        type: string
-        default: text/plain
-    signatureAuth:
-      name: X-GEMINI-SIGNATURE
-      in: header
-      required: true
-      description: HEX-encoded HMAC-SHA384 of payload signed with API secret
-      schema:
-        type: string
     contentLength:
       name: Content-Length
       in: header
@@ -2385,76 +2420,41 @@ components:
       schema:
         type: string
         default: '0'
-    payloadAuth:
-      name: X-GEMINI-PAYLOAD
-      in: header
+    currencyParam:
+      name: currency
+      in: path
       required: true
-      description: Base64-encoded JSON payload
       schema:
         type: string
-  responses:
-    TooManyRequests:
-      description: Too many requests - you have exceeded the rate limit
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/ErrorResponse'
-          example:
-            result: error
-            reason: Too Many Requests
-            message: Too Many Requests
-    ApiKeyIpFilteringFailure:
-      description: ApiKey fails IP Filtering Check
-      content:
-        application/json:
-          schema:
-            type: object
-            $ref: '#/components/schemas/ErrorResponse'
-          example:
-            result: error
-            reason: ApiKeyIpFilteringFailure
-            message: ApiKey fails IP Filtering Check for some accounts
-    BadRequest:
-      description: Bad request - malformed request or invalid parameters
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/ErrorResponse'
-          example:
-            result: error
-            reason: InvalidSignature
-            message: Invalid signature for this request
-    InternalError:
-      description: Internal server error
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/ErrorResponse'
-          example:
-            result: error
-            reason: Internal Server Error
-            message: Unexpected server error occurred.
-    Unauthorized:
-      description: Unauthorized - missing or invalid authentication
-      content:
-        application/json:
-          schema:
-            type: object
-            $ref: '#/components/schemas/ErrorResponse'
-          example:
-            result: error
-            reason: MissingApikeyHeader
-            message: Must provide 'X-GEMINI-APIKEY' header
-    NotFound:
-      description: Resource not found
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/ErrorResponse'
-          example:
-            result: error
-            reason: EndpointNotFound
-            message: API entry point not found
+      description: Either a fiat currency, e.g. `usd` or `gbp`, or a supported crypto-currency, e.g. `gusd`, `btc`, `eth`, `aave`, etc.
+    signatureAuth:
+      name: X-GEMINI-SIGNATURE
+      in: header
+      required: true
+      description: HEX-encoded HMAC-SHA384 of payload signed with API secret
+      schema:
+        type: string
+    apiKeyAuth:
+      name: X-GEMINI-APIKEY
+      in: header
+      required: true
+      description: Your API key
+      schema:
+        type: string
+    contentType:
+      name: Content-Type
+      in: header
+      required: false
+      schema:
+        type: string
+        default: text/plain
+    networkParam:
+      name: network
+      in: path
+      required: true
+      schema:
+        type: string
+      description: Can be `bitcoin`, `ethereum`, `bitcoincash`, `litecoin`, `zcash`, `filecoin`, `dogecoin`, `tezos`, `solana`, `polkadot`, `avalanche`, `cosmos`, or `xrpl`
   securitySchemes:
     apiKeyAuth:
       type: apiKey

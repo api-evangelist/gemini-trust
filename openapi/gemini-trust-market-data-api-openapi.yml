@@ -1118,124 +1118,70 @@ paths:
         '500':
           $ref: '#/components/responses/InternalError'
 components:
-  schemas:
-    NetworkToken:
-      type: object
-      properties:
-        token:
-          type: string
-          description: The requested token identifier.
-        network:
-          type: array
-          items:
-            type: string
-          description: 'Array of supported blockchain networks for the token. Many tokens (especially stablecoins like USDC, USDT) are available on multiple networks.
-
-
-            Supported networks include: `bitcoin`, `ethereum`, `solana`, `optimism`, `arbitrum`, `base`, `monad`, `avalanche`, `litecoin`, `bitcoincash`, `dogecoin`, `zcash`, `filecoin`, `tezos`, `polkadot`, `cosmos`, `xrpl`, `linea`, and more.
-
-            '
+  responses:
+    BadRequest:
+      description: Bad request - malformed request or invalid parameters
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
           example:
-          - optimism
-          - solana
-          - base
-          - arbitrum
-          - monad
-          - avalanche
-          - ethereum
-    Ticker:
-      type: object
-      properties:
-        bid:
-          type: string
-          format: decimal
-          description: The highest bid currently available
-          example: '977.59'
-        ask:
-          type: string
-          format: decimal
-          description: The lowest ask currently available
-          example: '977.35'
-        last:
-          type: string
-          format: decimal
-          description: The price of the last executed trade
-          example: '977.65'
-        volume:
-          type: object
-          description: Information about the 24 hour volume on the exchange. See properties below
-          properties:
-            timestamp:
-              $ref: '#/components/schemas/TimestampType'
-              example: 1483018200000
-              description: The end of the 24-hour period over which volume was measured. [timestamp (ms)](/rest/~schemas#timestamp-type)
-            price_symbol:
-              type: string
-              format: decimal
-              description: The volume denominated in the price currency
-              example: '2210.505328803'
-            quantity_symbol:
-              type: string
-              format: decimal
-              description: The volume denominated in the quantity currency
-              example: '2135477.463379586263'
-    TimestampType:
-      description: timestamp
-      oneOf:
-      - type: string
-        description: 'Gemini strongly recommends using milliseconds instead of seconds for timestamps.
-
-
-          | Timestamp format      | Example               | Supported request type |
-
-          |-----------------------|-----------------------|------------------------|
-
-          | string (seconds)      | `1495127793`          | `POST` only            |
-
-          | string (milliseconds) | `1495127793000`       | `POST` only            |
-
-          '
-        example: '1495127793000'
-      - type: integer
-        format: int64
-        description: 'Gemini strongly recommends using milliseconds instead of seconds for timestamps.
-
-
-          | Timestamp format            | Example                   | Supported request type |
-
-          |-----------------------------|---------------------------|------------------------|
-
-          | whole number (seconds)      | `1495127793`              | `GET`, `POST`          |
-
-          | whole number (milliseconds) | `1495127793000`           | `GET`, `POST`          |
-
-          '
-        example: 1495127793000
-    FundingAmountResponse:
-      type: object
-      properties:
-        symbol:
-          type: string
-          description: The requested symbol. See [**symbols and minimums**](/market-data/symbols-and-minimums#all-supported-symbols)
-        fundingDateTime:
-          type: string
-          description: UTC date time in format `yyyy-MM-ddThh:mm:ss.SSSZ` format
-        fundingTimestampMilliSecs:
-          type: number
-          format: long
-          description: Current funding amount Epoc time.
-        nextFundingTimestamp:
-          type: number
-          format: long
-          description: Next funding amount Epoc time.
-        amount:
-          type: number
-          format: decimal
-          description: The dollar amount for a Long 1 position held in the symbol for funding period (1 hour)
-        estimatedFundingAmount:
-          type: number
-          format: decimal
-          description: The estimated dollar amount for a Long 1 position held in the symbol for next funding period (1 hour)
+            result: error
+            reason: InvalidSignature
+            message: Invalid signature for this request
+    NotFound:
+      description: Resource not found
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          example:
+            result: error
+            reason: EndpointNotFound
+            message: API entry point not found
+    TooManyRequests:
+      description: Too many requests - you have exceeded the rate limit
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          example:
+            result: error
+            reason: Too Many Requests
+            message: Too Many Requests
+    InternalError:
+      description: Internal server error
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          example:
+            result: error
+            reason: Internal Server Error
+            message: Unexpected server error occurred.
+    ApiKeyIpFilteringFailure:
+      description: ApiKey fails IP Filtering Check
+      content:
+        application/json:
+          schema:
+            type: object
+            $ref: '#/components/schemas/ErrorResponse'
+          example:
+            result: error
+            reason: ApiKeyIpFilteringFailure
+            message: ApiKey fails IP Filtering Check for some accounts
+    Unauthorized:
+      description: Unauthorized - missing or invalid authentication
+      content:
+        application/json:
+          schema:
+            type: object
+            $ref: '#/components/schemas/ErrorResponse'
+          example:
+            result: error
+            reason: MissingApikeyHeader
+            message: Must provide 'X-GEMINI-APIKEY' header
+  schemas:
     ErrorResponse:
       type: object
       properties:
@@ -1248,6 +1194,30 @@ components:
         message:
           type: string
           description: Detailed error message
+    FxRate:
+      type: object
+      properties:
+        fxPair:
+          type: string
+          description: The requested currency pair
+          example: AUDUSD
+        rate:
+          type: number
+          format: double
+          description: The exchange rate
+          example: 0.69
+        asOf:
+          $ref: '#/components/schemas/TimestampType'
+          description: The timestamp (in Epoch time format) that the requested fxrate has been retrieved for
+          example: 1594651859000
+        provider:
+          type: string
+          description: The market data provider
+          example: bcb
+        benchmark:
+          type: string
+          description: The market for which the retrieved price applies to
+          example: Spot
     TickerInfo:
       type: object
       properties:
@@ -1319,6 +1289,63 @@ components:
         - 7776.56
         - 7817.28
         - 43.4228281059
+    PriceFeedResponse:
+      type: array
+      items:
+        type: object
+        properties:
+          pair:
+            type: string
+            description: Trading pair symbol. See [**symbols and minimums**](/market-data/symbols-and-minimums#all-supported-symbols)
+          price:
+            type: string
+            description: Current price of the pair on the Gemini order book
+          percentChange24h:
+            type: string
+            description: 24 hour change in price of the pair on the Gemini order book
+    OrderBookEntry:
+      type: object
+      properties:
+        price:
+          type: string
+          format: decimal
+          description: The price
+        amount:
+          type: string
+          format: decimal
+          description: The total quantity remaining at the price
+        timestamp:
+          type: string
+          description: '**DO NOT USE** - this field is included for compatibility reasons only and is just populated with a dummy value.'
+    FundingAmountResponse:
+      type: object
+      properties:
+        symbol:
+          type: string
+          description: The requested symbol. See [**symbols and minimums**](/market-data/symbols-and-minimums#all-supported-symbols)
+        fundingDateTime:
+          type: string
+          description: UTC date time in format `yyyy-MM-ddThh:mm:ss.SSSZ` format
+        fundingTimestampMilliSecs:
+          type: number
+          format: long
+          description: Current funding amount Epoc time.
+        nextFundingTimestamp:
+          type: number
+          format: long
+          description: Next funding amount Epoc time.
+        amount:
+          type: number
+          format: decimal
+          description: The dollar amount for a Long 1 position held in the symbol for funding period (1 hour)
+        estimatedFundingAmount:
+          type: number
+          format: decimal
+          description: The estimated dollar amount for a Long 1 position held in the symbol for next funding period (1 hour)
+    CandleResponse:
+      type: array
+      items:
+        $ref: '#/components/schemas/Candle'
     SymbolDetails:
       type: object
       properties:
@@ -1376,6 +1403,136 @@ components:
             Or collateral currency of the contract in case of perpetual swap instrument.
 
             '
+    Ticker:
+      type: object
+      properties:
+        bid:
+          type: string
+          format: decimal
+          description: The highest bid currently available
+          example: '977.59'
+        ask:
+          type: string
+          format: decimal
+          description: The lowest ask currently available
+          example: '977.35'
+        last:
+          type: string
+          format: decimal
+          description: The price of the last executed trade
+          example: '977.65'
+        volume:
+          type: object
+          description: Information about the 24 hour volume on the exchange. See properties below
+          properties:
+            timestamp:
+              $ref: '#/components/schemas/TimestampType'
+              example: 1483018200000
+              description: The end of the 24-hour period over which volume was measured. [timestamp (ms)](/rest/~schemas#timestamp-type)
+            price_symbol:
+              type: string
+              format: decimal
+              description: The volume denominated in the price currency
+              example: '2210.505328803'
+            quantity_symbol:
+              type: string
+              format: decimal
+              description: The volume denominated in the quantity currency
+              example: '2135477.463379586263'
+    NetworkAssets:
+      type: object
+      properties:
+        network:
+          type: string
+          description: The blockchain network identifier.
+          example: ethereum
+        assets:
+          type: array
+          items:
+            type: string
+          description: 'Alphabetically sorted array of enabled asset/token codes available on this network. Assets include both exchange-tradable and custody-supported tokens.
+
+            '
+          example:
+          - AAVE
+          - BAT
+          - DAI
+          - ETH
+          - LINK
+          - MATIC
+          - UNI
+          - USDC
+          - USDT
+          - WBTC
+    NetworkToken:
+      type: object
+      properties:
+        token:
+          type: string
+          description: The requested token identifier.
+        network:
+          type: array
+          items:
+            type: string
+          description: 'Array of supported blockchain networks for the token. Many tokens (especially stablecoins like USDC, USDT) are available on multiple networks.
+
+
+            Supported networks include: `bitcoin`, `ethereum`, `solana`, `optimism`, `arbitrum`, `base`, `monad`, `avalanche`, `litecoin`, `bitcoincash`, `dogecoin`, `zcash`, `filecoin`, `tezos`, `polkadot`, `cosmos`, `xrpl`, `linea`, and more.
+
+            '
+          example:
+          - optimism
+          - solana
+          - base
+          - arbitrum
+          - monad
+          - avalanche
+          - ethereum
+    TimestampType:
+      description: timestamp
+      oneOf:
+      - type: string
+        description: 'Gemini strongly recommends using milliseconds instead of seconds for timestamps.
+
+
+          | Timestamp format      | Example               | Supported request type |
+
+          |-----------------------|-----------------------|------------------------|
+
+          | string (seconds)      | `1495127793`          | `POST` only            |
+
+          | string (milliseconds) | `1495127793000`       | `POST` only            |
+
+          '
+        example: '1495127793000'
+      - type: integer
+        format: int64
+        description: 'Gemini strongly recommends using milliseconds instead of seconds for timestamps.
+
+
+          | Timestamp format            | Example                   | Supported request type |
+
+          |-----------------------------|---------------------------|------------------------|
+
+          | whole number (seconds)      | `1495127793`              | `GET`, `POST`          |
+
+          | whole number (milliseconds) | `1495127793000`           | `GET`, `POST`          |
+
+          '
+        example: 1495127793000
+    OrderBook:
+      type: object
+      properties:
+        bids:
+          type: array
+          description: The bid price levels currently on the book. These are offers to buy at a given price.
+          items:
+            $ref: '#/components/schemas/OrderBookEntry'
+        asks:
+          type: array
+          description: The ask price levels currently on the book. These are offers to sell at a given price.
+          items:
+            $ref: '#/components/schemas/OrderBookEntry'
     Trade:
       type: object
       properties:
@@ -1421,164 +1578,28 @@ components:
           type: boolean
           example: 'false'
           description: Whether the trade was broken or not. Broken trades will not be displayed by default; use the `include_breaks` to display them.
-    PriceFeedResponse:
-      type: array
-      items:
-        type: object
-        properties:
-          pair:
-            type: string
-            description: Trading pair symbol. See [**symbols and minimums**](/market-data/symbols-and-minimums#all-supported-symbols)
-          price:
-            type: string
-            description: Current price of the pair on the Gemini order book
-          percentChange24h:
-            type: string
-            description: 24 hour change in price of the pair on the Gemini order book
-    OrderBook:
-      type: object
-      properties:
-        bids:
-          type: array
-          description: The bid price levels currently on the book. These are offers to buy at a given price.
-          items:
-            $ref: '#/components/schemas/OrderBookEntry'
-        asks:
-          type: array
-          description: The ask price levels currently on the book. These are offers to sell at a given price.
-          items:
-            $ref: '#/components/schemas/OrderBookEntry'
-    OrderBookEntry:
-      type: object
-      properties:
-        price:
-          type: string
-          format: decimal
-          description: The price
-        amount:
-          type: string
-          format: decimal
-          description: The total quantity remaining at the price
-        timestamp:
-          type: string
-          description: '**DO NOT USE** - this field is included for compatibility reasons only and is just populated with a dummy value.'
-    NetworkAssets:
-      type: object
-      properties:
-        network:
-          type: string
-          description: The blockchain network identifier.
-          example: ethereum
-        assets:
-          type: array
-          items:
-            type: string
-          description: 'Alphabetically sorted array of enabled asset/token codes available on this network. Assets include both exchange-tradable and custody-supported tokens.
-
-            '
-          example:
-          - AAVE
-          - BAT
-          - DAI
-          - ETH
-          - LINK
-          - MATIC
-          - UNI
-          - USDC
-          - USDT
-          - WBTC
-    FxRate:
-      type: object
-      properties:
-        fxPair:
-          type: string
-          description: The requested currency pair
-          example: AUDUSD
-        rate:
-          type: number
-          format: double
-          description: The exchange rate
-          example: 0.69
-        asOf:
-          $ref: '#/components/schemas/TimestampType'
-          description: The timestamp (in Epoch time format) that the requested fxrate has been retrieved for
-          example: 1594651859000
-        provider:
-          type: string
-          description: The market data provider
-          example: bcb
-        benchmark:
-          type: string
-          description: The market for which the retrieved price applies to
-          example: Spot
-    CandleResponse:
-      type: array
-      items:
-        $ref: '#/components/schemas/Candle'
-  responses:
-    TooManyRequests:
-      description: Too many requests - you have exceeded the rate limit
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/ErrorResponse'
-          example:
-            result: error
-            reason: Too Many Requests
-            message: Too Many Requests
-    ApiKeyIpFilteringFailure:
-      description: ApiKey fails IP Filtering Check
-      content:
-        application/json:
-          schema:
-            type: object
-            $ref: '#/components/schemas/ErrorResponse'
-          example:
-            result: error
-            reason: ApiKeyIpFilteringFailure
-            message: ApiKey fails IP Filtering Check for some accounts
-    BadRequest:
-      description: Bad request - malformed request or invalid parameters
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/ErrorResponse'
-          example:
-            result: error
-            reason: InvalidSignature
-            message: Invalid signature for this request
-    InternalError:
-      description: Internal server error
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/ErrorResponse'
-          example:
-            result: error
-            reason: Internal Server Error
-            message: Unexpected server error occurred.
-    Unauthorized:
-      description: Unauthorized - missing or invalid authentication
-      content:
-        application/json:
-          schema:
-            type: object
-            $ref: '#/components/schemas/ErrorResponse'
-          example:
-            result: error
-            reason: MissingApikeyHeader
-            message: Must provide 'X-GEMINI-APIKEY' header
-    NotFound:
-      description: Resource not found
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/ErrorResponse'
-          example:
-            result: error
-            reason: EndpointNotFound
-            message: API entry point not found
   parameters:
+    payloadAuth:
+      name: X-GEMINI-PAYLOAD
+      in: header
+      required: true
+      description: Base64-encoded JSON payload
+      schema:
+        type: string
+    cacheControl:
+      name: Cache-Control
+      in: header
+      required: false
+      schema:
+        type: string
+        default: no-cache
+    contentLength:
+      name: Content-Length
+      in: header
+      required: false
+      schema:
+        type: string
+        default: '0'
     symbolParam:
       name: symbol
       in: path
@@ -1591,11 +1612,11 @@ components:
         `BTCUSD`, etc. See [<u>**symbols and minimums**</u>](/market-data/symbols-and-minimums#all-supported-symbols).
 
         '
-    apiKeyAuth:
-      name: X-GEMINI-APIKEY
+    signatureAuth:
+      name: X-GEMINI-SIGNATURE
       in: header
       required: true
-      description: Your API key
+      description: HEX-encoded HMAC-SHA384 of payload signed with API secret
       schema:
         type: string
     timestampParam:
@@ -1611,13 +1632,13 @@ components:
 
         '
       example: 1591084414622
-    cacheControl:
-      name: Cache-Control
+    apiKeyAuth:
+      name: X-GEMINI-APIKEY
       in: header
-      required: false
+      required: true
+      description: Your API key
       schema:
         type: string
-        default: no-cache
     contentType:
       name: Content-Type
       in: header
@@ -1625,27 +1646,6 @@ components:
       schema:
         type: string
         default: text/plain
-    signatureAuth:
-      name: X-GEMINI-SIGNATURE
-      in: header
-      required: true
-      description: HEX-encoded HMAC-SHA384 of payload signed with API secret
-      schema:
-        type: string
-    contentLength:
-      name: Content-Length
-      in: header
-      required: false
-      schema:
-        type: string
-        default: '0'
-    payloadAuth:
-      name: X-GEMINI-PAYLOAD
-      in: header
-      required: true
-      description: Base64-encoded JSON payload
-      schema:
-        type: string
   securitySchemes:
     apiKeyAuth:
       type: apiKey

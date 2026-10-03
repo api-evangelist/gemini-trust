@@ -426,107 +426,70 @@ paths:
         '500':
           $ref: '#/components/responses/InternalError'
 components:
+  responses:
+    BadRequest:
+      description: Bad request - malformed request or invalid parameters
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          example:
+            result: error
+            reason: InvalidSignature
+            message: Invalid signature for this request
+    NotFound:
+      description: Resource not found
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          example:
+            result: error
+            reason: EndpointNotFound
+            message: API entry point not found
+    TooManyRequests:
+      description: Too many requests - you have exceeded the rate limit
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          example:
+            result: error
+            reason: Too Many Requests
+            message: Too Many Requests
+    InternalError:
+      description: Internal server error
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          example:
+            result: error
+            reason: Internal Server Error
+            message: Unexpected server error occurred.
+    ApiKeyIpFilteringFailure:
+      description: ApiKey fails IP Filtering Check
+      content:
+        application/json:
+          schema:
+            type: object
+            $ref: '#/components/schemas/ErrorResponse'
+          example:
+            result: error
+            reason: ApiKeyIpFilteringFailure
+            message: ApiKey fails IP Filtering Check for some accounts
+    Unauthorized:
+      description: Unauthorized - missing or invalid authentication
+      content:
+        application/json:
+          schema:
+            type: object
+            $ref: '#/components/schemas/ErrorResponse'
+          example:
+            result: error
+            reason: MissingApikeyHeader
+            message: Must provide 'X-GEMINI-APIKEY' header
   schemas:
-    MarginRiskStats:
-      type: object
-      properties:
-        marginAssetValue:
-          allOf:
-          - $ref: '#/components/schemas/MoneyAmount'
-          description: The total value of all assets available in the margin account
-        availableCollateral:
-          allOf:
-          - $ref: '#/components/schemas/MoneyAmount'
-          description: The amount of collateral available for new positions
-        notionalValue:
-          allOf:
-          - $ref: '#/components/schemas/MoneyAmount'
-          description: The total value of all open positions
-        totalBorrowed:
-          allOf:
-          - $ref: '#/components/schemas/MoneyAmount'
-          description: The total amount currently borrowed
-        leverage:
-          type: string
-          format: decimal
-          description: The leverage ratio
-          example: '1.5'
-        reservedBuyOrders:
-          allOf:
-          - $ref: '#/components/schemas/MoneyAmount'
-          description: Collateral reserved for open buy orders
-        reservedSellOrders:
-          allOf:
-          - $ref: '#/components/schemas/MoneyAmount'
-          description: Collateral reserved for open sell orders
-        buyingPower:
-          allOf:
-          - $ref: '#/components/schemas/MoneyAmount'
-          description: The maximum value that can be purchased
-        sellingPower:
-          allOf:
-          - $ref: '#/components/schemas/MoneyAmount'
-          description: The maximum value that can be sold
-        liquidationRisk:
-          allOf:
-          - $ref: '#/components/schemas/LiquidationRisk'
-          description: Liquidation risk information (only present if applicable)
-      required:
-      - marginAssetValue
-      - availableCollateral
-      - notionalValue
-      - totalBorrowed
-      - leverage
-      - reservedBuyOrders
-      - reservedSellOrders
-      - buyingPower
-      - sellingPower
-    TimestampType:
-      description: timestamp
-      oneOf:
-      - type: string
-        description: 'Gemini strongly recommends using milliseconds instead of seconds for timestamps.
-
-
-          | Timestamp format      | Example               | Supported request type |
-
-          |-----------------------|-----------------------|------------------------|
-
-          | string (seconds)      | `1495127793`          | `POST` only            |
-
-          | string (milliseconds) | `1495127793000`       | `POST` only            |
-
-          '
-        example: '1495127793000'
-      - type: integer
-        format: int64
-        description: 'Gemini strongly recommends using milliseconds instead of seconds for timestamps.
-
-
-          | Timestamp format            | Example                   | Supported request type |
-
-          |-----------------------------|---------------------------|------------------------|
-
-          | whole number (seconds)      | `1495127793`              | `GET`, `POST`          |
-
-          | whole number (milliseconds) | `1495127793000`           | `GET`, `POST`          |
-
-          '
-        example: 1495127793000
-    MarginOrderPreview:
-      type: object
-      properties:
-        preorder:
-          allOf:
-          - $ref: '#/components/schemas/MarginRiskStats'
-          description: Margin risk statistics before the order would be executed
-        postorder:
-          allOf:
-          - $ref: '#/components/schemas/MarginRiskStats'
-          description: Margin risk statistics after the order would be executed
-      required:
-      - preorder
-      - postorder
     ErrorResponse:
       type: object
       properties:
@@ -539,20 +502,6 @@ components:
         message:
           type: string
           description: Detailed error message
-    LiquidationRisk:
-      type: object
-      properties:
-        lossPercentage:
-          type: string
-          format: decimal
-          description: The percentage loss from current value that would trigger liquidation, formatted as decimal (e.g., "0.1550" = 15.50%)
-          example: '0.1550'
-        liquidationPrice:
-          allOf:
-          - $ref: '#/components/schemas/MoneyAmount'
-          description: The estimated price at which liquidation would occur (optional, may not be present for all positions)
-      required:
-      - lossPercentage
     MarginInterestRate:
       type: object
       properties:
@@ -644,6 +593,153 @@ components:
       - sellingPower
       - reservedBuyOrders
       - reservedSellOrders
+    MarginRatesResponse:
+      type: object
+      properties:
+        rates:
+          type: array
+          items:
+            $ref: '#/components/schemas/MarginInterestRate'
+          description: Array of interest rates for all borrowable currencies
+      required:
+      - rates
+    MarginOrderPreview:
+      type: object
+      properties:
+        preorder:
+          allOf:
+          - $ref: '#/components/schemas/MarginRiskStats'
+          description: Margin risk statistics before the order would be executed
+        postorder:
+          allOf:
+          - $ref: '#/components/schemas/MarginRiskStats'
+          description: Margin risk statistics after the order would be executed
+      required:
+      - preorder
+      - postorder
+    MoneyAmount:
+      type: object
+      properties:
+        currency:
+          type: string
+          description: The currency code (e.g., "USD", "BTC", "ETH")
+          example: USD
+        value:
+          type: string
+          format: decimal
+          description: The amount in the specified currency
+          example: '10000.00'
+      required:
+      - currency
+      - value
+    LiquidationRisk:
+      type: object
+      properties:
+        lossPercentage:
+          type: string
+          format: decimal
+          description: The percentage loss from current value that would trigger liquidation, formatted as decimal (e.g., "0.1550" = 15.50%)
+          example: '0.1550'
+        liquidationPrice:
+          allOf:
+          - $ref: '#/components/schemas/MoneyAmount'
+          description: The estimated price at which liquidation would occur (optional, may not be present for all positions)
+      required:
+      - lossPercentage
+    Nonce:
+      oneOf:
+      - type: TimestampType
+        $ref: '#/components/schemas/TimestampType'
+        example: 1495127793000
+      - type: integer
+        example: 1495127793000
+      description: The nonce, as described in [Private API Invocation](/authentication/api-key#private-api-invocation)
+    TimestampType:
+      description: timestamp
+      oneOf:
+      - type: string
+        description: 'Gemini strongly recommends using milliseconds instead of seconds for timestamps.
+
+
+          | Timestamp format      | Example               | Supported request type |
+
+          |-----------------------|-----------------------|------------------------|
+
+          | string (seconds)      | `1495127793`          | `POST` only            |
+
+          | string (milliseconds) | `1495127793000`       | `POST` only            |
+
+          '
+        example: '1495127793000'
+      - type: integer
+        format: int64
+        description: 'Gemini strongly recommends using milliseconds instead of seconds for timestamps.
+
+
+          | Timestamp format            | Example                   | Supported request type |
+
+          |-----------------------------|---------------------------|------------------------|
+
+          | whole number (seconds)      | `1495127793`              | `GET`, `POST`          |
+
+          | whole number (milliseconds) | `1495127793000`           | `GET`, `POST`          |
+
+          '
+        example: 1495127793000
+    MarginRiskStats:
+      type: object
+      properties:
+        marginAssetValue:
+          allOf:
+          - $ref: '#/components/schemas/MoneyAmount'
+          description: The total value of all assets available in the margin account
+        availableCollateral:
+          allOf:
+          - $ref: '#/components/schemas/MoneyAmount'
+          description: The amount of collateral available for new positions
+        notionalValue:
+          allOf:
+          - $ref: '#/components/schemas/MoneyAmount'
+          description: The total value of all open positions
+        totalBorrowed:
+          allOf:
+          - $ref: '#/components/schemas/MoneyAmount'
+          description: The total amount currently borrowed
+        leverage:
+          type: string
+          format: decimal
+          description: The leverage ratio
+          example: '1.5'
+        reservedBuyOrders:
+          allOf:
+          - $ref: '#/components/schemas/MoneyAmount'
+          description: Collateral reserved for open buy orders
+        reservedSellOrders:
+          allOf:
+          - $ref: '#/components/schemas/MoneyAmount'
+          description: Collateral reserved for open sell orders
+        buyingPower:
+          allOf:
+          - $ref: '#/components/schemas/MoneyAmount'
+          description: The maximum value that can be purchased
+        sellingPower:
+          allOf:
+          - $ref: '#/components/schemas/MoneyAmount'
+          description: The maximum value that can be sold
+        liquidationRisk:
+          allOf:
+          - $ref: '#/components/schemas/LiquidationRisk'
+          description: Liquidation risk information (only present if applicable)
+      required:
+      - marginAssetValue
+      - availableCollateral
+      - notionalValue
+      - totalBorrowed
+      - leverage
+      - reservedBuyOrders
+      - reservedSellOrders
+      - buyingPower
+      - sellingPower
     InterestRateInfo:
       type: object
       properties:
@@ -661,108 +757,12 @@ components:
       required:
       - rate
       - interval
-    Nonce:
-      oneOf:
-      - type: TimestampType
-        $ref: '#/components/schemas/TimestampType'
-        example: 1495127793000
-      - type: integer
-        example: 1495127793000
-      description: The nonce, as described in [Private API Invocation](/authentication/api-key#private-api-invocation)
-    MoneyAmount:
-      type: object
-      properties:
-        currency:
-          type: string
-          description: The currency code (e.g., "USD", "BTC", "ETH")
-          example: USD
-        value:
-          type: string
-          format: decimal
-          description: The amount in the specified currency
-          example: '10000.00'
-      required:
-      - currency
-      - value
-    MarginRatesResponse:
-      type: object
-      properties:
-        rates:
-          type: array
-          items:
-            $ref: '#/components/schemas/MarginInterestRate'
-          description: Array of interest rates for all borrowable currencies
-      required:
-      - rates
-  responses:
-    TooManyRequests:
-      description: Too many requests - you have exceeded the rate limit
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/ErrorResponse'
-          example:
-            result: error
-            reason: Too Many Requests
-            message: Too Many Requests
-    ApiKeyIpFilteringFailure:
-      description: ApiKey fails IP Filtering Check
-      content:
-        application/json:
-          schema:
-            type: object
-            $ref: '#/components/schemas/ErrorResponse'
-          example:
-            result: error
-            reason: ApiKeyIpFilteringFailure
-            message: ApiKey fails IP Filtering Check for some accounts
-    BadRequest:
-      description: Bad request - malformed request or invalid parameters
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/ErrorResponse'
-          example:
-            result: error
-            reason: InvalidSignature
-            message: Invalid signature for this request
-    InternalError:
-      description: Internal server error
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/ErrorResponse'
-          example:
-            result: error
-            reason: Internal Server Error
-            message: Unexpected server error occurred.
-    Unauthorized:
-      description: Unauthorized - missing or invalid authentication
-      content:
-        application/json:
-          schema:
-            type: object
-            $ref: '#/components/schemas/ErrorResponse'
-          example:
-            result: error
-            reason: MissingApikeyHeader
-            message: Must provide 'X-GEMINI-APIKEY' header
-    NotFound:
-      description: Resource not found
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/ErrorResponse'
-          example:
-            result: error
-            reason: EndpointNotFound
-            message: API entry point not found
   parameters:
-    apiKeyAuth:
-      name: X-GEMINI-APIKEY
+    payloadAuth:
+      name: X-GEMINI-PAYLOAD
       in: header
       required: true
-      description: Your API key
+      description: Base64-encoded JSON payload
       schema:
         type: string
     cacheControl:
@@ -772,20 +772,6 @@ components:
       schema:
         type: string
         default: no-cache
-    contentType:
-      name: Content-Type
-      in: header
-      required: false
-      schema:
-        type: string
-        default: text/plain
-    signatureAuth:
-      name: X-GEMINI-SIGNATURE
-      in: header
-      required: true
-      description: HEX-encoded HMAC-SHA384 of payload signed with API secret
-      schema:
-        type: string
     contentLength:
       name: Content-Length
       in: header
@@ -793,13 +779,27 @@ components:
       schema:
         type: string
         default: '0'
-    payloadAuth:
-      name: X-GEMINI-PAYLOAD
+    signatureAuth:
+      name: X-GEMINI-SIGNATURE
       in: header
       required: true
-      description: Base64-encoded JSON payload
+      description: HEX-encoded HMAC-SHA384 of payload signed with API secret
       schema:
         type: string
+    apiKeyAuth:
+      name: X-GEMINI-APIKEY
+      in: header
+      required: true
+      description: Your API key
+      schema:
+        type: string
+    contentType:
+      name: Content-Type
+      in: header
+      required: false
+      schema:
+        type: string
+        default: text/plain
   securitySchemes:
     apiKeyAuth:
       type: apiKey

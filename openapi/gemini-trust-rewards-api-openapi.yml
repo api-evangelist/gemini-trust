@@ -1,10 +1,13 @@
 openapi: 3.2.0
 info:
-  title: Gemini Trust Rewards API
+  title: Gemini Prediction Markets Rewards API
+  description: 'API for trading prediction market contracts on Gemini.
+
+
+    **Note:** Only fields documented in this specification are considered stable. Undocumented fields in API responses may change or be removed without notice.'
   version: 1.0.0
   contact:
     name: Gemini API Support
-  description: 'Operations tagged Rewards across 2 of this provider''s published API definitions: gemini-trust-prediction-markets-openapi.yml, gemini-trust-prediction-markets-openapi.yml. Each path carries the servers of the definition it was published in.'
 servers:
 - url: https://api.gemini.com
   description: Production
@@ -71,11 +74,6 @@ paths:
                 $ref: '#/components/schemas/Error'
               example:
                 error: Maker rebate program is not currently available
-    servers:
-    - url: https://api.gemini.com
-      description: Production
-    - url: https://api.sandbox.gemini.com
-      description: Sandbox
   /v1/prediction-markets/maker-rebate/payouts:
     post:
       tags:
@@ -155,11 +153,6 @@ paths:
                 $ref: '#/components/schemas/Error'
               example:
                 error: Maker rebate program is not currently available
-    servers:
-    - url: https://api.gemini.com
-      description: Production
-    - url: https://api.sandbox.gemini.com
-      description: Sandbox
   /v1/prediction-markets/maker-rebate/summary/total:
     get:
       tags:
@@ -249,11 +242,6 @@ paths:
               example:
                 error: SERVICE_UNAVAILABLE
                 message: Maker rebate program is not currently available
-    servers:
-    - url: https://api.gemini.com
-      description: Production
-    - url: https://api.sandbox.gemini.com
-      description: Sandbox
   /v1/prediction-markets/liquidity-rewards/config:
     get:
       tags:
@@ -303,11 +291,6 @@ paths:
               example:
                 error: SERVICE_UNAVAILABLE
                 message: Liquidity rewards program is not currently available
-    servers:
-    - url: https://api.gemini.com
-      description: Production
-    - url: https://api.sandbox.gemini.com
-      description: Sandbox
   /v1/prediction-markets/liquidity-rewards/events:
     get:
       tags:
@@ -438,11 +421,6 @@ paths:
               example:
                 error: SERVICE_UNAVAILABLE
                 message: Liquidity rewards program is not currently available
-    servers:
-    - url: https://api.gemini.com
-      description: Production
-    - url: https://api.sandbox.gemini.com
-      description: Sandbox
   /v1/prediction-markets/liquidity-rewards/summary/daily:
     get:
       tags:
@@ -539,11 +517,6 @@ paths:
                 $ref: '#/components/schemas/Error'
               example:
                 error: Liquidity incentive program is not currently available
-    servers:
-    - url: https://api.gemini.com
-      description: Production
-    - url: https://api.sandbox.gemini.com
-      description: Sandbox
   /v1/prediction-markets/liquidity-rewards/summary/total:
     get:
       tags:
@@ -629,22 +602,19 @@ paths:
               example:
                 error: SERVICE_UNAVAILABLE
                 message: Liquidity rewards program is not currently available
-    servers:
-    - url: https://api.gemini.com
-      description: Production
-    - url: https://api.sandbox.gemini.com
-      description: Sandbox
 components:
   schemas:
-    MakerRebatePayoutsResponse:
+    Error:
       type: object
-      required:
-      - payouts
       properties:
-        payouts:
-          type: array
-          items:
-            $ref: '#/components/schemas/MakerRebatePayout'
+        error:
+          type: string
+          description: Error code
+          example: InvalidInput
+        message:
+          type: string
+          description: Human-readable error message
+          example: orderId is required
     LiquidityRewardsLifetimeSummary:
       type: object
       required:
@@ -676,17 +646,6 @@ components:
           format: date
           description: Date of the most recent payout in the window, or `null` if no payouts exist.
           example: '2026-05-20'
-    Error:
-      type: object
-      properties:
-        error:
-          type: string
-          description: Error code
-          example: InvalidInput
-        message:
-          type: string
-          description: Human-readable error message
-          example: orderId is required
     LiquidityEventScore:
       type: object
       required:
@@ -729,15 +688,15 @@ components:
           type: string
           description: Portion of the day's total reward attributed to this event.
           example: '8.20'
-    MakerRebateRatesResponse:
+    MakerRebatePayoutsResponse:
       type: object
       required:
-      - rate_rules
+      - payouts
       properties:
-        rate_rules:
+        payouts:
           type: array
           items:
-            $ref: '#/components/schemas/MakerRebateRateRule'
+            $ref: '#/components/schemas/MakerRebatePayout'
     MakerRebatePayout:
       type: object
       required:
@@ -785,48 +744,6 @@ components:
           format: date-time
           description: ISO-8601 timestamp at which the payout row was created. Always present.
           example: '2026-05-20T20:55:12Z'
-    MakerRebateRateRule:
-      type: object
-      required:
-      - id
-      - rebate_multiplier_bps
-      - effective_from
-      properties:
-        id:
-          type: integer
-          format: int64
-          description: Stable identifier for this rate rule.
-          example: 12
-        rebate_multiplier_bps:
-          type: integer
-          format: int32
-          description: Portion of the maker fee that is rebated, in basis points (10000 bps = 100%).
-          example: 5000
-        effective_from:
-          type:
-          - string
-          - 'null'
-          format: date-time
-          description: ISO-8601 timestamp at which this rule becomes effective. Always present; in practice never `null`.
-          example: '2026-03-19T00:00:00Z'
-        category:
-          type: string
-          description: Market category this rule applies to. When absent, the rule applies to all categories.
-          example: Crypto
-        effective_to:
-          type: string
-          format: date-time
-          description: ISO-8601 timestamp after which this rule is superseded. Omitted when the rule is still current.
-          example: '2026-04-19T00:00:00Z'
-    LiquidityRewardsDailySummaryResponse:
-      type: object
-      required:
-      - daily_summaries
-      properties:
-        daily_summaries:
-          type: array
-          items:
-            $ref: '#/components/schemas/LiquidityDailySummary'
     MakerRebateLifetimeSummary:
       type: object
       required:
@@ -869,26 +786,6 @@ components:
           format: date
           description: Date of the most recent payout in the window, or `null` if no payouts exist.
           example: '2026-05-20'
-    LiquidityRewardsEventsResponse:
-      type: object
-      required:
-      - events
-      - pagination
-      - last_score_date
-      properties:
-        events:
-          type: array
-          items:
-            $ref: '#/components/schemas/LiquidityRewardEvent'
-        pagination:
-          $ref: '#/components/schemas/Pagination'
-        last_score_date:
-          type:
-          - string
-          - 'null'
-          format: date
-          description: Most recent date for which scoring has been written. `null` when no scoring has run yet.
-          example: '2026-05-19'
     LiquidityRewardEvent:
       type: object
       required:
@@ -940,24 +837,18 @@ components:
           type: string
           description: Optional URL for the event icon. Omitted when not configured.
           example: https://example.com/btc.png
-    LiquidityRewardsConfig:
+    Pagination:
       type: object
-      required:
-      - enabled
       properties:
-        max_spread_cents:
+        limit:
           type: integer
-          format: int32
-          description: Quotes wider than this spread score zero in the scoring algorithm. Only present when `enabled` is `true`.
-          example: 10
-        min_payout_threshold_usd:
-          type: string
-          description: Daily reward amounts below this threshold are suppressed (sub-threshold accounts get no row at all). Only present when `enabled` is `true`.
-          example: '1.00'
-        enabled:
-          type: boolean
-          description: 'True when the program is fully configured upstream. When false, the response collapses to `{ "enabled": false }` only.'
-          example: true
+          example: 50
+        offset:
+          type: integer
+          example: 0
+        total:
+          type: integer
+          example: 100
     LiquidityDailySummary:
       type: object
       required:
@@ -992,18 +883,95 @@ components:
           description: Per-event score breakdown showing how the day's total was distributed.
           items:
             $ref: '#/components/schemas/LiquidityEventScore'
-    Pagination:
+    LiquidityRewardsDailySummaryResponse:
       type: object
+      required:
+      - daily_summaries
       properties:
-        limit:
+        daily_summaries:
+          type: array
+          items:
+            $ref: '#/components/schemas/LiquidityDailySummary'
+    MakerRebateRateRule:
+      type: object
+      required:
+      - id
+      - rebate_multiplier_bps
+      - effective_from
+      properties:
+        id:
           type: integer
-          example: 50
-        offset:
+          format: int64
+          description: Stable identifier for this rate rule.
+          example: 12
+        rebate_multiplier_bps:
           type: integer
-          example: 0
-        total:
+          format: int32
+          description: Portion of the maker fee that is rebated, in basis points (10000 bps = 100%).
+          example: 5000
+        effective_from:
+          type:
+          - string
+          - 'null'
+          format: date-time
+          description: ISO-8601 timestamp at which this rule becomes effective. Always present; in practice never `null`.
+          example: '2026-03-19T00:00:00Z'
+        category:
+          type: string
+          description: Market category this rule applies to. When absent, the rule applies to all categories.
+          example: Crypto
+        effective_to:
+          type: string
+          format: date-time
+          description: ISO-8601 timestamp after which this rule is superseded. Omitted when the rule is still current.
+          example: '2026-04-19T00:00:00Z'
+    MakerRebateRatesResponse:
+      type: object
+      required:
+      - rate_rules
+      properties:
+        rate_rules:
+          type: array
+          items:
+            $ref: '#/components/schemas/MakerRebateRateRule'
+    LiquidityRewardsConfig:
+      type: object
+      required:
+      - enabled
+      properties:
+        max_spread_cents:
           type: integer
-          example: 100
+          format: int32
+          description: Quotes wider than this spread score zero in the scoring algorithm. Only present when `enabled` is `true`.
+          example: 10
+        min_payout_threshold_usd:
+          type: string
+          description: Daily reward amounts below this threshold are suppressed (sub-threshold accounts get no row at all). Only present when `enabled` is `true`.
+          example: '1.00'
+        enabled:
+          type: boolean
+          description: 'True when the program is fully configured upstream. When false, the response collapses to `{ "enabled": false }` only.'
+          example: true
+    LiquidityRewardsEventsResponse:
+      type: object
+      required:
+      - events
+      - pagination
+      - last_score_date
+      properties:
+        events:
+          type: array
+          items:
+            $ref: '#/components/schemas/LiquidityRewardEvent'
+        pagination:
+          $ref: '#/components/schemas/Pagination'
+        last_score_date:
+          type:
+          - string
+          - 'null'
+          format: date
+          description: Most recent date for which scoring has been written. `null` when no scoring has run yet.
+          example: '2026-05-19'
   responses:
     Unauthorized:
       description: Authentication required or invalid credentials
@@ -1027,6 +995,3 @@ components:
       in: header
       name: X-GEMINI-SIGNATURE
       description: Hex HMAC-SHA384 signature of the payload using the API secret.
-x-refined-from:
-- gemini-trust-prediction-markets-openapi.yml
-- gemini-trust-prediction-markets-openapi.yml

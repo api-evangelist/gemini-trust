@@ -573,113 +573,70 @@ paths:
         '500':
           $ref: '#/components/responses/InternalError'
 components:
+  responses:
+    BadRequest:
+      description: Bad request - malformed request or invalid parameters
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          example:
+            result: error
+            reason: InvalidSignature
+            message: Invalid signature for this request
+    NotFound:
+      description: Resource not found
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          example:
+            result: error
+            reason: EndpointNotFound
+            message: API entry point not found
+    TooManyRequests:
+      description: Too many requests - you have exceeded the rate limit
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          example:
+            result: error
+            reason: Too Many Requests
+            message: Too Many Requests
+    InternalError:
+      description: Internal server error
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          example:
+            result: error
+            reason: Internal Server Error
+            message: Unexpected server error occurred.
+    ApiKeyIpFilteringFailure:
+      description: ApiKey fails IP Filtering Check
+      content:
+        application/json:
+          schema:
+            type: object
+            $ref: '#/components/schemas/ErrorResponse'
+          example:
+            result: error
+            reason: ApiKeyIpFilteringFailure
+            message: ApiKey fails IP Filtering Check for some accounts
+    Unauthorized:
+      description: Unauthorized - missing or invalid authentication
+      content:
+        application/json:
+          schema:
+            type: object
+            $ref: '#/components/schemas/ErrorResponse'
+          example:
+            result: error
+            reason: MissingApikeyHeader
+            message: Must provide 'X-GEMINI-APIKEY' header
   schemas:
-    StakingWithdrawal:
-      type: object
-      properties:
-        transactionId:
-          type: string
-          description: A unique identifier for the staking transaction
-          example: MPZ7LDD8
-        amount:
-          type: number
-          format: decimal
-          description: The amount deposited
-          example: 20
-        amountPaidSoFar:
-          type: number
-          format: decimal
-          description: The amount redeemed successfully
-          example: 20
-        amountRemaining:
-          type: number
-          format: decimal
-          description: The amount pending to be redeemed
-          example: 0
-        currency:
-          type: string
-          description: Currency code
-          example: MATIC
-        requestInitiated:
-          type: string
-          description: In ISO datetime with timezone format
-          example: '2022-11-02T19:49:20.153Z'
-    StakingRewardsResponse:
-      type: object
-      description: Provider UUID Keys
-      properties:
-        provider_uuid:
-          $ref: '#/components/schemas/StakingRewardsProvider'
-    StakingDeposit:
-      type: object
-      properties:
-        transactionId:
-          type: string
-          description: A unique identifier for the staking transaction
-          example: 65QN4XM5
-        providerId:
-          type: string
-          description: Provider Id, in uuid4 format
-          example: 62b21e17-2534-4b9f-afcf-b7edb609dd8d
-        currency:
-          type: string
-          description: Currency code, see [symbols](/market-data/symbols-and-minimums)
-          example: MATIC
-        amount:
-          type: number
-          format: decimal
-          description: The amount deposited
-          example: 30
-        accrualTotal:
-          type: number
-          format: decimal
-          description: The total accrual
-        rates:
-          type: object
-          description: A JSON object including one or many rates. If more than one rate it would be an array of rates.
-          properties:
-            rate:
-              type: integer
-              description: Staking interest rate in bps (Expressed as a simple rate. Interest on Staking balances compounds daily. In mobile and web applications, APYs are derived from this rate and rounded to 1/10th of a percent.)
-              example: 540
-    TimestampType:
-      description: timestamp
-      oneOf:
-      - type: string
-        description: 'Gemini strongly recommends using milliseconds instead of seconds for timestamps.
-
-
-          | Timestamp format      | Example               | Supported request type |
-
-          |-----------------------|-----------------------|------------------------|
-
-          | string (seconds)      | `1495127793`          | `POST` only            |
-
-          | string (milliseconds) | `1495127793000`       | `POST` only            |
-
-          '
-        example: '1495127793000'
-      - type: integer
-        format: int64
-        description: 'Gemini strongly recommends using milliseconds instead of seconds for timestamps.
-
-
-          | Timestamp format            | Example                   | Supported request type |
-
-          |-----------------------------|---------------------------|------------------------|
-
-          | whole number (seconds)      | `1495127793`              | `GET`, `POST`          |
-
-          | whole number (milliseconds) | `1495127793000`           | `GET`, `POST`          |
-
-          '
-        example: 1495127793000
-    StakingRewardsProvider:
-      type: object
-      description: Currency Symbol Keys
-      properties:
-        currency_symbol:
-          $ref: '#/components/schemas/StakingRewards'
     ErrorResponse:
       type: object
       properties:
@@ -692,122 +649,6 @@ components:
         message:
           type: string
           description: Detailed error message
-    StakingRate:
-      type: object
-      properties:
-        providerId:
-          type: string
-          description: Provider Id, in uuid4 format
-          example: 62bb4d27-a9c8-4493-a737-d4fa33994f1f
-        rate:
-          type: number
-          format: decimal
-          description: Staking interest rate in bps (Expressed as a simple rate. Interest on Staking balances compounds daily. In mobile and web applications, APYs are derived from this rate and rounded to 1/10th of a percent.)
-          example: 429.386
-        apyPct:
-          type: number
-          format: decimal
-          description: Staking interest APY (Expressed as a percentage derived from the rate and rounded to 1/10th of a percent.)
-          example: 4.39
-        ratePct:
-          type: number
-          format: decimal
-          description: '`rate` expressed as a percentage'
-          example: 4.29386
-        depositUsdLimit:
-          type: integer
-          description: Maximum new amount in USD notional of this crypto that can participate in Gemini Staking per account per month
-          example: 500000
-    StakingHistory:
-      type: object
-      properties:
-        providerId:
-          type: string
-          description: Provider Id, in uuid4 format
-          example: 62b21e17-2534-4b9f-afcf-b7edb609dd8d
-        transactions:
-          type: array
-          items:
-            $ref: '#/components/schemas/StakingTransaction'
-    StakingRewardPeriod:
-      type: object
-      properties:
-        providerId:
-          type: string
-          description: Provider Id, in uuid4 format
-          example: 62b21e17-2534-4b9f-afcf-b7edb609dd8d
-        currency:
-          type: string
-          description: Currency code, see [symbols](/market-data/symbols-and-minimums)
-          example: MATIC
-        apyPct:
-          type: number
-          format: decimal
-          description: Staking reward rate expressed as an APY at time of accrual. Interest on Staking balances compounds daily based on the simple rate which is available from `/v1/staking/rates/`
-          example: 5.75
-        ratePct:
-          type: number
-          format: decimal
-          description: Rate expressed as a percentage
-          example: 5.592369
-        numberOfAccruals:
-          type: integer
-          description: Number of accruals in the specific aggregate, typically one per day. If the rate is adjusted, new accruals are added.
-          example: 1
-        accrualTotal:
-          type: number
-          format: decimal
-          description: The total accrual
-          example: 0.0065678
-        firstAccrualAt:
-          type: string
-          description: Time of first accrual. In iso datetime with timezone format
-          example: '2022-08-23T20:00:00.000Z'
-        lastAccrualAt:
-          type: string
-          description: Time of last accrual. In iso datetime with timezone format
-          example: '2022-08-23T20:00:00.000Z'
-    StakingRewards:
-      type: object
-      properties:
-        providerId:
-          type: string
-          description: Provider Id, in uuid4 format
-          example: 62b21e17-2534-4b9f-afcf-b7edb609dd8d
-        currency:
-          type: string
-          description: Currency code, see [symbols](/market-data/symbols-and-minimums)
-          example: MATIC
-        accrualTotal:
-          type: number
-          format: decimal
-          description: The total accrual
-          example: 0.103994
-        ratePeriods:
-          type: array
-          description: Array of JSON objects with period accrual information
-          items:
-            $ref: '#/components/schemas/StakingRewardPeriod'
-    StakingRateProvider:
-      type: object
-      description: Currency Symbol Keys
-      properties:
-        currency_symbol:
-          $ref: '#/components/schemas/StakingRate'
-    Nonce:
-      oneOf:
-      - type: TimestampType
-        $ref: '#/components/schemas/TimestampType'
-        example: 1495127793000
-      - type: integer
-        example: 1495127793000
-      description: The nonce, as described in [Private API Invocation](/authentication/api-key#private-api-invocation)
-    StakingRateResponse:
-      type: object
-      description: Provider UUID Keys
-      properties:
-        provider_uuid:
-          $ref: '#/components/schemas/StakingRateProvider'
     StakingBalance:
       type: object
       properties:
@@ -844,6 +685,65 @@ components:
                 format: decimal
                 description: The current Staking balance per providerId
                 example: 10
+    StakingRate:
+      type: object
+      properties:
+        providerId:
+          type: string
+          description: Provider Id, in uuid4 format
+          example: 62bb4d27-a9c8-4493-a737-d4fa33994f1f
+        rate:
+          type: number
+          format: decimal
+          description: Staking interest rate in bps (Expressed as a simple rate. Interest on Staking balances compounds daily. In mobile and web applications, APYs are derived from this rate and rounded to 1/10th of a percent.)
+          example: 429.386
+        apyPct:
+          type: number
+          format: decimal
+          description: Staking interest APY (Expressed as a percentage derived from the rate and rounded to 1/10th of a percent.)
+          example: 4.39
+        ratePct:
+          type: number
+          format: decimal
+          description: '`rate` expressed as a percentage'
+          example: 4.29386
+        depositUsdLimit:
+          type: integer
+          description: Maximum new amount in USD notional of this crypto that can participate in Gemini Staking per account per month
+          example: 500000
+    StakingRewardsProvider:
+      type: object
+      description: Currency Symbol Keys
+      properties:
+        currency_symbol:
+          $ref: '#/components/schemas/StakingRewards'
+    StakingRewards:
+      type: object
+      properties:
+        providerId:
+          type: string
+          description: Provider Id, in uuid4 format
+          example: 62b21e17-2534-4b9f-afcf-b7edb609dd8d
+        currency:
+          type: string
+          description: Currency code, see [symbols](/market-data/symbols-and-minimums)
+          example: MATIC
+        accrualTotal:
+          type: number
+          format: decimal
+          description: The total accrual
+          example: 0.103994
+        ratePeriods:
+          type: array
+          description: Array of JSON objects with period accrual information
+          items:
+            $ref: '#/components/schemas/StakingRewardPeriod'
+    StakingRateResponse:
+      type: object
+      description: Provider UUID Keys
+      properties:
+        provider_uuid:
+          $ref: '#/components/schemas/StakingRateProvider'
     StakingTransaction:
       type: object
       properties:
@@ -885,75 +785,175 @@ components:
           $ref: '#/components/schemas/TimestampType'
           description: The time of the transaction in milliseconds
           example: 1667418560153
-  responses:
-    TooManyRequests:
-      description: Too many requests - you have exceeded the rate limit
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/ErrorResponse'
-          example:
-            result: error
-            reason: Too Many Requests
-            message: Too Many Requests
-    ApiKeyIpFilteringFailure:
-      description: ApiKey fails IP Filtering Check
-      content:
-        application/json:
-          schema:
-            type: object
-            $ref: '#/components/schemas/ErrorResponse'
-          example:
-            result: error
-            reason: ApiKeyIpFilteringFailure
-            message: ApiKey fails IP Filtering Check for some accounts
-    BadRequest:
-      description: Bad request - malformed request or invalid parameters
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/ErrorResponse'
-          example:
-            result: error
-            reason: InvalidSignature
-            message: Invalid signature for this request
-    InternalError:
-      description: Internal server error
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/ErrorResponse'
-          example:
-            result: error
-            reason: Internal Server Error
-            message: Unexpected server error occurred.
-    Unauthorized:
-      description: Unauthorized - missing or invalid authentication
-      content:
-        application/json:
-          schema:
-            type: object
-            $ref: '#/components/schemas/ErrorResponse'
-          example:
-            result: error
-            reason: MissingApikeyHeader
-            message: Must provide 'X-GEMINI-APIKEY' header
-    NotFound:
-      description: Resource not found
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/ErrorResponse'
-          example:
-            result: error
-            reason: EndpointNotFound
-            message: API entry point not found
+    StakingRateProvider:
+      type: object
+      description: Currency Symbol Keys
+      properties:
+        currency_symbol:
+          $ref: '#/components/schemas/StakingRate'
+    Nonce:
+      oneOf:
+      - type: TimestampType
+        $ref: '#/components/schemas/TimestampType'
+        example: 1495127793000
+      - type: integer
+        example: 1495127793000
+      description: The nonce, as described in [Private API Invocation](/authentication/api-key#private-api-invocation)
+    StakingRewardPeriod:
+      type: object
+      properties:
+        providerId:
+          type: string
+          description: Provider Id, in uuid4 format
+          example: 62b21e17-2534-4b9f-afcf-b7edb609dd8d
+        currency:
+          type: string
+          description: Currency code, see [symbols](/market-data/symbols-and-minimums)
+          example: MATIC
+        apyPct:
+          type: number
+          format: decimal
+          description: Staking reward rate expressed as an APY at time of accrual. Interest on Staking balances compounds daily based on the simple rate which is available from `/v1/staking/rates/`
+          example: 5.75
+        ratePct:
+          type: number
+          format: decimal
+          description: Rate expressed as a percentage
+          example: 5.592369
+        numberOfAccruals:
+          type: integer
+          description: Number of accruals in the specific aggregate, typically one per day. If the rate is adjusted, new accruals are added.
+          example: 1
+        accrualTotal:
+          type: number
+          format: decimal
+          description: The total accrual
+          example: 0.0065678
+        firstAccrualAt:
+          type: string
+          description: Time of first accrual. In iso datetime with timezone format
+          example: '2022-08-23T20:00:00.000Z'
+        lastAccrualAt:
+          type: string
+          description: Time of last accrual. In iso datetime with timezone format
+          example: '2022-08-23T20:00:00.000Z'
+    TimestampType:
+      description: timestamp
+      oneOf:
+      - type: string
+        description: 'Gemini strongly recommends using milliseconds instead of seconds for timestamps.
+
+
+          | Timestamp format      | Example               | Supported request type |
+
+          |-----------------------|-----------------------|------------------------|
+
+          | string (seconds)      | `1495127793`          | `POST` only            |
+
+          | string (milliseconds) | `1495127793000`       | `POST` only            |
+
+          '
+        example: '1495127793000'
+      - type: integer
+        format: int64
+        description: 'Gemini strongly recommends using milliseconds instead of seconds for timestamps.
+
+
+          | Timestamp format            | Example                   | Supported request type |
+
+          |-----------------------------|---------------------------|------------------------|
+
+          | whole number (seconds)      | `1495127793`              | `GET`, `POST`          |
+
+          | whole number (milliseconds) | `1495127793000`           | `GET`, `POST`          |
+
+          '
+        example: 1495127793000
+    StakingRewardsResponse:
+      type: object
+      description: Provider UUID Keys
+      properties:
+        provider_uuid:
+          $ref: '#/components/schemas/StakingRewardsProvider'
+    StakingDeposit:
+      type: object
+      properties:
+        transactionId:
+          type: string
+          description: A unique identifier for the staking transaction
+          example: 65QN4XM5
+        providerId:
+          type: string
+          description: Provider Id, in uuid4 format
+          example: 62b21e17-2534-4b9f-afcf-b7edb609dd8d
+        currency:
+          type: string
+          description: Currency code, see [symbols](/market-data/symbols-and-minimums)
+          example: MATIC
+        amount:
+          type: number
+          format: decimal
+          description: The amount deposited
+          example: 30
+        accrualTotal:
+          type: number
+          format: decimal
+          description: The total accrual
+        rates:
+          type: object
+          description: A JSON object including one or many rates. If more than one rate it would be an array of rates.
+          properties:
+            rate:
+              type: integer
+              description: Staking interest rate in bps (Expressed as a simple rate. Interest on Staking balances compounds daily. In mobile and web applications, APYs are derived from this rate and rounded to 1/10th of a percent.)
+              example: 540
+    StakingWithdrawal:
+      type: object
+      properties:
+        transactionId:
+          type: string
+          description: A unique identifier for the staking transaction
+          example: MPZ7LDD8
+        amount:
+          type: number
+          format: decimal
+          description: The amount deposited
+          example: 20
+        amountPaidSoFar:
+          type: number
+          format: decimal
+          description: The amount redeemed successfully
+          example: 20
+        amountRemaining:
+          type: number
+          format: decimal
+          description: The amount pending to be redeemed
+          example: 0
+        currency:
+          type: string
+          description: Currency code
+          example: MATIC
+        requestInitiated:
+          type: string
+          description: In ISO datetime with timezone format
+          example: '2022-11-02T19:49:20.153Z'
+    StakingHistory:
+      type: object
+      properties:
+        providerId:
+          type: string
+          description: Provider Id, in uuid4 format
+          example: 62b21e17-2534-4b9f-afcf-b7edb609dd8d
+        transactions:
+          type: array
+          items:
+            $ref: '#/components/schemas/StakingTransaction'
   parameters:
-    apiKeyAuth:
-      name: X-GEMINI-APIKEY
+    payloadAuth:
+      name: X-GEMINI-PAYLOAD
       in: header
       required: true
-      description: Your API key
+      description: Base64-encoded JSON payload
       schema:
         type: string
     cacheControl:
@@ -963,20 +963,6 @@ components:
       schema:
         type: string
         default: no-cache
-    contentType:
-      name: Content-Type
-      in: header
-      required: false
-      schema:
-        type: string
-        default: text/plain
-    signatureAuth:
-      name: X-GEMINI-SIGNATURE
-      in: header
-      required: true
-      description: HEX-encoded HMAC-SHA384 of payload signed with API secret
-      schema:
-        type: string
     contentLength:
       name: Content-Length
       in: header
@@ -984,13 +970,27 @@ components:
       schema:
         type: string
         default: '0'
-    payloadAuth:
-      name: X-GEMINI-PAYLOAD
+    signatureAuth:
+      name: X-GEMINI-SIGNATURE
       in: header
       required: true
-      description: Base64-encoded JSON payload
+      description: HEX-encoded HMAC-SHA384 of payload signed with API secret
       schema:
         type: string
+    apiKeyAuth:
+      name: X-GEMINI-APIKEY
+      in: header
+      required: true
+      description: Your API key
+      schema:
+        type: string
+    contentType:
+      name: Content-Type
+      in: header
+      required: false
+      schema:
+        type: string
+        default: text/plain
   securitySchemes:
     apiKeyAuth:
       type: apiKey

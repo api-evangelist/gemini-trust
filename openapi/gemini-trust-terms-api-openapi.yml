@@ -1,10 +1,13 @@
 openapi: 3.2.0
 info:
-  title: Gemini Trust Terms API
+  title: Gemini Prediction Markets Terms API
+  description: 'API for trading prediction market contracts on Gemini.
+
+
+    **Note:** Only fields documented in this specification are considered stable. Undocumented fields in API responses may change or be removed without notice.'
   version: 1.0.0
   contact:
     name: Gemini API Support
-  description: 'Operations tagged Terms across 2 of this provider''s published API definitions: gemini-trust-prediction-markets-openapi.yml, gemini-trust-prediction-markets-openapi.yml. Each path carries the servers of the definition it was published in.'
 servers:
 - url: https://api.gemini.com
   description: Production
@@ -47,11 +50,6 @@ paths:
                 message: No terms configured for prediction markets
         '500':
           $ref: '#/components/responses/InternalError'
-    servers:
-    - url: https://api.gemini.com
-      description: Production
-    - url: https://api.sandbox.gemini.com
-      description: Sandbox
   /v1/prediction-markets/terms/status:
     get:
       tags:
@@ -87,11 +85,6 @@ paths:
           $ref: '#/components/responses/Unauthorized'
         '500':
           $ref: '#/components/responses/InternalError'
-    servers:
-    - url: https://api.gemini.com
-      description: Production
-    - url: https://api.sandbox.gemini.com
-      description: Sandbox
   /v1/prediction-markets/terms/accept:
     post:
       tags:
@@ -125,21 +118,8 @@ paths:
                 message: No terms configured for prediction markets
         '500':
           $ref: '#/components/responses/InternalError'
-    servers:
-    - url: https://api.gemini.com
-      description: Production
-    - url: https://api.sandbox.gemini.com
-      description: Sandbox
 components:
   schemas:
-    AcceptPredictionMarketsTermsResponse:
-      type: object
-      required:
-      - success
-      properties:
-        success:
-          type: boolean
-          example: true
     Error:
       type: object
       properties:
@@ -197,15 +177,23 @@ components:
           - 'null'
           description: Latest configured Prediction Markets terms version, if available
           example: 3
+    AcceptPredictionMarketsTermsResponse:
+      type: object
+      required:
+      - success
+      properties:
+        success:
+          type: boolean
+          example: true
   responses:
-    Unauthorized:
-      description: Authentication required or invalid credentials
+    InternalError:
+      description: Internal server error
       content:
         application/json:
           schema:
             $ref: '#/components/schemas/Error'
-    InternalError:
-      description: Internal server error
+    Unauthorized:
+      description: Authentication required or invalid credentials
       content:
         application/json:
           schema:
@@ -226,6 +214,3 @@ components:
       in: header
       name: X-GEMINI-SIGNATURE
       description: Hex HMAC-SHA384 signature of the payload using the API secret.
-x-refined-from:
-- gemini-trust-prediction-markets-openapi.yml
-- gemini-trust-prediction-markets-openapi.yml

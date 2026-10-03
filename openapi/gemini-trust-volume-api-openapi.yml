@@ -1,10 +1,13 @@
 openapi: 3.2.0
 info:
-  title: Gemini Trust Volume API
+  title: Gemini Prediction Markets Volume API
+  description: 'API for trading prediction market contracts on Gemini.
+
+
+    **Note:** Only fields documented in this specification are considered stable. Undocumented fields in API responses may change or be removed without notice.'
   version: 1.0.0
   contact:
     name: Gemini API Support
-  description: 'Operations tagged Volume across 2 of this provider''s published API definitions: gemini-trust-prediction-markets-openapi.yml, gemini-trust-prediction-markets-openapi.yml. Each path carries the servers of the definition it was published in.'
 servers:
 - url: https://api.gemini.com
   description: Production
@@ -88,11 +91,6 @@ paths:
               example:
                 error: SERVICE_UNAVAILABLE
                 message: Prediction market volume data is temporarily unavailable
-    servers:
-    - url: https://api.gemini.com
-      description: Production
-    - url: https://api.sandbox.gemini.com
-      description: Sandbox
   /v1/prediction-markets/volume/{date}/hourly:
     get:
       tags:
@@ -169,11 +167,6 @@ paths:
               example:
                 error: SERVICE_UNAVAILABLE
                 message: Prediction market volume data is temporarily unavailable
-    servers:
-    - url: https://api.gemini.com
-      description: Production
-    - url: https://api.sandbox.gemini.com
-      description: Sandbox
 components:
   schemas:
     Error:
@@ -192,6 +185,25 @@ components:
       pattern: ^(?:0|[1-9][0-9]*)(?:\.[0-9]+)?$
       description: Non-negative decimal string. Preserve it as a string to avoid floating-point precision loss.
       example: '143567.25'
+    PredictionMarketVolumeCategory:
+      type: object
+      required:
+      - categoryPath
+      - volume
+      properties:
+        categoryPath:
+          type: array
+          description: Display-name path from the top-level category to this category. It replaces recursive child nodes.
+          items:
+            type: string
+          example:
+          - Sports
+          - Football
+          - Pro Football
+        volume:
+          allOf:
+          - $ref: '#/components/schemas/PredictionMarketVolumeDecimal'
+          description: Total volume for this category, including all descendant categories.
     PredictionMarketHourlyVolumeCategory:
       type: object
       required:
@@ -217,25 +229,6 @@ components:
           allOf:
           - $ref: '#/components/schemas/PredictionMarketVolumeDecimal'
           description: Total volume for this category in this hour, including all descendant categories.
-    PredictionMarketVolumeCategory:
-      type: object
-      required:
-      - categoryPath
-      - volume
-      properties:
-        categoryPath:
-          type: array
-          description: Display-name path from the top-level category to this category. It replaces recursive child nodes.
-          items:
-            type: string
-          example:
-          - Sports
-          - Football
-          - Pro Football
-        volume:
-          allOf:
-          - $ref: '#/components/schemas/PredictionMarketVolumeDecimal'
-          description: Total volume for this category, including all descendant categories.
   securitySchemes:
     apiKey:
       type: apiKey
@@ -252,6 +245,3 @@ components:
       in: header
       name: X-GEMINI-SIGNATURE
       description: Hex HMAC-SHA384 signature of the payload using the API secret.
-x-refined-from:
-- gemini-trust-prediction-markets-openapi.yml
-- gemini-trust-prediction-markets-openapi.yml

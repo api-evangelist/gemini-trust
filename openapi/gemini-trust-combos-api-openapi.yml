@@ -360,18 +360,26 @@ paths:
         '503':
           $ref: '#/components/responses/ServiceUnavailable'
 components:
+  responses:
+    ServiceUnavailable:
+      description: Prediction markets feature is temporarily unavailable
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+    BadRequest:
+      description: Invalid request parameters
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+    InternalError:
+      description: Internal server error
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
   schemas:
-    Error:
-      type: object
-      properties:
-        error:
-          type: string
-          description: Error code
-          example: InvalidInput
-        message:
-          type: string
-          description: Human-readable error message
-          example: orderId is required
     ComboLeg:
       type: object
       required:
@@ -417,104 +425,17 @@ components:
           allOf:
           - $ref: '#/components/schemas/ContractMetadata'
           description: Full metadata for the underlying single contract
-    ComboWriteError:
+    Error:
       type: object
-      required:
-      - error
-      - message
       properties:
         error:
           type: string
-          description: Error class.
+          description: Error code
           example: InvalidInput
-        code:
-          type: string
-          description: Machine-readable code for validation or missing-leg errors, when available.
-          example: COMBO_VALIDATION_ERROR
         message:
           type: string
-          description: Human-readable error detail.
-          example: a combo needs 2-6 legs
-    CreateComboResponse:
-      type: object
-      required:
-      - combo
-      - alreadyExisted
-      properties:
-        combo:
-          $ref: '#/components/schemas/ComboSummary'
-        alreadyExisted:
-          type: boolean
-          description: '`false` when this request created the canonical combo; `true` when the canonical combo already existed.'
-    ComboSummaryLeg:
-      type: object
-      required:
-      - comboId
-      - legIndex
-      - contractId
-      - requiredOutcome
-      properties:
-        comboId:
-          type: integer
-          format: int64
-          description: Parent combo ID.
-        legIndex:
-          type: integer
-          format: int32
-          description: Zero-based leg position in canonical order.
-        contractId:
-          type: string
-          description: Underlying contract ID as a decimal string.
-        requiredOutcome:
-          type: string
-          enum:
-          - 'Yes'
-          - 'No'
-          description: Required settlement outcome for the leg.
-        legOutcome:
-          type:
-          - string
-          - 'null'
-          enum:
-          - 'Yes'
-          - 'No'
-          description: Settled outcome for the leg, when resolved.
-        resolvedAt:
-          type:
-          - string
-          - 'null'
-          format: date-time
-          description: Resolution time for the leg, when resolved.
-        contract:
-          allOf:
-          - $ref: '#/components/schemas/ContractMetadata'
-          description: Underlying contract metadata, when available.
-    ListCombosResponse:
-      type: object
-      required:
-      - combos
-      - pagination
-      properties:
-        combos:
-          type: array
-          description: List of combo contracts matching the query
-          items:
-            $ref: '#/components/schemas/ComboResponse'
-        pagination:
-          allOf:
-          - $ref: '#/components/schemas/Pagination'
-    Pagination:
-      type: object
-      properties:
-        limit:
-          type: integer
-          example: 50
-        offset:
-          type: integer
-          example: 0
-        total:
-          type: integer
-          example: 100
+          description: Human-readable error message
+          example: orderId is required
     CreateComboLeg:
       type: object
       required:
@@ -532,100 +453,6 @@ components:
           - 'No'
           description: Required settlement outcome for this leg.
           example: 'Yes'
-    CreateComboRequest:
-      type: object
-      description: A canonical combo definition. The authenticated account is derived from the signed request and is not a request field.
-      required:
-      - legs
-      properties:
-        legs:
-          type: array
-          description: Two to six distinct underlying contract legs. The service canonicalizes their complete set, so leg order does not create a distinct combo.
-          minItems: 2
-          maxItems: 6
-          items:
-            $ref: '#/components/schemas/CreateComboLeg'
-    AuthErrorResponse:
-      type: object
-      additionalProperties: false
-      required:
-      - result
-      - reason
-      - message
-      properties:
-        result:
-          type: string
-          enum:
-          - error
-        reason:
-          type: string
-          description: Authentication or authorization error class
-          example: MissingNonce
-        message:
-          type: string
-          description: Human-readable authentication or authorization detail
-          example: Must provide unique monotonic increasing 'nonce' field in payload
-    ComboResponse:
-      type: object
-      required:
-      - contract
-      - legs
-      properties:
-        contract:
-          allOf:
-          - $ref: '#/components/schemas/ContractMetadata'
-          description: Metadata for the combo contract itself (ticker, status, expiry, etc.)
-        legs:
-          type: array
-          description: Ordered list of legs that make up this combo
-          items:
-            $ref: '#/components/schemas/ComboLeg'
-    ContractMetadata:
-      type: object
-      properties:
-        contractId:
-          type: string
-        contractName:
-          type: string
-        contractTicker:
-          type: string
-        eventTicker:
-          type: string
-        eventName:
-          type: string
-        category:
-          type: string
-        contractStatus:
-          type: string
-        eventType:
-          type: string
-          description: Event type ("binary" or "categorical")
-        expiryDate:
-          type:
-          - string
-          - 'null'
-          format: date-time
-        resolvedAt:
-          type:
-          - string
-          - 'null'
-          format: date-time
-        resolutionSide:
-          type:
-          - string
-          - 'null'
-          description: Winning outcome if resolved ("yes" or "no")
-        parentEventTicker:
-          type:
-          - string
-          - 'null'
-          description: Parent event ticker for sub-events
-        startTime:
-          type:
-          - string
-          - 'null'
-          format: date-time
-          description: Start datetime (ISO 8601)
     ComboSummary:
       type: object
       required:
@@ -683,34 +510,199 @@ components:
           description: Canonically ordered combo legs.
           items:
             $ref: '#/components/schemas/ComboSummaryLeg'
-  responses:
-    InternalError:
-      description: Internal server error
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/Error'
-    BadRequest:
-      description: Invalid request parameters
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/Error'
-    ServiceUnavailable:
-      description: Prediction markets feature is temporarily unavailable
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/Error'
+    ComboWriteError:
+      type: object
+      required:
+      - error
+      - message
+      properties:
+        error:
+          type: string
+          description: Error class.
+          example: InvalidInput
+        code:
+          type: string
+          description: Machine-readable code for validation or missing-leg errors, when available.
+          example: COMBO_VALIDATION_ERROR
+        message:
+          type: string
+          description: Human-readable error detail.
+          example: a combo needs 2-6 legs
+    ComboResponse:
+      type: object
+      required:
+      - contract
+      - legs
+      properties:
+        contract:
+          allOf:
+          - $ref: '#/components/schemas/ContractMetadata'
+          description: Metadata for the combo contract itself (ticker, status, expiry, etc.)
+        legs:
+          type: array
+          description: Ordered list of legs that make up this combo
+          items:
+            $ref: '#/components/schemas/ComboLeg'
+    AuthErrorResponse:
+      type: object
+      additionalProperties: false
+      required:
+      - result
+      - reason
+      - message
+      properties:
+        result:
+          type: string
+          enum:
+          - error
+        reason:
+          type: string
+          description: Authentication or authorization error class
+          example: MissingNonce
+        message:
+          type: string
+          description: Human-readable authentication or authorization detail
+          example: Must provide unique monotonic increasing 'nonce' field in payload
+    Pagination:
+      type: object
+      properties:
+        limit:
+          type: integer
+          example: 50
+        offset:
+          type: integer
+          example: 0
+        total:
+          type: integer
+          example: 100
+    CreateComboResponse:
+      type: object
+      required:
+      - combo
+      - alreadyExisted
+      properties:
+        combo:
+          $ref: '#/components/schemas/ComboSummary'
+        alreadyExisted:
+          type: boolean
+          description: '`false` when this request created the canonical combo; `true` when the canonical combo already existed.'
+    CreateComboRequest:
+      type: object
+      description: A canonical combo definition. The authenticated account is derived from the signed request and is not a request field.
+      required:
+      - legs
+      properties:
+        legs:
+          type: array
+          description: Two to six distinct underlying contract legs. The service canonicalizes their complete set, so leg order does not create a distinct combo.
+          minItems: 2
+          maxItems: 6
+          items:
+            $ref: '#/components/schemas/CreateComboLeg'
+    ListCombosResponse:
+      type: object
+      required:
+      - combos
+      - pagination
+      properties:
+        combos:
+          type: array
+          description: List of combo contracts matching the query
+          items:
+            $ref: '#/components/schemas/ComboResponse'
+        pagination:
+          allOf:
+          - $ref: '#/components/schemas/Pagination'
+    ContractMetadata:
+      type: object
+      properties:
+        contractId:
+          type: string
+        contractName:
+          type: string
+        contractTicker:
+          type: string
+        eventTicker:
+          type: string
+        eventName:
+          type: string
+        category:
+          type: string
+        contractStatus:
+          type: string
+        eventType:
+          type: string
+          description: Event type ("binary" or "categorical")
+        expiryDate:
+          type:
+          - string
+          - 'null'
+          format: date-time
+        resolvedAt:
+          type:
+          - string
+          - 'null'
+          format: date-time
+        resolutionSide:
+          type:
+          - string
+          - 'null'
+          description: Winning outcome if resolved ("yes" or "no")
+        parentEventTicker:
+          type:
+          - string
+          - 'null'
+          description: Parent event ticker for sub-events
+        startTime:
+          type:
+          - string
+          - 'null'
+          format: date-time
+          description: Start datetime (ISO 8601)
+    ComboSummaryLeg:
+      type: object
+      required:
+      - comboId
+      - legIndex
+      - contractId
+      - requiredOutcome
+      properties:
+        comboId:
+          type: integer
+          format: int64
+          description: Parent combo ID.
+        legIndex:
+          type: integer
+          format: int32
+          description: Zero-based leg position in canonical order.
+        contractId:
+          type: string
+          description: Underlying contract ID as a decimal string.
+        requiredOutcome:
+          type: string
+          enum:
+          - 'Yes'
+          - 'No'
+          description: Required settlement outcome for the leg.
+        legOutcome:
+          type:
+          - string
+          - 'null'
+          enum:
+          - 'Yes'
+          - 'No'
+          description: Settled outcome for the leg, when resolved.
+        resolvedAt:
+          type:
+          - string
+          - 'null'
+          format: date-time
+          description: Resolution time for the leg, when resolved.
+        contract:
+          allOf:
+          - $ref: '#/components/schemas/ContractMetadata'
+          description: Underlying contract metadata, when available.
   parameters:
-    Offset:
-      name: offset
-      in: query
-      description: Number of results to skip for pagination
-      schema:
-        type: integer
-        default: 0
-        minimum: 0
     Limit:
       name: limit
       in: query
@@ -720,6 +712,14 @@ components:
         default: 50
         minimum: 1
         maximum: 500
+    Offset:
+      name: offset
+      in: query
+      description: Number of results to skip for pagination
+      schema:
+        type: integer
+        default: 0
+        minimum: 0
   securitySchemes:
     apiKey:
       type: apiKey

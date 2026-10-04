@@ -676,38 +676,113 @@ paths:
         '503':
           $ref: '#/components/responses/ServiceUnavailable'
 components:
-  responses:
-    BadRequest:
-      description: Invalid request parameters
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/Error'
-    InternalError:
-      description: Internal server error
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/Error'
-    Unauthorized:
-      description: Authentication required or invalid credentials
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/Error'
-    ServiceUnavailable:
-      description: Prediction markets feature is temporarily unavailable
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/Error'
   schemas:
-    OrderType:
+    OrderSide:
       type: string
       enum:
-      - limit
-      - stop-limit
-      description: Order type. `stop-limit` orders require a `stopPrice` that triggers a limit order at `price` when the market reaches the trigger.
+      - buy
+      - sell
+    Outcome:
+      type: string
+      enum:
+      - 'yes'
+      - 'no'
+      description: The outcome being traded (Yes or No)
+    ContractShareVolume:
+      type: object
+      properties:
+        symbol:
+          type: string
+          description: Contract instrument symbol
+          example: GEMI-FED260318-CUT25
+        totalQty:
+          type: string
+          description: Total taker volume across all participants (in shares)
+          example: '94625'
+        userAggressorQty:
+          type:
+          - string
+          - 'null'
+          description: The authenticated user's taker (aggressor) volume (in shares)
+          example: '1'
+        userRestingQty:
+          type:
+          - string
+          - 'null'
+          description: The authenticated user's maker (resting) volume (in shares)
+          example: '0'
+    PositionsResponse:
+      type: object
+      properties:
+        positions:
+          type: array
+          items:
+            $ref: '#/components/schemas/Position'
+        total:
+          type:
+          - integer
+          - 'null'
+          description: Total number of positions (for pagination)
+    OrderStatus:
+      type: string
+      enum:
+      - open
+      - filled
+      - cancelled
+    Error:
+      type: object
+      properties:
+        error:
+          type: string
+          description: Error code
+          example: InvalidInput
+        message:
+          type: string
+          description: Human-readable error message
+          example: orderId is required
+    PositionPrices:
+      type:
+      - object
+      - 'null'
+      description: Current bid/ask/last-trade prices for the contract
+      required:
+      - buy
+      - sell
+      properties:
+        buy:
+          type: object
+          properties:
+            'yes':
+              type:
+              - string
+              - 'null'
+            'no':
+              type:
+              - string
+              - 'null'
+        sell:
+          type: object
+          properties:
+            'yes':
+              type:
+              - string
+              - 'null'
+            'no':
+              type:
+              - string
+              - 'null'
+        bestBid:
+          type:
+          - string
+          - 'null'
+        bestAsk:
+          type:
+          - string
+          - 'null'
+        lastTradePrice:
+          type:
+          - string
+          - 'null'
     VolumeMetricsResponse:
       type: object
       properties:
@@ -719,61 +794,175 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/ContractShareVolume'
-    OrderSide:
-      type: string
-      enum:
-      - buy
-      - sell
-    PaginationSimple:
+    CashedOutPosition:
       type: object
-      properties:
-        limit:
-          type: integer
-        offset:
-          type: integer
-        count:
-          type: integer
-          description: Number of items in current response
-    SettledPositionsResponse:
-      type: object
-      properties:
-        positions:
-          type: array
-          items:
-            $ref: '#/components/schemas/SettledPosition'
-        total:
-          type:
-          - integer
-          - 'null'
-          description: Total number of settled positions across all pages for the current filter set.
-        totalPayout:
-          type: string
-          description: Sum of `payout` across all settled positions in the filter set. Retained for binary back-compat with the legacy response shape; **field is absent (not `null`) on the unified backend** because computing a roll-up over the full filtered set would require a separate aggregate query (deferred until a partner asks). Play's default `OptionHandlers` omits absent `Option` fields rather than emitting `null`.
-        totalCostBasis:
-          type: string
-          description: Sum of `costBasis` across all settled positions in the filter set. Retained for binary back-compat; **field is absent (not `null`) on the unified backend** (see `totalPayout`).
-        totalNetProfit:
-          type: string
-          description: Sum of `netProfit` across all settled positions in the filter set. Retained for binary back-compat; **field is absent (not `null`) on the unified backend** (see `totalPayout`).
-        cashOuts:
-          type: array
-          description: 'Cash-outs (early sells before contract resolution) in the same account-scoped time window as the returned page''s settled positions. Field is absent (not `null`) when `withCashOuts=true` is not passed on the request. `positions[]` pagination is unaffected — `limit`/`offset` continue to scope `positions[]` only.
+      required:
+      - accountId
+      - instrumentId
+      - instrumentSymbol
+      - timestamp
+      - filledQuantity
+      - side
+      - proceeds
+      - costBasis
+      - netProfit
+      description: 'A qualifying cash-out (early sell before contract resolution) with cost-basis context. Exposed only via the `withCashOuts=true` sibling array on `POST /v1/prediction-markets/positions/settled`. Distinct from `SettledPosition` — cash-outs don''t have a `payout` or `resolutionSide` since the contract hadn''t resolved when the user sold.
 
-            '
-          items:
-            $ref: '#/components/schemas/CashedOutPosition'
-        totalCashOutProceeds:
+        '
+      properties:
+        accountId:
+          type: integer
+          format: int64
+          description: Account that held the position.
+          example: 456
+        instrumentId:
+          type: integer
+          format: int64
+          description: Contract instrument ID.
+          example: 16789219
+        instrumentSymbol:
           type: string
-          description: Sum of `cashOuts[].proceeds` over the returned cash-outs. Field is absent (not `null`) when `withCashOuts=true` is not passed on the request.
-          example: '120.00'
-        totalCashOutCostBasis:
+          description: Contract instrument symbol.
+          example: GEMI-FEDJAN26-DN25
+        timestamp:
           type: string
-          description: Sum of `cashOuts[].costBasis` over the returned cash-outs. Field is absent (not `null`) when `withCashOuts=true` is not passed on the request.
-          example: '100.00'
-        totalCashOutNetProfit:
+          format: date-time
+          description: Wall-clock timestamp when the cash-out order closed (ISO 8601).
+          example: '2026-05-15T14:30:00.000Z'
+        filledQuantity:
           type: string
-          description: Sum of `cashOuts[].netProfit` over the returned cash-outs. Field is absent (not `null`) when `withCashOuts=true` is not passed on the request.
-          example: '20.00'
+          description: Quantity sold (cumulative filled quantity on the cash-out order).
+          example: '10'
+        side:
+          type: string
+          enum:
+          - sell
+          description: Always `sell` for cash-outs.
+          example: sell
+        proceeds:
+          type: string
+          description: Amount received from the sale in USD. For prediction sells, proceeds flow through `cash_balance` rather than `closed_orders.total_spend`, so the value is derived from position-balance snapshots before/after the fill.
+          example: '10.50'
+        costBasis:
+          type: string
+          description: Cost basis allocated proportionally to the filled quantity (`(costBasisSpend / costBasisPositionBalance) * filledQuantity`).
+          example: '10.00'
+        netProfit:
+          type: string
+          description: Realized P&L from this cash-out fill (`proceeds - costBasis`). Equals the ledger `realized_pl` delta on the position-balance row pair around the fill; falls back to `0` under transient market-data lag so a missing post-fill snapshot can't poison the page.
+          example: '0.50'
+        contractMetadata:
+          $ref: '#/components/schemas/ContractMetadata'
+    SettledPosition:
+      type: object
+      description: A historically settled position in a resolved prediction market contract.
+      properties:
+        accountId:
+          type: integer
+          format: int64
+          description: Account that held the position
+        instrumentId:
+          type: integer
+          format: int64
+          description: Unique instrument identifier for the contract
+        instrumentSymbol:
+          type: string
+          description: Contract instrument symbol
+          example: GEMI-FEDJAN26-DN25
+        position:
+          type: string
+          description: Signed position held at settlement. Positive values represent a `yes` position; negative values represent a `no` position.
+          example: '125'
+        positionQuantity:
+          type: string
+          description: Absolute quantity held at settlement (unsigned)
+          example: '125'
+        outcome:
+          $ref: '#/components/schemas/Outcome'
+        payout:
+          type: string
+          description: Payout received from settlement. `0` when the position lost.
+          example: '125.00'
+        resolutionSide:
+          allOf:
+          - $ref: '#/components/schemas/Outcome'
+          description: The winning outcome of the contract
+        settledAt:
+          type: string
+          format: date-time
+          description: Settlement timestamp (ISO 8601)
+        contractMetadata:
+          $ref: '#/components/schemas/ContractMetadata'
+        costBasis:
+          type:
+          - string
+          - 'null'
+          description: Total amount spent to enter the position, net of any prior realized P&L from partial sells. Omitted when cost-basis data is not available.
+          example: '78.75'
+        realizedPnl:
+          type:
+          - string
+          - 'null'
+          description: Realized profit or loss recorded from sells prior to settlement. Omitted when not available.
+          example: '0'
+        netProfit:
+          type:
+          - string
+          - 'null'
+          description: Net profit for the position, computed as `payout - costBasis + realizedPnl`. Omitted when `costBasis` is not available.
+          example: '46.25'
+    Position:
+      type: object
+      properties:
+        symbol:
+          type: string
+        instrumentId:
+          type: integer
+          format: int64
+        totalQuantity:
+          type: string
+          description: Total position size
+        quantityOnHold:
+          type: string
+          description: Quantity currently on hold from open orders
+        avgPrice:
+          type: string
+          description: Average entry price
+        outcome:
+          $ref: '#/components/schemas/Outcome'
+        contractMetadata:
+          $ref: '#/components/schemas/ContractMetadata'
+        prices:
+          $ref: '#/components/schemas/PositionPrices'
+        resolutionSide:
+          type:
+          - string
+          - 'null'
+          description: Winning outcome ("yes" or "no") if the contract has resolved
+        isAboveAutoStartThreshold:
+          type: boolean
+          description: Whether the position is above the auto-start threshold
+        isLive:
+          type: boolean
+          description: Whether the market is currently live/active
+        realizedPl:
+          type:
+          - string
+          - 'null'
+          description: Realized profit/loss from sells
+        marketValue:
+          type: string
+          description: Mark-to-market value of the position in USD at the current sell price (bestBid for YES, bestAsk for NO). **Absent** from the response when the held outcome has no live sell quote (no liquidity to sell into) — surface a no-liquidity state rather than a price the user cannot transact at. `lastTradePrice` is still returned for display. Treat as `Optional<T>`.
+          example: '65.00'
+        unrealizedPnl:
+          type: string
+          description: Unrealized P&L in USD (`marketValue - costBasis`). **Absent** whenever `marketValue` is absent. Treat as `Optional<T>`.
+          example: '12.50'
+        unrealizedPct:
+          type: number
+          format: double
+          description: Unrealized P&L as a percentage of cost basis. Expressed as a percent (e.g. `12.5` represents 12.5%, **not** `0.125`); rounded to 4 decimal places. **Absent** when there is no live sell quote, or when cost basis is zero. Treat as `Optional<T>`.
+          example: 23.81
     OrderResponse:
       type: object
       properties:
@@ -847,276 +1036,62 @@ components:
             $ref: '#/components/schemas/OrderResponse'
         pagination:
           $ref: '#/components/schemas/PaginationSimple'
-    Outcome:
+    OrderType:
       type: string
       enum:
-      - 'yes'
-      - 'no'
-      description: The outcome being traded (Yes or No)
-    ContractShareVolume:
-      type: object
-      properties:
-        symbol:
-          type: string
-          description: Contract instrument symbol
-          example: GEMI-FED260318-CUT25
-        totalQty:
-          type: string
-          description: Total taker volume across all participants (in shares)
-          example: '94625'
-        userAggressorQty:
-          type:
-          - string
-          - 'null'
-          description: The authenticated user's taker (aggressor) volume (in shares)
-          example: '1'
-        userRestingQty:
-          type:
-          - string
-          - 'null'
-          description: The authenticated user's maker (resting) volume (in shares)
-          example: '0'
-    CashedOutPosition:
-      type: object
-      required:
-      - accountId
-      - instrumentId
-      - instrumentSymbol
-      - timestamp
-      - filledQuantity
-      - side
-      - proceeds
-      - costBasis
-      - netProfit
-      description: 'A qualifying cash-out (early sell before contract resolution) with cost-basis context. Exposed only via the `withCashOuts=true` sibling array on `POST /v1/prediction-markets/positions/settled`. Distinct from `SettledPosition` — cash-outs don''t have a `payout` or `resolutionSide` since the contract hadn''t resolved when the user sold.
-
-        '
-      properties:
-        accountId:
-          type: integer
-          format: int64
-          description: Account that held the position.
-          example: 456
-        instrumentId:
-          type: integer
-          format: int64
-          description: Contract instrument ID.
-          example: 16789219
-        instrumentSymbol:
-          type: string
-          description: Contract instrument symbol.
-          example: GEMI-FEDJAN26-DN25
-        timestamp:
-          type: string
-          format: date-time
-          description: Wall-clock timestamp when the cash-out order closed (ISO 8601).
-          example: '2026-05-15T14:30:00.000Z'
-        filledQuantity:
-          type: string
-          description: Quantity sold (cumulative filled quantity on the cash-out order).
-          example: '10'
-        side:
-          type: string
-          enum:
-          - sell
-          description: Always `sell` for cash-outs.
-          example: sell
-        proceeds:
-          type: string
-          description: Amount received from the sale in USD. For prediction sells, proceeds flow through `cash_balance` rather than `closed_orders.total_spend`, so the value is derived from position-balance snapshots before/after the fill.
-          example: '10.50'
-        costBasis:
-          type: string
-          description: Cost basis allocated proportionally to the filled quantity (`(costBasisSpend / costBasisPositionBalance) * filledQuantity`).
-          example: '10.00'
-        netProfit:
-          type: string
-          description: Realized P&L from this cash-out fill (`proceeds - costBasis`). Equals the ledger `realized_pl` delta on the position-balance row pair around the fill; falls back to `0` under transient market-data lag so a missing post-fill snapshot can't poison the page.
-          example: '0.50'
-        contractMetadata:
-          $ref: '#/components/schemas/ContractMetadata'
-    PositionsResponse:
+      - limit
+      - stop-limit
+      description: Order type. `stop-limit` orders require a `stopPrice` that triggers a limit order at `price` when the market reaches the trigger.
+    SettledPositionsResponse:
       type: object
       properties:
         positions:
           type: array
           items:
-            $ref: '#/components/schemas/Position'
+            $ref: '#/components/schemas/SettledPosition'
         total:
           type:
           - integer
           - 'null'
-          description: Total number of positions (for pagination)
-    Position:
+          description: Total number of settled positions across all pages for the current filter set.
+        totalPayout:
+          type: string
+          description: Sum of `payout` across all settled positions in the filter set. Retained for binary back-compat with the legacy response shape; **field is absent (not `null`) on the unified backend** because computing a roll-up over the full filtered set would require a separate aggregate query (deferred until a partner asks). Play's default `OptionHandlers` omits absent `Option` fields rather than emitting `null`.
+        totalCostBasis:
+          type: string
+          description: Sum of `costBasis` across all settled positions in the filter set. Retained for binary back-compat; **field is absent (not `null`) on the unified backend** (see `totalPayout`).
+        totalNetProfit:
+          type: string
+          description: Sum of `netProfit` across all settled positions in the filter set. Retained for binary back-compat; **field is absent (not `null`) on the unified backend** (see `totalPayout`).
+        cashOuts:
+          type: array
+          description: 'Cash-outs (early sells before contract resolution) in the same account-scoped time window as the returned page''s settled positions. Field is absent (not `null`) when `withCashOuts=true` is not passed on the request. `positions[]` pagination is unaffected — `limit`/`offset` continue to scope `positions[]` only.
+
+            '
+          items:
+            $ref: '#/components/schemas/CashedOutPosition'
+        totalCashOutProceeds:
+          type: string
+          description: Sum of `cashOuts[].proceeds` over the returned cash-outs. Field is absent (not `null`) when `withCashOuts=true` is not passed on the request.
+          example: '120.00'
+        totalCashOutCostBasis:
+          type: string
+          description: Sum of `cashOuts[].costBasis` over the returned cash-outs. Field is absent (not `null`) when `withCashOuts=true` is not passed on the request.
+          example: '100.00'
+        totalCashOutNetProfit:
+          type: string
+          description: Sum of `cashOuts[].netProfit` over the returned cash-outs. Field is absent (not `null`) when `withCashOuts=true` is not passed on the request.
+          example: '20.00'
+    PaginationSimple:
       type: object
       properties:
-        symbol:
-          type: string
-        instrumentId:
+        limit:
           type: integer
-          format: int64
-        totalQuantity:
-          type: string
-          description: Total position size
-        quantityOnHold:
-          type: string
-          description: Quantity currently on hold from open orders
-        avgPrice:
-          type: string
-          description: Average entry price
-        outcome:
-          $ref: '#/components/schemas/Outcome'
-        contractMetadata:
-          $ref: '#/components/schemas/ContractMetadata'
-        prices:
-          $ref: '#/components/schemas/PositionPrices'
-        resolutionSide:
-          type:
-          - string
-          - 'null'
-          description: Winning outcome ("yes" or "no") if the contract has resolved
-        isAboveAutoStartThreshold:
-          type: boolean
-          description: Whether the position is above the auto-start threshold
-        isLive:
-          type: boolean
-          description: Whether the market is currently live/active
-        realizedPl:
-          type:
-          - string
-          - 'null'
-          description: Realized profit/loss from sells
-        marketValue:
-          type: string
-          description: Mark-to-market value of the position in USD at the current sell price (bestBid for YES, bestAsk for NO). **Absent** from the response when the held outcome has no live sell quote (no liquidity to sell into) — surface a no-liquidity state rather than a price the user cannot transact at. `lastTradePrice` is still returned for display. Treat as `Optional<T>`.
-          example: '65.00'
-        unrealizedPnl:
-          type: string
-          description: Unrealized P&L in USD (`marketValue - costBasis`). **Absent** whenever `marketValue` is absent. Treat as `Optional<T>`.
-          example: '12.50'
-        unrealizedPct:
-          type: number
-          format: double
-          description: Unrealized P&L as a percentage of cost basis. Expressed as a percent (e.g. `12.5` represents 12.5%, **not** `0.125`); rounded to 4 decimal places. **Absent** when there is no live sell quote, or when cost basis is zero. Treat as `Optional<T>`.
-          example: 23.81
-    Error:
-      type: object
-      properties:
-        error:
-          type: string
-          description: Error code
-          example: InvalidInput
-        message:
-          type: string
-          description: Human-readable error message
-          example: orderId is required
-    OrderStatus:
-      type: string
-      enum:
-      - open
-      - filled
-      - cancelled
-    SettledPosition:
-      type: object
-      description: A historically settled position in a resolved prediction market contract.
-      properties:
-        accountId:
+        offset:
           type: integer
-          format: int64
-          description: Account that held the position
-        instrumentId:
+        count:
           type: integer
-          format: int64
-          description: Unique instrument identifier for the contract
-        instrumentSymbol:
-          type: string
-          description: Contract instrument symbol
-          example: GEMI-FEDJAN26-DN25
-        position:
-          type: string
-          description: Signed position held at settlement. Positive values represent a `yes` position; negative values represent a `no` position.
-          example: '125'
-        positionQuantity:
-          type: string
-          description: Absolute quantity held at settlement (unsigned)
-          example: '125'
-        outcome:
-          $ref: '#/components/schemas/Outcome'
-        payout:
-          type: string
-          description: Payout received from settlement. `0` when the position lost.
-          example: '125.00'
-        resolutionSide:
-          allOf:
-          - $ref: '#/components/schemas/Outcome'
-          description: The winning outcome of the contract
-        settledAt:
-          type: string
-          format: date-time
-          description: Settlement timestamp (ISO 8601)
-        contractMetadata:
-          $ref: '#/components/schemas/ContractMetadata'
-        costBasis:
-          type:
-          - string
-          - 'null'
-          description: Total amount spent to enter the position, net of any prior realized P&L from partial sells. Omitted when cost-basis data is not available.
-          example: '78.75'
-        realizedPnl:
-          type:
-          - string
-          - 'null'
-          description: Realized profit or loss recorded from sells prior to settlement. Omitted when not available.
-          example: '0'
-        netProfit:
-          type:
-          - string
-          - 'null'
-          description: Net profit for the position, computed as `payout - costBasis + realizedPnl`. Omitted when `costBasis` is not available.
-          example: '46.25'
-    PositionPrices:
-      type:
-      - object
-      - 'null'
-      description: Current bid/ask/last-trade prices for the contract
-      required:
-      - buy
-      - sell
-      properties:
-        buy:
-          type: object
-          properties:
-            'yes':
-              type:
-              - string
-              - 'null'
-            'no':
-              type:
-              - string
-              - 'null'
-        sell:
-          type: object
-          properties:
-            'yes':
-              type:
-              - string
-              - 'null'
-            'no':
-              type:
-              - string
-              - 'null'
-        bestBid:
-          type:
-          - string
-          - 'null'
-        bestAsk:
-          type:
-          - string
-          - 'null'
-        lastTradePrice:
-          type:
-          - string
-          - 'null'
+          description: Number of items in current response
     ContractMetadata:
       type: object
       properties:
@@ -1163,6 +1138,31 @@ components:
           - 'null'
           format: date-time
           description: Start datetime (ISO 8601)
+  responses:
+    ServiceUnavailable:
+      description: Prediction markets feature is temporarily unavailable
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+    BadRequest:
+      description: Invalid request parameters
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+    InternalError:
+      description: Internal server error
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+    Unauthorized:
+      description: Authentication required or invalid credentials
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
   securitySchemes:
     apiKey:
       type: apiKey

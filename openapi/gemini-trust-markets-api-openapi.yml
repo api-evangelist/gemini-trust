@@ -625,99 +625,520 @@ paths:
         '503':
           $ref: '#/components/responses/ServiceUnavailable'
 components:
-  responses:
-    BadRequest:
-      description: Invalid request parameters
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/Error'
-    InternalError:
-      description: Internal server error
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/Error'
-    ServiceUnavailable:
-      description: Prediction markets feature is temporarily unavailable
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/Error'
-  parameters:
-    SportsMarketMetricFilter:
-      name: sports_market_metric
-      in: query
-      description: Filter by `sportsMarket.metric`. Repeat the parameter to match any supplied value (OR). A metric can be queried without `sport`; use `sport` when its sport-specific meaning matters. Sports-market filters compose independently using AND. Unsupported enum values return `400 Bad Request`.
-      schema:
-        type: array
-        items:
-          $ref: '#/components/schemas/SportsMarketMetric'
-      style: form
-      explode: true
-    SportsMarketScopeFilter:
-      name: sports_market_scope
-      in: query
-      description: Filter by `sportsMarket.scope.type`. Repeat the parameter to match any supplied value (OR). Ordinal and range qualifiers are not inferred by this filter. Sports-market filters compose independently using AND. Unsupported enum values return `400 Bad Request`.
-      schema:
-        type: array
-        items:
-          $ref: '#/components/schemas/SportsMarketScopeType'
-      style: form
-      explode: true
-    SportsMarketSubjectFilter:
-      name: sports_market_subject
-      in: query
-      description: Filter by `sportsMarket.subject`. Repeat the parameter to match any supplied value (OR). Sports-market filters compose independently using AND. Unsupported enum values return `400 Bad Request`.
-      schema:
-        type: array
-        items:
-          $ref: '#/components/schemas/SportsMarketSubject'
-      style: form
-      explode: true
-    Offset:
-      name: offset
-      in: query
-      description: Number of results to skip for pagination
-      schema:
-        type: integer
-        default: 0
-        minimum: 0
-    Limit:
-      name: limit
-      in: query
-      description: Maximum number of results to return (max 500)
-      schema:
-        type: integer
-        default: 50
-        minimum: 1
-        maximum: 500
-    SportsMarketTypeFilter:
-      name: sports_market_type
-      in: query
-      description: Filter by `sportsMarket.type`. Repeat the parameter to match any supplied value (OR). Sports-market filters compose independently using AND. Unsupported enum values return `400 Bad Request`.
-      schema:
-        type: array
-        items:
-          $ref: '#/components/schemas/SportsMarketType'
-      style: form
-      explode: true
-    SportFilter:
-      name: sport
-      in: query
-      description: Filter by `sportsMarket.sport`. Repeat the parameter to match any supplied value (OR). Sports-market filters compose independently using AND. Unsupported enum values return `400 Bad Request`; valid combinations with no matching events return an empty result.
-      schema:
-        type: array
-        items:
-          $ref: '#/components/schemas/SportsMarketSport'
-      style: form
-      explode: true
   schemas:
     OrderSide:
       type: string
       enum:
       - buy
       - sell
+    Outcome:
+      type: string
+      enum:
+      - 'yes'
+      - 'no'
+      description: The outcome being traded (Yes or No)
+    SportsMarketSubject:
+      type: string
+      enum:
+      - contest
+      - team
+      - player
+      - participant
+      - other
+      description: What the market is about. `participant` covers non-player entrants such as drivers and horses.
+    MarketType:
+      type: string
+      enum:
+      - binary
+      - categorical
+      description: Type of prediction market
+    OrderBookEntry:
+      type: object
+      properties:
+        side:
+          $ref: '#/components/schemas/OrderSide'
+        price:
+          type: string
+          example: '0.65'
+        quantity:
+          type: string
+          example: '1000'
+    SportsMarket:
+      type: object
+      additionalProperties: false
+      description: Atomic sports-market classification shared by every contract grouped under the event. Present only for sports events. All fields except `metric` are required together.
+      required:
+      - sport
+      - type
+      - subject
+      - scope
+      properties:
+        sport:
+          $ref: '#/components/schemas/SportsMarketSport'
+        type:
+          $ref: '#/components/schemas/SportsMarketType'
+        subject:
+          $ref: '#/components/schemas/SportsMarketSubject'
+        scope:
+          $ref: '#/components/schemas/SportsMarketScope'
+        metric:
+          $ref: '#/components/schemas/SportsMarketMetric'
+    Error:
+      type: object
+      properties:
+        error:
+          type: string
+          description: Error code
+          example: InvalidInput
+        message:
+          type: string
+          description: Human-readable error message
+          example: orderId is required
+    Contract:
+      type: object
+      description: 'Contract quantity and price validation is instrument-specific. Clients must validate order quantities and prices against the returned increment and minimum fields rather than assuming a fixed grid.
+
+        '
+      properties:
+        id:
+          type: string
+        label:
+          type: string
+          description: Human-readable label for the contract's YES-space proposition (e.g., "SOL > $90")
+        abbreviatedName:
+          type:
+          - string
+          - 'null'
+          description: Short form label (e.g., ">$90")
+        description:
+          type: object
+          description: Rich text description
+        prices:
+          $ref: '#/components/schemas/ContractPrices'
+        color:
+          type:
+          - string
+          - 'null'
+        status:
+          $ref: '#/components/schemas/MarketStatus'
+        imageUrl:
+          type:
+          - string
+          - 'null'
+        priceHistory:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/PricePoint'
+        createdAt:
+          type: string
+          format: date-time
+        expiryDate:
+          type:
+          - string
+          - 'null'
+          format: date-time
+        resolutionSide:
+          $ref: '#/components/schemas/Outcome'
+        resolvedAt:
+          type:
+          - string
+          - 'null'
+          format: date-time
+        termsAndConditionsUrl:
+          type: string
+        ticker:
+          type: string
+        instrumentSymbol:
+          type: string
+        quantityIncrement:
+          type:
+          - string
+          - 'null'
+          description: Contract quantity grid from instrument refdata (for example, "0.01").
+        quantityMinimum:
+          type:
+          - string
+          - 'null'
+          description: Minimum contract quantity from instrument refdata (for example, "1.00").
+        priceIncrement:
+          type:
+          - string
+          - 'null'
+          description: Contract price grid from instrument refdata (for example, "0.0001").
+        quoteAssetPrecision:
+          type:
+          - integer
+          - 'null'
+          description: Decimal places supported by the instrument's quote asset.
+        priceMinimum:
+          type:
+          - string
+          - 'null'
+          description: Minimum contract price and anchor for the instrument price grid (for example, "0.0001").
+        effectiveDate:
+          type:
+          - string
+          - 'null'
+          format: date-time
+        marketState:
+          type:
+          - string
+          - 'null'
+          description: Trading state of the contract
+          enum:
+          - open
+          - closed
+        sortOrder:
+          type:
+          - integer
+          - 'null'
+          description: Display order within the event
+        strike:
+          $ref: '#/components/schemas/Strike'
+        source:
+          type:
+          - string
+          - 'null'
+          deprecated: true
+          description: 'Deprecated: use the event-level `sourceDetails` (`agency` + `index`) instead. Data source identifier for price observation (e.g., "GRR-KAIKO_BTCUSD_60S"). Present for crypto Up/Down contracts.'
+          example: GRR-KAIKO_BTCUSD_60S
+        settlementValue:
+          type:
+          - string
+          - 'null'
+          description: The observed settlement price. Only present after the contract is settled.
+          example: '87654.32'
+    PricePoint:
+      type: object
+      properties:
+        timestamp:
+          type: string
+          format: date-time
+        price:
+          type: string
+    MarketStatus:
+      type: string
+      enum:
+      - approved
+      - active
+      - closed
+      - under_review
+      - settled
+      - invalid
+      description: Status of a prediction market
+    SportsMarketScopeType:
+      type: string
+      enum:
+      - full_contest
+      - regulation
+      - half
+      - quarter
+      - period
+      - inning
+      - team_innings
+      - over
+      - powerplay
+      - set
+      - game
+      - round
+      - hole
+      - match_day
+      - session
+      - super_over
+      - race
+      - sprint
+      - qualifying
+      - practice
+      - stage
+      - lap
+      - series
+      - season
+      - tournament
+      - competition
+      - other
+      description: Unit covered by the market. `full_contest` follows the market's official final-result rules; `regulation` covers scheduled regulation play only. Ordinal and range qualifiers are represented separately on `SportsMarketScope`.
+    SourceDetails:
+      type:
+      - object
+      - 'null'
+      description: Structured data source information for price observation. Replaces the deprecated flat `source` string on the event and contract. Present for crypto Up/Down events. Both fields are omitted when not available.
+      properties:
+        agency:
+          type:
+          - string
+          - 'null'
+          description: The data provider / vendor name.
+          example: Kaiko
+        index:
+          type:
+          - string
+          - 'null'
+          description: The specific data feed identifier (the value previously carried by the flat `source` field).
+          example: GRR-KAIKO_BTCUSD_60S
+    Event:
+      type: object
+      description: A prediction market event containing one or more tradeable contracts
+      properties:
+        id:
+          type: string
+        title:
+          type: string
+          example: Will Bitcoin reach $100k by end of 2028?
+        slug:
+          type: string
+          example: bitcoin-100k-2028
+        description:
+          type:
+          - string
+          - 'null'
+        imageUrl:
+          type:
+          - string
+          - 'null'
+        type:
+          $ref: '#/components/schemas/MarketType'
+        category:
+          type: string
+          example: crypto
+        series:
+          type:
+          - string
+          - 'null'
+        sportsMarket:
+          $ref: '#/components/schemas/SportsMarket'
+        ticker:
+          type: string
+          description: The event ticker (e.g., "BTC100K2028")
+          example: BTC100K2028
+        status:
+          $ref: '#/components/schemas/MarketStatus'
+        resolvedAt:
+          type:
+          - string
+          - 'null'
+          format: date-time
+        createdAt:
+          type: string
+          format: date-time
+        contracts:
+          type: array
+          description: Tradeable contracts within this event
+          items:
+            $ref: '#/components/schemas/Contract'
+        events:
+          type: array
+          description: Full child or sibling event objects for the same game or underlying market. The available child market types are open-ended and may include spreads, totals, player props, or future types. Each child event includes its own contracts array.
+          items:
+            $ref: '#/components/schemas/NestedEvent'
+        contractOrderbooks:
+          type: object
+          additionalProperties:
+            $ref: '#/components/schemas/OrderBook'
+        volume:
+          type: string
+          description: Total trading volume in USD
+          example: '125000.00'
+        liquidity:
+          type: string
+          description: Total liquidity in USD
+          example: '50000.00'
+        tags:
+          type:
+          - array
+          - 'null'
+          items:
+            type: string
+        effectiveDate:
+          type: string
+          format: date-time
+        expiryDate:
+          type:
+          - string
+          - 'null'
+          format: date-time
+        subcategory:
+          $ref: '#/components/schemas/Subcategory'
+        source:
+          type:
+          - string
+          - 'null'
+          deprecated: true
+          description: 'Deprecated: use `sourceDetails` (`agency` + `index`) instead. Data source identifier for price observation. Aggregated from contracts for crypto Up/Down events.'
+          example: GRR-KAIKO_BTCUSD_60S
+        sourceDetails:
+          $ref: '#/components/schemas/SourceDetails'
+        settlement:
+          $ref: '#/components/schemas/Settlement'
+    StrikeType:
+      type: string
+      description: 'Strike or condition inequality type for contract threshold evaluation. - `reference`: Crypto Up/Down reference strike price captured at `availableAt` time. - `above`: Higher/Lower contract threshold. - `spread`: Point, run, or goal handicap spread line. - `over`: Total or prop threshold evaluated as strict greater than (`>`). - `over_or_equal`: Total or prop threshold evaluated as greater than or equal to (`>=`). - `under`: Total or prop threshold evaluated as strict less than (`<`). - `under_or_equal`: Position, rank, or total threshold evaluated as less than or equal to (`<=`).'
+      enum:
+      - reference
+      - above
+      - spread
+      - over
+      - over_or_equal
+      - under
+      - under_or_equal
+      example: spread
+    OrderBook:
+      type: object
+      properties:
+        bids:
+          type: array
+          items:
+            $ref: '#/components/schemas/OrderBookEntry'
+        asks:
+          type: array
+          items:
+            $ref: '#/components/schemas/OrderBookEntry'
+    EventsResponse:
+      type: object
+      properties:
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/Event'
+        pagination:
+          $ref: '#/components/schemas/Pagination'
+    Settlement:
+      type: object
+      description: Settlement information for resolved events
+      properties:
+        value:
+          type:
+          - string
+          - 'null'
+          description: The observed settlement value (e.g., the price at expiry for crypto contracts)
+          example: '87654.32'
+    NestedEvent:
+      type: object
+      description: A child or sibling prediction market event nested within a parent event
+      properties:
+        id:
+          type: string
+        title:
+          type: string
+        slug:
+          type: string
+        description:
+          type:
+          - string
+          - 'null'
+        imageUrl:
+          type:
+          - string
+          - 'null'
+        type:
+          $ref: '#/components/schemas/MarketType'
+        category:
+          type: string
+        series:
+          type:
+          - string
+          - 'null'
+        sportsMarket:
+          $ref: '#/components/schemas/SportsMarket'
+        ticker:
+          type: string
+        status:
+          $ref: '#/components/schemas/MarketStatus'
+        resolvedAt:
+          type:
+          - string
+          - 'null'
+          format: date-time
+        createdAt:
+          type: string
+          format: date-time
+        contracts:
+          type: array
+          description: Tradeable contracts within this nested event
+          items:
+            $ref: '#/components/schemas/Contract'
+        contractOrderbooks:
+          type: object
+          additionalProperties:
+            $ref: '#/components/schemas/OrderBook'
+        volume:
+          type: string
+        liquidity:
+          type: string
+        tags:
+          type:
+          - array
+          - 'null'
+          items:
+            type: string
+        effectiveDate:
+          type: string
+          format: date-time
+        expiryDate:
+          type:
+          - string
+          - 'null'
+          format: date-time
+        subcategory:
+          $ref: '#/components/schemas/Subcategory'
+        source:
+          type:
+          - string
+          - 'null'
+          deprecated: true
+        sourceDetails:
+          $ref: '#/components/schemas/SourceDetails'
+        settlement:
+          $ref: '#/components/schemas/Settlement'
+    ContractPrices:
+      type:
+      - object
+      - 'null'
+      description: Current bid/ask pricing for the contract
+      properties:
+        buy:
+          type: object
+          description: Buy prices for each outcome
+          properties:
+            'yes':
+              type: string
+              description: Price to buy YES outcome
+              example: '0.42'
+            'no':
+              type: string
+              description: Price to buy NO outcome
+              example: '0.58'
+        sell:
+          type: object
+          description: Sell prices for each outcome
+          properties:
+            'yes':
+              type: string
+              description: Price to sell YES outcome
+              example: '0.42'
+            'no':
+              type: string
+              description: Price to sell NO outcome
+              example: '0.58'
+        bestBid:
+          type:
+          - string
+          - 'null'
+          description: Highest buy offer
+          example: '0.49'
+        bestAsk:
+          type:
+          - string
+          - 'null'
+          description: Lowest sell offer
+          example: '0.54'
+        lastTradePrice:
+          type:
+          - string
+          - 'null'
+          description: Most recent transaction price
+          example: '0.75'
     SportsMarketMetric:
       type: string
       description: Statistic measured by the market. Interpret shared metric names using `sportsMarket.sport`.
@@ -840,382 +1261,6 @@ components:
       - wins
       - yellow_cards
       - other
-    MarketStatus:
-      type: string
-      enum:
-      - approved
-      - active
-      - closed
-      - under_review
-      - settled
-      - invalid
-      description: Status of a prediction market
-    SportsMarketScopeType:
-      type: string
-      enum:
-      - full_contest
-      - regulation
-      - half
-      - quarter
-      - period
-      - inning
-      - team_innings
-      - over
-      - powerplay
-      - set
-      - game
-      - round
-      - hole
-      - match_day
-      - session
-      - super_over
-      - race
-      - sprint
-      - qualifying
-      - practice
-      - stage
-      - lap
-      - series
-      - season
-      - tournament
-      - competition
-      - other
-      description: Unit covered by the market. `full_contest` follows the market's official final-result rules; `regulation` covers scheduled regulation play only. Ordinal and range qualifiers are represented separately on `SportsMarketScope`.
-    Event:
-      type: object
-      description: A prediction market event containing one or more tradeable contracts
-      properties:
-        id:
-          type: string
-        title:
-          type: string
-          example: Will Bitcoin reach $100k by end of 2028?
-        slug:
-          type: string
-          example: bitcoin-100k-2028
-        description:
-          type:
-          - string
-          - 'null'
-        imageUrl:
-          type:
-          - string
-          - 'null'
-        type:
-          $ref: '#/components/schemas/MarketType'
-        category:
-          type: string
-          example: crypto
-        series:
-          type:
-          - string
-          - 'null'
-        sportsMarket:
-          $ref: '#/components/schemas/SportsMarket'
-        ticker:
-          type: string
-          description: The event ticker (e.g., "BTC100K2028")
-          example: BTC100K2028
-        status:
-          $ref: '#/components/schemas/MarketStatus'
-        resolvedAt:
-          type:
-          - string
-          - 'null'
-          format: date-time
-        createdAt:
-          type: string
-          format: date-time
-        contracts:
-          type: array
-          description: Tradeable contracts within this event
-          items:
-            $ref: '#/components/schemas/Contract'
-        events:
-          type: array
-          description: Full child or sibling event objects for the same game or underlying market. The available child market types are open-ended and may include spreads, totals, player props, or future types. Each child event includes its own contracts array.
-          items:
-            $ref: '#/components/schemas/NestedEvent'
-        contractOrderbooks:
-          type: object
-          additionalProperties:
-            $ref: '#/components/schemas/OrderBook'
-        volume:
-          type: string
-          description: Total trading volume in USD
-          example: '125000.00'
-        liquidity:
-          type: string
-          description: Total liquidity in USD
-          example: '50000.00'
-        tags:
-          type:
-          - array
-          - 'null'
-          items:
-            type: string
-        effectiveDate:
-          type: string
-          format: date-time
-        expiryDate:
-          type:
-          - string
-          - 'null'
-          format: date-time
-        subcategory:
-          $ref: '#/components/schemas/Subcategory'
-        source:
-          type:
-          - string
-          - 'null'
-          deprecated: true
-          description: 'Deprecated: use `sourceDetails` (`agency` + `index`) instead. Data source identifier for price observation. Aggregated from contracts for crypto Up/Down events.'
-          example: GRR-KAIKO_BTCUSD_60S
-        sourceDetails:
-          $ref: '#/components/schemas/SourceDetails'
-        settlement:
-          $ref: '#/components/schemas/Settlement'
-    PricePoint:
-      type: object
-      properties:
-        timestamp:
-          type: string
-          format: date-time
-        price:
-          type: string
-    SportsMarket:
-      type: object
-      additionalProperties: false
-      description: Atomic sports-market classification shared by every contract grouped under the event. Present only for sports events. All fields except `metric` are required together.
-      required:
-      - sport
-      - type
-      - subject
-      - scope
-      properties:
-        sport:
-          $ref: '#/components/schemas/SportsMarketSport'
-        type:
-          $ref: '#/components/schemas/SportsMarketType'
-        subject:
-          $ref: '#/components/schemas/SportsMarketSubject'
-        scope:
-          $ref: '#/components/schemas/SportsMarketScope'
-        metric:
-          $ref: '#/components/schemas/SportsMarketMetric'
-    Strike:
-      type: object
-      description: Strike price or contract threshold information for Up/Down crypto contracts and sports prediction market contracts.
-      properties:
-        value:
-          type:
-          - string
-          - 'null'
-          description: The strike price value. Null for "reference" type strikes where the value is determined at availableAt time. For sports contracts, this represents the derived numeric strike value (e.g. spread margin, total line, or position/rank threshold).
-          example: '87500.00'
-        type:
-          $ref: '#/components/schemas/StrikeType'
-        availableAt:
-          type:
-          - string
-          - 'null'
-          format: date-time
-          description: When the strike price becomes available
-          example: '2026-03-27T19:45:00.000Z'
-    EventsResponse:
-      type: object
-      properties:
-        data:
-          type: array
-          items:
-            $ref: '#/components/schemas/Event'
-        pagination:
-          $ref: '#/components/schemas/Pagination'
-    Pagination:
-      type: object
-      properties:
-        limit:
-          type: integer
-          example: 50
-        offset:
-          type: integer
-          example: 0
-        total:
-          type: integer
-          example: 100
-    Outcome:
-      type: string
-      enum:
-      - 'yes'
-      - 'no'
-      description: The outcome being traded (Yes or No)
-    Settlement:
-      type: object
-      description: Settlement information for resolved events
-      properties:
-        value:
-          type:
-          - string
-          - 'null'
-          description: The observed settlement value (e.g., the price at expiry for crypto contracts)
-          example: '87654.32'
-    SourceDetails:
-      type:
-      - object
-      - 'null'
-      description: Structured data source information for price observation. Replaces the deprecated flat `source` string on the event and contract. Present for crypto Up/Down events. Both fields are omitted when not available.
-      properties:
-        agency:
-          type:
-          - string
-          - 'null'
-          description: The data provider / vendor name.
-          example: Kaiko
-        index:
-          type:
-          - string
-          - 'null'
-          description: The specific data feed identifier (the value previously carried by the flat `source` field).
-          example: GRR-KAIKO_BTCUSD_60S
-    OrderBookEntry:
-      type: object
-      properties:
-        side:
-          $ref: '#/components/schemas/OrderSide'
-        price:
-          type: string
-          example: '0.65'
-        quantity:
-          type: string
-          example: '1000'
-    MarketType:
-      type: string
-      enum:
-      - binary
-      - categorical
-      description: Type of prediction market
-    SportsMarketType:
-      type: string
-      enum:
-      - moneyline
-      - spread
-      - total
-      - prop
-      - correct_score
-      - to_advance
-      - futures
-      - other
-      description: Conventional sports-market family. `subject`, `scope`, and `metric` provide detail within the family. This classification is independent of the event's structural `type` (`binary` or `categorical`).
-    SportsMarketSubject:
-      type: string
-      enum:
-      - contest
-      - team
-      - player
-      - participant
-      - other
-      description: What the market is about. `participant` covers non-player entrants such as drivers and horses.
-    NestedEvent:
-      type: object
-      description: A child or sibling prediction market event nested within a parent event
-      properties:
-        id:
-          type: string
-        title:
-          type: string
-        slug:
-          type: string
-        description:
-          type:
-          - string
-          - 'null'
-        imageUrl:
-          type:
-          - string
-          - 'null'
-        type:
-          $ref: '#/components/schemas/MarketType'
-        category:
-          type: string
-        series:
-          type:
-          - string
-          - 'null'
-        sportsMarket:
-          $ref: '#/components/schemas/SportsMarket'
-        ticker:
-          type: string
-        status:
-          $ref: '#/components/schemas/MarketStatus'
-        resolvedAt:
-          type:
-          - string
-          - 'null'
-          format: date-time
-        createdAt:
-          type: string
-          format: date-time
-        contracts:
-          type: array
-          description: Tradeable contracts within this nested event
-          items:
-            $ref: '#/components/schemas/Contract'
-        contractOrderbooks:
-          type: object
-          additionalProperties:
-            $ref: '#/components/schemas/OrderBook'
-        volume:
-          type: string
-        liquidity:
-          type: string
-        tags:
-          type:
-          - array
-          - 'null'
-          items:
-            type: string
-        effectiveDate:
-          type: string
-          format: date-time
-        expiryDate:
-          type:
-          - string
-          - 'null'
-          format: date-time
-        subcategory:
-          $ref: '#/components/schemas/Subcategory'
-        source:
-          type:
-          - string
-          - 'null'
-          deprecated: true
-        sourceDetails:
-          $ref: '#/components/schemas/SourceDetails'
-        settlement:
-          $ref: '#/components/schemas/Settlement'
-    StrikeType:
-      type: string
-      description: 'Strike or condition inequality type for contract threshold evaluation. - `reference`: Crypto Up/Down reference strike price captured at `availableAt` time. - `above`: Higher/Lower contract threshold. - `spread`: Point, run, or goal handicap spread line. - `over`: Total or prop threshold evaluated as strict greater than (`>`). - `over_or_equal`: Total or prop threshold evaluated as greater than or equal to (`>=`). - `under`: Total or prop threshold evaluated as strict less than (`<`). - `under_or_equal`: Position, rank, or total threshold evaluated as less than or equal to (`<=`).'
-      enum:
-      - reference
-      - above
-      - spread
-      - over
-      - over_or_equal
-      - under
-      - under_or_equal
-      example: spread
-    Error:
-      type: object
-      properties:
-        error:
-          type: string
-          description: Error code
-          example: InvalidInput
-        message:
-          type: string
-          description: Human-readable error message
-          example: orderId is required
     SportsMarketSport:
       type: string
       enum:
@@ -1240,17 +1285,25 @@ components:
       - soccer
       - tennis
       description: Sport whose rules give the market's scope and metric their sport-specific meaning.
-    OrderBook:
+    Strike:
       type: object
+      description: Strike price or contract threshold information for Up/Down crypto contracts and sports prediction market contracts.
       properties:
-        bids:
-          type: array
-          items:
-            $ref: '#/components/schemas/OrderBookEntry'
-        asks:
-          type: array
-          items:
-            $ref: '#/components/schemas/OrderBookEntry'
+        value:
+          type:
+          - string
+          - 'null'
+          description: The strike price value. Null for "reference" type strikes where the value is determined at availableAt time. For sports contracts, this represents the derived numeric strike value (e.g. spread margin, total line, or position/rank threshold).
+          example: '87500.00'
+        type:
+          $ref: '#/components/schemas/StrikeType'
+        availableAt:
+          type:
+          - string
+          - 'null'
+          format: date-time
+          description: When the strike price becomes available
+          example: '2026-03-27T19:45:00.000Z'
     SportsMarketScope:
       type: object
       additionalProperties: false
@@ -1275,6 +1328,30 @@ components:
           format: int32
           minimum: 0
           description: Optional inclusive end of a scope range, such as inning `5`.
+    SportsMarketType:
+      type: string
+      enum:
+      - moneyline
+      - spread
+      - total
+      - prop
+      - correct_score
+      - to_advance
+      - futures
+      - other
+      description: Conventional sports-market family. `subject`, `scope`, and `metric` provide detail within the family. This classification is independent of the event's structural `type` (`binary` or `categorical`).
+    Pagination:
+      type: object
+      properties:
+        limit:
+          type: integer
+          example: 50
+        offset:
+          type: integer
+          example: 0
+        total:
+          type: integer
+          example: 100
     Subcategory:
       type:
       - object
@@ -1301,170 +1378,93 @@ components:
           example:
           - Crypto
           - Solana
-    Contract:
-      type: object
-      description: 'Contract quantity and price validation is instrument-specific. Clients must validate order quantities and prices against the returned increment and minimum fields rather than assuming a fixed grid.
-
-        '
-      properties:
-        id:
-          type: string
-        label:
-          type: string
-          description: Human-readable label for the contract's YES-space proposition (e.g., "SOL > $90")
-        abbreviatedName:
-          type:
-          - string
-          - 'null'
-          description: Short form label (e.g., ">$90")
-        description:
-          type: object
-          description: Rich text description
-        prices:
-          $ref: '#/components/schemas/ContractPrices'
-        color:
-          type:
-          - string
-          - 'null'
-        status:
-          $ref: '#/components/schemas/MarketStatus'
-        imageUrl:
-          type:
-          - string
-          - 'null'
-        priceHistory:
-          type:
-          - array
-          - 'null'
-          items:
-            $ref: '#/components/schemas/PricePoint'
-        createdAt:
-          type: string
-          format: date-time
-        expiryDate:
-          type:
-          - string
-          - 'null'
-          format: date-time
-        resolutionSide:
-          $ref: '#/components/schemas/Outcome'
-        resolvedAt:
-          type:
-          - string
-          - 'null'
-          format: date-time
-        termsAndConditionsUrl:
-          type: string
-        ticker:
-          type: string
-        instrumentSymbol:
-          type: string
-        quantityIncrement:
-          type:
-          - string
-          - 'null'
-          description: Contract quantity grid from instrument refdata (for example, "0.01").
-        quantityMinimum:
-          type:
-          - string
-          - 'null'
-          description: Minimum contract quantity from instrument refdata (for example, "1.00").
-        priceIncrement:
-          type:
-          - string
-          - 'null'
-          description: Contract price grid from instrument refdata (for example, "0.0001").
-        quoteAssetPrecision:
-          type:
-          - integer
-          - 'null'
-          description: Decimal places supported by the instrument's quote asset.
-        priceMinimum:
-          type:
-          - string
-          - 'null'
-          description: Minimum contract price and anchor for the instrument price grid (for example, "0.0001").
-        effectiveDate:
-          type:
-          - string
-          - 'null'
-          format: date-time
-        marketState:
-          type:
-          - string
-          - 'null'
-          description: Trading state of the contract
-          enum:
-          - open
-          - closed
-        sortOrder:
-          type:
-          - integer
-          - 'null'
-          description: Display order within the event
-        strike:
-          $ref: '#/components/schemas/Strike'
-        source:
-          type:
-          - string
-          - 'null'
-          deprecated: true
-          description: 'Deprecated: use the event-level `sourceDetails` (`agency` + `index`) instead. Data source identifier for price observation (e.g., "GRR-KAIKO_BTCUSD_60S"). Present for crypto Up/Down contracts.'
-          example: GRR-KAIKO_BTCUSD_60S
-        settlementValue:
-          type:
-          - string
-          - 'null'
-          description: The observed settlement price. Only present after the contract is settled.
-          example: '87654.32'
-    ContractPrices:
-      type:
-      - object
-      - 'null'
-      description: Current bid/ask pricing for the contract
-      properties:
-        buy:
-          type: object
-          description: Buy prices for each outcome
-          properties:
-            'yes':
-              type: string
-              description: Price to buy YES outcome
-              example: '0.42'
-            'no':
-              type: string
-              description: Price to buy NO outcome
-              example: '0.58'
-        sell:
-          type: object
-          description: Sell prices for each outcome
-          properties:
-            'yes':
-              type: string
-              description: Price to sell YES outcome
-              example: '0.42'
-            'no':
-              type: string
-              description: Price to sell NO outcome
-              example: '0.58'
-        bestBid:
-          type:
-          - string
-          - 'null'
-          description: Highest buy offer
-          example: '0.49'
-        bestAsk:
-          type:
-          - string
-          - 'null'
-          description: Lowest sell offer
-          example: '0.54'
-        lastTradePrice:
-          type:
-          - string
-          - 'null'
-          description: Most recent transaction price
-          example: '0.75'
+  parameters:
+    SportsMarketMetricFilter:
+      name: sports_market_metric
+      in: query
+      description: Filter by `sportsMarket.metric`. Repeat the parameter to match any supplied value (OR). A metric can be queried without `sport`; use `sport` when its sport-specific meaning matters. Sports-market filters compose independently using AND. Unsupported enum values return `400 Bad Request`.
+      schema:
+        type: array
+        items:
+          $ref: '#/components/schemas/SportsMarketMetric'
+      style: form
+      explode: true
+    Offset:
+      name: offset
+      in: query
+      description: Number of results to skip for pagination
+      schema:
+        type: integer
+        default: 0
+        minimum: 0
+    Limit:
+      name: limit
+      in: query
+      description: Maximum number of results to return (max 500)
+      schema:
+        type: integer
+        default: 50
+        minimum: 1
+        maximum: 500
+    SportsMarketScopeFilter:
+      name: sports_market_scope
+      in: query
+      description: Filter by `sportsMarket.scope.type`. Repeat the parameter to match any supplied value (OR). Ordinal and range qualifiers are not inferred by this filter. Sports-market filters compose independently using AND. Unsupported enum values return `400 Bad Request`.
+      schema:
+        type: array
+        items:
+          $ref: '#/components/schemas/SportsMarketScopeType'
+      style: form
+      explode: true
+    SportsMarketSubjectFilter:
+      name: sports_market_subject
+      in: query
+      description: Filter by `sportsMarket.subject`. Repeat the parameter to match any supplied value (OR). Sports-market filters compose independently using AND. Unsupported enum values return `400 Bad Request`.
+      schema:
+        type: array
+        items:
+          $ref: '#/components/schemas/SportsMarketSubject'
+      style: form
+      explode: true
+    SportsMarketTypeFilter:
+      name: sports_market_type
+      in: query
+      description: Filter by `sportsMarket.type`. Repeat the parameter to match any supplied value (OR). Sports-market filters compose independently using AND. Unsupported enum values return `400 Bad Request`.
+      schema:
+        type: array
+        items:
+          $ref: '#/components/schemas/SportsMarketType'
+      style: form
+      explode: true
+    SportFilter:
+      name: sport
+      in: query
+      description: Filter by `sportsMarket.sport`. Repeat the parameter to match any supplied value (OR). Sports-market filters compose independently using AND. Unsupported enum values return `400 Bad Request`; valid combinations with no matching events return an empty result.
+      schema:
+        type: array
+        items:
+          $ref: '#/components/schemas/SportsMarketSport'
+      style: form
+      explode: true
+  responses:
+    ServiceUnavailable:
+      description: Prediction markets feature is temporarily unavailable
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+    BadRequest:
+      description: Invalid request parameters
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+    InternalError:
+      description: Internal server error
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
   securitySchemes:
     apiKey:
       type: apiKey

@@ -120,6 +120,14 @@ paths:
           $ref: '#/components/responses/InternalError'
 components:
   schemas:
+    AcceptPredictionMarketsTermsResponse:
+      type: object
+      required:
+      - success
+      properties:
+        success:
+          type: boolean
+          example: true
     Error:
       type: object
       properties:
@@ -177,14 +185,6 @@ components:
           - 'null'
           description: Latest configured Prediction Markets terms version, if available
           example: 3
-    AcceptPredictionMarketsTermsResponse:
-      type: object
-      required:
-      - success
-      properties:
-        success:
-          type: boolean
-          example: true
   responses:
     InternalError:
       description: Internal server error

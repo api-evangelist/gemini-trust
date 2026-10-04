@@ -427,6 +427,17 @@ paths:
           $ref: '#/components/responses/InternalError'
 components:
   responses:
+    ApiKeyIpFilteringFailure:
+      description: ApiKey fails IP Filtering Check
+      content:
+        application/json:
+          schema:
+            type: object
+            $ref: '#/components/schemas/ErrorResponse'
+          example:
+            result: error
+            reason: ApiKeyIpFilteringFailure
+            message: ApiKey fails IP Filtering Check for some accounts
     BadRequest:
       description: Bad request - malformed request or invalid parameters
       content:
@@ -447,16 +458,6 @@ components:
             result: error
             reason: EndpointNotFound
             message: API entry point not found
-    TooManyRequests:
-      description: Too many requests - you have exceeded the rate limit
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/ErrorResponse'
-          example:
-            result: error
-            reason: Too Many Requests
-            message: Too Many Requests
     InternalError:
       description: Internal server error
       content:
@@ -467,17 +468,16 @@ components:
             result: error
             reason: Internal Server Error
             message: Unexpected server error occurred.
-    ApiKeyIpFilteringFailure:
-      description: ApiKey fails IP Filtering Check
+    TooManyRequests:
+      description: Too many requests - you have exceeded the rate limit
       content:
         application/json:
           schema:
-            type: object
             $ref: '#/components/schemas/ErrorResponse'
           example:
             result: error
-            reason: ApiKeyIpFilteringFailure
-            message: ApiKey fails IP Filtering Check for some accounts
+            reason: Too Many Requests
+            message: Too Many Requests
     Unauthorized:
       description: Unauthorized - missing or invalid authentication
       content:
@@ -502,39 +502,31 @@ components:
         message:
           type: string
           description: Detailed error message
-    MarginInterestRate:
+    MoneyAmount:
       type: object
       properties:
         currency:
           type: string
-          description: The currency code (e.g., "BTC", "ETH", "USD")
-          example: BTC
-        borrowRate:
+          description: The currency code (e.g., "USD", "BTC", "ETH")
+          example: USD
+        value:
           type: string
           format: decimal
-          description: The hourly borrow rate as a decimal
-          example: '0.00001141552511'
-        borrowRateDaily:
-          type: string
-          format: decimal
-          description: The daily borrow rate (hourly rate × 24)
-          example: '0.00027397260264'
-        borrowRateAnnual:
-          type: string
-          format: decimal
-          description: The annualized borrow rate (daily rate × 365)
-          example: '0.1'
-        lastUpdated:
-          type: integer
-          format: int64
-          description: Unix timestamp in milliseconds when the rate was last updated
-          example: 1700000000000
+          description: The amount in the specified currency
+          example: '10000.00'
       required:
       - currency
-      - borrowRate
-      - borrowRateDaily
-      - borrowRateAnnual
-      - lastUpdated
+      - value
+    MarginRatesResponse:
+      type: object
+      properties:
+        rates:
+          type: array
+          items:
+            $ref: '#/components/schemas/MarginInterestRate'
+          description: Array of interest rates for all borrowable currencies
+      required:
+      - rates
     MarginAccountSummary:
       type: object
       properties:
@@ -593,67 +585,6 @@ components:
       - sellingPower
       - reservedBuyOrders
       - reservedSellOrders
-    MarginRatesResponse:
-      type: object
-      properties:
-        rates:
-          type: array
-          items:
-            $ref: '#/components/schemas/MarginInterestRate'
-          description: Array of interest rates for all borrowable currencies
-      required:
-      - rates
-    MarginOrderPreview:
-      type: object
-      properties:
-        preorder:
-          allOf:
-          - $ref: '#/components/schemas/MarginRiskStats'
-          description: Margin risk statistics before the order would be executed
-        postorder:
-          allOf:
-          - $ref: '#/components/schemas/MarginRiskStats'
-          description: Margin risk statistics after the order would be executed
-      required:
-      - preorder
-      - postorder
-    MoneyAmount:
-      type: object
-      properties:
-        currency:
-          type: string
-          description: The currency code (e.g., "USD", "BTC", "ETH")
-          example: USD
-        value:
-          type: string
-          format: decimal
-          description: The amount in the specified currency
-          example: '10000.00'
-      required:
-      - currency
-      - value
-    LiquidationRisk:
-      type: object
-      properties:
-        lossPercentage:
-          type: string
-          format: decimal
-          description: The percentage loss from current value that would trigger liquidation, formatted as decimal (e.g., "0.1550" = 15.50%)
-          example: '0.1550'
-        liquidationPrice:
-          allOf:
-          - $ref: '#/components/schemas/MoneyAmount'
-          description: The estimated price at which liquidation would occur (optional, may not be present for all positions)
-      required:
-      - lossPercentage
-    Nonce:
-      oneOf:
-      - type: TimestampType
-        $ref: '#/components/schemas/TimestampType'
-        example: 1495127793000
-      - type: integer
-        example: 1495127793000
-      description: The nonce, as described in [Private API Invocation](/authentication/api-key#private-api-invocation)
     TimestampType:
       description: timestamp
       oneOf:
@@ -686,6 +617,92 @@ components:
 
           '
         example: 1495127793000
+    MarginInterestRate:
+      type: object
+      properties:
+        currency:
+          type: string
+          description: The currency code (e.g., "BTC", "ETH", "USD")
+          example: BTC
+        borrowRate:
+          type: string
+          format: decimal
+          description: The hourly borrow rate as a decimal
+          example: '0.00001141552511'
+        borrowRateDaily:
+          type: string
+          format: decimal
+          description: The daily borrow rate (hourly rate × 24)
+          example: '0.00027397260264'
+        borrowRateAnnual:
+          type: string
+          format: decimal
+          description: The annualized borrow rate (daily rate × 365)
+          example: '0.1'
+        lastUpdated:
+          type: integer
+          format: int64
+          description: Unix timestamp in milliseconds when the rate was last updated
+          example: 1700000000000
+      required:
+      - currency
+      - borrowRate
+      - borrowRateDaily
+      - borrowRateAnnual
+      - lastUpdated
+    Nonce:
+      oneOf:
+      - type: TimestampType
+        $ref: '#/components/schemas/TimestampType'
+        example: 1495127793000
+      - type: integer
+        example: 1495127793000
+      description: The nonce, as described in [Private API Invocation](/authentication/api-key#private-api-invocation)
+    InterestRateInfo:
+      type: object
+      properties:
+        rate:
+          type: string
+          format: decimal
+          description: The interest rate as a decimal string
+          example: '0.00001141552511'
+        interval:
+          type: string
+          enum:
+          - hour
+          description: The time interval for the rate (currently only "hour" is supported)
+          example: hour
+      required:
+      - rate
+      - interval
+    LiquidationRisk:
+      type: object
+      properties:
+        lossPercentage:
+          type: string
+          format: decimal
+          description: The percentage loss from current value that would trigger liquidation, formatted as decimal (e.g., "0.1550" = 15.50%)
+          example: '0.1550'
+        liquidationPrice:
+          allOf:
+          - $ref: '#/components/schemas/MoneyAmount'
+          description: The estimated price at which liquidation would occur (optional, may not be present for all positions)
+      required:
+      - lossPercentage
+    MarginOrderPreview:
+      type: object
+      properties:
+        preorder:
+          allOf:
+          - $ref: '#/components/schemas/MarginRiskStats'
+          description: Margin risk statistics before the order would be executed
+        postorder:
+          allOf:
+          - $ref: '#/components/schemas/MarginRiskStats'
+          description: Margin risk statistics after the order would be executed
+      required:
+      - preorder
+      - postorder
     MarginRiskStats:
       type: object
       properties:
@@ -740,31 +757,14 @@ components:
       - reservedSellOrders
       - buyingPower
       - sellingPower
-    InterestRateInfo:
-      type: object
-      properties:
-        rate:
-          type: string
-          format: decimal
-          description: The interest rate as a decimal string
-          example: '0.00001141552511'
-        interval:
-          type: string
-          enum:
-          - hour
-          description: The time interval for the rate (currently only "hour" is supported)
-          example: hour
-      required:
-      - rate
-      - interval
   parameters:
-    payloadAuth:
-      name: X-GEMINI-PAYLOAD
+    contentType:
+      name: Content-Type
       in: header
-      required: true
-      description: Base64-encoded JSON payload
+      required: false
       schema:
         type: string
+        default: text/plain
     cacheControl:
       name: Cache-Control
       in: header
@@ -772,6 +772,13 @@ components:
       schema:
         type: string
         default: no-cache
+    signatureAuth:
+      name: X-GEMINI-SIGNATURE
+      in: header
+      required: true
+      description: HEX-encoded HMAC-SHA384 of payload signed with API secret
+      schema:
+        type: string
     contentLength:
       name: Content-Length
       in: header
@@ -779,11 +786,11 @@ components:
       schema:
         type: string
         default: '0'
-    signatureAuth:
-      name: X-GEMINI-SIGNATURE
+    payloadAuth:
+      name: X-GEMINI-PAYLOAD
       in: header
       required: true
-      description: HEX-encoded HMAC-SHA384 of payload signed with API secret
+      description: Base64-encoded JSON payload
       schema:
         type: string
     apiKeyAuth:
@@ -793,13 +800,6 @@ components:
       description: Your API key
       schema:
         type: string
-    contentType:
-      name: Content-Type
-      in: header
-      required: false
-      schema:
-        type: string
-        default: text/plain
   securitySchemes:
     apiKeyAuth:
       type: apiKey

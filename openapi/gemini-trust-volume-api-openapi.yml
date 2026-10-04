@@ -169,22 +169,6 @@ paths:
                 message: Prediction market volume data is temporarily unavailable
 components:
   schemas:
-    Error:
-      type: object
-      properties:
-        error:
-          type: string
-          description: Error code
-          example: InvalidInput
-        message:
-          type: string
-          description: Human-readable error message
-          example: orderId is required
-    PredictionMarketVolumeDecimal:
-      type: string
-      pattern: ^(?:0|[1-9][0-9]*)(?:\.[0-9]+)?$
-      description: Non-negative decimal string. Preserve it as a string to avoid floating-point precision loss.
-      example: '143567.25'
     PredictionMarketVolumeCategory:
       type: object
       required:
@@ -204,6 +188,17 @@ components:
           allOf:
           - $ref: '#/components/schemas/PredictionMarketVolumeDecimal'
           description: Total volume for this category, including all descendant categories.
+    Error:
+      type: object
+      properties:
+        error:
+          type: string
+          description: Error code
+          example: InvalidInput
+        message:
+          type: string
+          description: Human-readable error message
+          example: orderId is required
     PredictionMarketHourlyVolumeCategory:
       type: object
       required:
@@ -229,6 +224,11 @@ components:
           allOf:
           - $ref: '#/components/schemas/PredictionMarketVolumeDecimal'
           description: Total volume for this category in this hour, including all descendant categories.
+    PredictionMarketVolumeDecimal:
+      type: string
+      pattern: ^(?:0|[1-9][0-9]*)(?:\.[0-9]+)?$
+      description: Non-negative decimal string. Preserve it as a string to avoid floating-point precision loss.
+      example: '143567.25'
   securitySchemes:
     apiKey:
       type: apiKey

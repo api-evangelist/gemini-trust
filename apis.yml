@@ -29,6 +29,10 @@ deliveryModel:
 specificationVersion: '0.20'
 created: '2026-09-15'
 modified: '2026-09-18'
+x-docs-platform: zudoku
+x-docs-platform-confidence: medium
+x-docs-platform-checked: 2026-10-03
+x-docs-hosting: aws-cloudfront
 tags:
 - Company
 - Cryptocurrency
@@ -332,6 +336,8 @@ apis:
   humanURL: https://developer.gemini.com/rest-api/rest-api
   baseURL: https://api.gemini.com
   tags:
+  - Authentication
+  tags_raw:
   - OAuth
   properties:
   - type: OpenAPI
@@ -354,6 +360,8 @@ apis:
   humanURL: https://developer.gemini.com/rest-api/rest-api
   baseURL: https://api.gemini.com
   tags:
+  - Order
+  tags_raw:
   - Orders
   properties:
   - type: OpenAPI
@@ -440,6 +448,8 @@ apis:
   humanURL: https://developer.gemini.com/rest-api/rest-api
   baseURL: https://api.gemini.com
   tags:
+  - Sessions
+  tags_raw:
   - Session
   properties:
   - type: OpenAPI

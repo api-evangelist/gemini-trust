@@ -76,10 +76,46 @@ edges:
     detected: '2026-10-14'
   detected_by: sweep-crypto.py
   first_seen: '2026-10-14'
+- partner_name: A2A protocol (own Agent Card)
+  partner: null
+  partner_match: register
+  type: register
+  direction: provider-built
+  category: A2A agent
+  evidence: https://developer.gemini.com/.well-known/agent-card.json
+  channel: provider-built
+  relationship: compatible
+  shape: a2a
+  evidence_kind: own-wellknown
+  degree: flavored
+  report_only: true
+  a2a_card:
+    grade: flavored
+    verdict: flavored
+    protocol_version: null
+    deviations:
+    - no-protocolVersion
+    card_subject: unknown
+  contract_reference:
+    register: provider's own /.well-known/agent-card.json
+    spec_file: null
+    standard: A2A
+    role: a2a-agent-card
+    registered_name: Gemini Developer Platform Agent
+    organization: Gemini
+    matched_domain: gemini.com
+    matched_by: own-domain
+    detected_by: sweep-ai-agents.py
+    detected: '2026-10-15'
+  detected_by: sweep-ai-agents.py
+  first_seen: '2026-10-15'
 generated: '2026-10-13'
 method: searched
 checked:
+- https://a2aregistry.org/api/agents
 - https://api.coingecko.com/api/v3/exchanges
 - https://raw.githubusercontent.com/ccxt/ccxt/master/exchanges.json
 - https://www.dfs.ny.gov/apps_and_licensing/virtual_currency_businesses
 - https://www.esma.europa.eu/sites/default/files/2024-12/CASPS.csv
+source:
+- https://a2aregistry.org/api/agents

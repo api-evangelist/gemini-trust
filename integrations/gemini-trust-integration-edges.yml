@@ -109,12 +109,47 @@ edges:
     detected: '2026-10-15'
   detected_by: sweep-ai-agents.py
   first_seen: '2026-10-15'
+- partner_name: FinCEN (MSB registration)
+  partner: null
+  partner_match: register
+  type: contract
+  channel: regulator-register
+  relationship: standard-participant
+  direction: partner-built
+  evidence: https://msb.fincen.gov/
+  category: Money services business
+  contract_reference:
+    register: FinCEN MSB Registrant Search (msb.fincen.gov, full list export)
+    spec_file: null
+    standard: FinCEN MSB registration (US Bank Secrecy Act)
+    role: fincen-msb-registrant
+    registered_name: Gemini Trust Company, LLC
+    dba_name: null
+    register_id: Gemini Trust Company, LLC
+    matched_domain: gemini.com
+    matched_by: domain
+    identity: wikidata Q22908594 'Gemini' P856 https://gemini.com/
+    identity_source: wikidata P856 (labelled provenance step; Kin 2026-10-15 decision 1)
+    msb_activities:
+    - 409 money transmitter
+    - 414 provider of prepaid access
+    states_of_activity: 53
+    received_date: 12/22/2025
+    signal_note: 'participation only: an MSB registration is not a licence or a certification; activities and states
+      are context, never counted'
+    detected_by: sweep-regtech-aml.py
+    detected: '2026-10-15'
+  detected_by: sweep-regtech-aml.py
+  first_seen: '2026-10-15'
 generated: '2026-10-13'
 method: searched
 checked:
 - https://a2aregistry.org/api/agents
 - https://api.coingecko.com/api/v3/exchanges
+- https://kantarainitiative.org/trust-status-list/
+- https://msb.fincen.gov/
 - https://raw.githubusercontent.com/ccxt/ccxt/master/exchanges.json
+- https://www.access-dvs-register.service.gov.uk/register/download-register
 - https://www.dfs.ny.gov/apps_and_licensing/virtual_currency_businesses
 - https://www.esma.europa.eu/sites/default/files/2024-12/CASPS.csv
 source:

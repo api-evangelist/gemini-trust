@@ -431,99 +431,6 @@ paths:
                 $ref: '#/components/schemas/PredictionMarketsError'
 components:
   schemas:
-    CancelOrderBatchSuccessResult:
-      type: object
-      additionalProperties: false
-      required:
-      - orderId
-      - result
-      properties:
-        orderId:
-          type: integer
-          format: int64
-          description: Order ID from the corresponding request entry.
-          example: 12345678
-        result:
-          type: string
-          enum:
-          - ok
-    TermsNotAcceptedError:
-      type: object
-      additionalProperties: false
-      required:
-      - error
-      - message
-      properties:
-        error:
-          type: string
-          enum:
-          - TERMS_NOT_ACCEPTED
-        message:
-          type: string
-          enum:
-          - Prediction markets terms must be accepted before placing orders
-    OrderSide:
-      type: string
-      enum:
-      - buy
-      - sell
-    PlaceOrderBatchResponse:
-      type: object
-      required:
-      - results
-      properties:
-        results:
-          type: array
-          minItems: 1
-          maxItems: 20
-          description: One result for each submitted order, in request order.
-          items:
-            $ref: '#/components/schemas/PlaceOrderBatchResult'
-    PlaceOrderBatchResult:
-      description: Exactly one outcome is present. Accepted entries contain `order`; rejected entries contain `error` and `message`.
-      oneOf:
-      - $ref: '#/components/schemas/PlaceOrderBatchSuccessResult'
-      - $ref: '#/components/schemas/PlaceOrderBatchErrorResult'
-    PlaceOrderBatchRequest:
-      type: object
-      required:
-      - orders
-      properties:
-        orders:
-          type: array
-          minItems: 1
-          maxItems: 20
-          description: Orders to submit. Every entry is validated before any order is submitted. All orders use the account associated with the authenticated request.
-          items:
-            $ref: '#/components/schemas/OrderRequest'
-    Outcome:
-      type: string
-      enum:
-      - 'yes'
-      - 'no'
-      description: The outcome being traded (Yes or No)
-    CancelOrderBatchResult:
-      description: Exactly one outcome is present. Successful entries contain `orderId` and `result`; rejected entries contain `orderId`, `error`, and `message`.
-      oneOf:
-      - $ref: '#/components/schemas/CancelOrderBatchSuccessResult'
-      - $ref: '#/components/schemas/CancelOrderBatchErrorResult'
-    OrderStatus:
-      type: string
-      enum:
-      - open
-      - filled
-      - cancelled
-    Error:
-      type: object
-      properties:
-        error:
-          type: string
-          description: Error code
-          example: InvalidInput
-        message:
-          type: string
-          description: Human-readable error message
-          example: orderId is required
     PlaceOrderBatchSuccessResult:
       type: object
       additionalProperties: false
@@ -621,21 +528,50 @@ components:
         fundsOnHold:
           type: string
           description: Cash reserved for the unfilled portion of a resting buy order; omitted when unavailable
-    AccountGroupBlockedError:
+    PlaceOrderBatchResponse:
+      type: object
+      required:
+      - results
+      properties:
+        results:
+          type: array
+          minItems: 1
+          maxItems: 20
+          description: One result for each submitted order, in request order.
+          items:
+            $ref: '#/components/schemas/PlaceOrderBatchResult'
+    RestrictedSellOnlyError:
       type: object
       additionalProperties: false
       required:
       - error
-      - code
+      - message
       properties:
         error:
           type: string
           enum:
-          - This account is not permitted to trade prediction markets
-        code:
+          - ACCOUNT_RESTRICTED_SELL_ONLY
+        message:
           type: string
           enum:
-          - ACCOUNT_GROUP_BLOCKED
+          - Your account is restricted to selling existing positions; buying is not permitted.
+    OrderSide:
+      type: string
+      enum:
+      - buy
+      - sell
+    CancelOrderBatchResponse:
+      type: object
+      required:
+      - results
+      properties:
+        results:
+          type: array
+          minItems: 1
+          maxItems: 20
+          description: One result for each requested cancellation, in request order.
+          items:
+            $ref: '#/components/schemas/CancelOrderBatchResult'
     CancelOrderBatchRequest:
       type: object
       required:
@@ -654,6 +590,47 @@ components:
             - type: string
               pattern: ^\d+$
               example: '12345678'
+    OrderRequest:
+      type: object
+      required:
+      - symbol
+      - orderType
+      - side
+      - quantity
+      - price
+      - outcome
+      properties:
+        symbol:
+          type: string
+          description: Contract instrument symbol
+          example: GEMI-FEDJAN26-DN25
+        orderType:
+          $ref: '#/components/schemas/OrderType'
+        side:
+          $ref: '#/components/schemas/OrderSide'
+        quantity:
+          type: string
+          format: decimal
+          description: Number of contracts
+          example: '100'
+        price:
+          type: string
+          format: decimal
+          description: Limit price (0-1 range)
+          example: '0.65'
+        stopPrice:
+          type: string
+          format: decimal
+          description: The price to trigger a stop-limit order (0-1 range). Only available for stop-limit orders. See [Stop-Limit Orders](#operation/placeOrder) above for `stopPrice`/`price` constraints.
+          example: '0.60'
+        outcome:
+          $ref: '#/components/schemas/Outcome'
+        timeInForce:
+          $ref: '#/components/schemas/TimeInForce'
+        makerOrCancel:
+          type: boolean
+          description: Set to `true` to require maker-only behavior. If the order would immediately take liquidity, the order is cancelled instead of filling.
+          default: false
     CancelOrderBatchErrorResult:
       type: object
       additionalProperties: false
@@ -675,7 +652,7 @@ components:
           type: string
           description: Human-readable detail for a rejected cancellation
           example: Order 12345678 not found
-    RestrictedSellOnlyError:
+    TermsNotAcceptedError:
       type: object
       additionalProperties: false
       required:
@@ -685,11 +662,72 @@ components:
         error:
           type: string
           enum:
-          - ACCOUNT_RESTRICTED_SELL_ONLY
+          - TERMS_NOT_ACCEPTED
         message:
           type: string
           enum:
-          - Your account is restricted to selling existing positions; buying is not permitted.
+          - Prediction markets terms must be accepted before placing orders
+    ContractMetadata:
+      type: object
+      properties:
+        contractId:
+          type: string
+        contractName:
+          type: string
+        contractTicker:
+          type: string
+        eventTicker:
+          type: string
+        eventName:
+          type: string
+        category:
+          type: string
+        contractStatus:
+          type: string
+        eventType:
+          type: string
+          description: Event type ("binary" or "categorical")
+        expiryDate:
+          type:
+          - string
+          - 'null'
+          format: date-time
+        resolvedAt:
+          type:
+          - string
+          - 'null'
+          format: date-time
+        resolutionSide:
+          type:
+          - string
+          - 'null'
+          description: Winning outcome if resolved ("yes" or "no")
+        parentEventTicker:
+          type:
+          - string
+          - 'null'
+          description: Parent event ticker for sub-events
+        startTime:
+          type:
+          - string
+          - 'null'
+          format: date-time
+          description: Start datetime (ISO 8601)
+    PlaceOrderBatchErrorResult:
+      type: object
+      additionalProperties: false
+      required:
+      - error
+      - message
+      properties:
+        error:
+          type: string
+          description: Error class for a rejected entry
+          example: InsufficientFunds
+        message:
+          type: string
+          description: Human-readable detail for a rejected entry
+          example: Insufficient funds
     AuthErrorResponse:
       type: object
       additionalProperties: false
@@ -710,6 +748,34 @@ components:
           type: string
           description: Human-readable authentication or authorization detail
           example: Must provide unique monotonic increasing 'nonce' field in payload
+    PlaceOrderBatchRequest:
+      type: object
+      required:
+      - orders
+      properties:
+        orders:
+          type: array
+          minItems: 1
+          maxItems: 20
+          description: Orders to submit. Every entry is validated before any order is submitted. All orders use the account associated with the authenticated request.
+          items:
+            $ref: '#/components/schemas/OrderRequest'
+    CancelOrderBatchSuccessResult:
+      type: object
+      additionalProperties: false
+      required:
+      - orderId
+      - result
+      properties:
+        orderId:
+          type: integer
+          format: int64
+          description: Order ID from the corresponding request entry.
+          example: 12345678
+        result:
+          type: string
+          enum:
+          - ok
     OrderResponse:
       type: object
       properties:
@@ -774,40 +840,6 @@ components:
           format: date-time
         contractMetadata:
           $ref: '#/components/schemas/ContractMetadata'
-    OrderType:
-      type: string
-      enum:
-      - limit
-      - stop-limit
-      description: Order type. `stop-limit` orders require a `stopPrice` that triggers a limit order at `price` when the market reaches the trigger.
-    TimeInForce:
-      type: string
-      enum:
-      - good-til-cancel
-      - immediate-or-cancel
-      - fill-or-kill
-      default: good-til-cancel
-      description: 'Order execution behavior:
-
-        - `good-til-cancel` - Order remains active until filled or cancelled (default)
-
-        - `immediate-or-cancel` - Fill immediately or cancel remaining
-
-        - `fill-or-kill` - Fill entire order immediately or cancel
-
-        '
-    CancelOrderBatchResponse:
-      type: object
-      required:
-      - results
-      properties:
-        results:
-          type: array
-          minItems: 1
-          maxItems: 20
-          description: One result for each requested cancellation, in request order.
-          items:
-            $ref: '#/components/schemas/CancelOrderBatchResult'
     PredictionMarketsError:
       type: object
       additionalProperties: false
@@ -826,111 +858,79 @@ components:
           type: string
           description: Human-readable error detail, when available
           example: orders must contain between 1 and 20 entries
-    OrderRequest:
-      type: object
-      required:
-      - symbol
-      - orderType
-      - side
-      - quantity
-      - price
-      - outcome
-      properties:
-        symbol:
-          type: string
-          description: Contract instrument symbol
-          example: GEMI-FEDJAN26-DN25
-        orderType:
-          $ref: '#/components/schemas/OrderType'
-        side:
-          $ref: '#/components/schemas/OrderSide'
-        quantity:
-          type: string
-          format: decimal
-          description: Number of contracts
-          example: '100'
-        price:
-          type: string
-          format: decimal
-          description: Limit price (0-1 range)
-          example: '0.65'
-        stopPrice:
-          type: string
-          format: decimal
-          description: The price to trigger a stop-limit order (0-1 range). Only available for stop-limit orders. See [Stop-Limit Orders](#operation/placeOrder) above for `stopPrice`/`price` constraints.
-          example: '0.60'
-        outcome:
-          $ref: '#/components/schemas/Outcome'
-        timeInForce:
-          $ref: '#/components/schemas/TimeInForce'
-        makerOrCancel:
-          type: boolean
-          description: Set to `true` to require maker-only behavior. If the order would immediately take liquidity, the order is cancelled instead of filling.
-          default: false
-    PlaceOrderBatchErrorResult:
+    AccountGroupBlockedError:
       type: object
       additionalProperties: false
       required:
       - error
-      - message
+      - code
       properties:
         error:
           type: string
-          description: Error class for a rejected entry
-          example: InsufficientFunds
-        message:
+          enum:
+          - This account is not permitted to trade prediction markets
+        code:
           type: string
-          description: Human-readable detail for a rejected entry
-          example: Insufficient funds
-    ContractMetadata:
+          enum:
+          - ACCOUNT_GROUP_BLOCKED
+    TimeInForce:
+      type: string
+      enum:
+      - good-til-cancel
+      - immediate-or-cancel
+      - fill-or-kill
+      default: good-til-cancel
+      description: 'Order execution behavior:
+
+        - `good-til-cancel` - Order remains active until filled or cancelled (default)
+
+        - `immediate-or-cancel` - Fill immediately or cancel remaining
+
+        - `fill-or-kill` - Fill entire order immediately or cancel
+
+        '
+    CancelOrderBatchResult:
+      description: Exactly one outcome is present. Successful entries contain `orderId` and `result`; rejected entries contain `orderId`, `error`, and `message`.
+      oneOf:
+      - $ref: '#/components/schemas/CancelOrderBatchSuccessResult'
+      - $ref: '#/components/schemas/CancelOrderBatchErrorResult'
+    PlaceOrderBatchResult:
+      description: Exactly one outcome is present. Accepted entries contain `order`; rejected entries contain `error` and `message`.
+      oneOf:
+      - $ref: '#/components/schemas/PlaceOrderBatchSuccessResult'
+      - $ref: '#/components/schemas/PlaceOrderBatchErrorResult'
+    Error:
       type: object
       properties:
-        contractId:
+        error:
           type: string
-        contractName:
+          description: Error code
+          example: InvalidInput
+        message:
           type: string
-        contractTicker:
-          type: string
-        eventTicker:
-          type: string
-        eventName:
-          type: string
-        category:
-          type: string
-        contractStatus:
-          type: string
-        eventType:
-          type: string
-          description: Event type ("binary" or "categorical")
-        expiryDate:
-          type:
-          - string
-          - 'null'
-          format: date-time
-        resolvedAt:
-          type:
-          - string
-          - 'null'
-          format: date-time
-        resolutionSide:
-          type:
-          - string
-          - 'null'
-          description: Winning outcome if resolved ("yes" or "no")
-        parentEventTicker:
-          type:
-          - string
-          - 'null'
-          description: Parent event ticker for sub-events
-        startTime:
-          type:
-          - string
-          - 'null'
-          format: date-time
-          description: Start datetime (ISO 8601)
+          description: Human-readable error message
+          example: orderId is required
+    OrderType:
+      type: string
+      enum:
+      - limit
+      - stop-limit
+      description: Order type. `stop-limit` orders require a `stopPrice` that triggers a limit order at `price` when the market reaches the trigger.
+    Outcome:
+      type: string
+      enum:
+      - 'yes'
+      - 'no'
+      description: The outcome being traded (Yes or No)
+    OrderStatus:
+      type: string
+      enum:
+      - open
+      - filled
+      - cancelled
   responses:
-    ServiceUnavailable:
-      description: Prediction markets feature is temporarily unavailable
+    Unauthorized:
+      description: Authentication required or invalid credentials
       content:
         application/json:
           schema:
@@ -947,8 +947,8 @@ components:
         application/json:
           schema:
             $ref: '#/components/schemas/Error'
-    Unauthorized:
-      description: Authentication required or invalid credentials
+    ServiceUnavailable:
+      description: Prediction markets feature is temporarily unavailable
       content:
         application/json:
           schema:

@@ -529,145 +529,81 @@ paths:
                 open_interest: '14.439'
                 open_interest_notional: '434325.12'
 components:
-  responses:
-    ApiKeyIpFilteringFailure:
-      description: ApiKey fails IP Filtering Check
-      content:
-        application/json:
-          schema:
-            type: object
-            $ref: '#/components/schemas/ErrorResponse'
-          example:
-            result: error
-            reason: ApiKeyIpFilteringFailure
-            message: ApiKey fails IP Filtering Check for some accounts
-    BadRequest:
-      description: Bad request - malformed request or invalid parameters
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/ErrorResponse'
-          example:
-            result: error
-            reason: InvalidSignature
-            message: Invalid signature for this request
-    NotFound:
-      description: Resource not found
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/ErrorResponse'
-          example:
-            result: error
-            reason: EndpointNotFound
-            message: API entry point not found
-    InternalError:
-      description: Internal server error
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/ErrorResponse'
-          example:
-            result: error
-            reason: Internal Server Error
-            message: Unexpected server error occurred.
-    TooManyRequests:
-      description: Too many requests - you have exceeded the rate limit
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/ErrorResponse'
-          example:
-            result: error
-            reason: Too Many Requests
-            message: Too Many Requests
-    Unauthorized:
-      description: Unauthorized - missing or invalid authentication
-      content:
-        application/json:
-          schema:
-            type: object
-            $ref: '#/components/schemas/ErrorResponse'
-          example:
-            result: error
-            reason: MissingApikeyHeader
-            message: Must provide 'X-GEMINI-APIKEY' header
-  parameters:
-    contentType:
-      name: Content-Type
-      in: header
-      required: false
-      schema:
-        type: string
-        default: text/plain
-    cacheControl:
-      name: Cache-Control
-      in: header
-      required: false
-      schema:
-        type: string
-        default: no-cache
-    signatureAuth:
-      name: X-GEMINI-SIGNATURE
-      in: header
-      required: true
-      description: HEX-encoded HMAC-SHA384 of payload signed with API secret
-      schema:
-        type: string
-    contentLength:
-      name: Content-Length
-      in: header
-      required: false
-      schema:
-        type: string
-        default: '0'
-    apiKeyAuth:
-      name: X-GEMINI-APIKEY
-      in: header
-      required: true
-      description: Your API key
-      schema:
-        type: string
-    payloadAuth:
-      name: X-GEMINI-PAYLOAD
-      in: header
-      required: true
-      description: Base64-encoded JSON payload
-      schema:
-        type: string
   schemas:
-    TimestampType:
-      description: timestamp
+    FundingTransfer:
+      type: object
+      properties:
+        eventType:
+          type: string
+          description: Event type
+        timestamp:
+          allOf:
+          - $ref: '#/components/schemas/TimestampType'
+          description: Time of the funding payment
+        assetCode:
+          type: string
+          description: Asset symbol
+        action:
+          type: string
+          enum:
+          - Credit
+          - Debit
+          description: Credit or Debit
+        quantity:
+          allOf:
+          - $ref: '#/components/schemas/Quantity'
+          description: A nested JSON object describing the transaction amount
+        instrumentSymbol:
+          type: string
+          description: Symbol of the underlying instrument. **Note** that this is only attached to requests from 16th April 2024 onwards.
+      required:
+      - eventType
+      - timestamp
+      - assetCode
+      - action
+      - quantity
+    Nonce:
       oneOf:
-      - type: string
-        description: 'Gemini strongly recommends using milliseconds instead of seconds for timestamps.
-
-
-          | Timestamp format      | Example               | Supported request type |
-
-          |-----------------------|-----------------------|------------------------|
-
-          | string (seconds)      | `1495127793`          | `POST` only            |
-
-          | string (milliseconds) | `1495127793000`       | `POST` only            |
-
-          '
-        example: '1495127793000'
-      - type: integer
-        format: int64
-        description: 'Gemini strongly recommends using milliseconds instead of seconds for timestamps.
-
-
-          | Timestamp format            | Example                   | Supported request type |
-
-          |-----------------------------|---------------------------|------------------------|
-
-          | whole number (seconds)      | `1495127793`              | `GET`, `POST`          |
-
-          | whole number (milliseconds) | `1495127793000`           | `GET`, `POST`          |
-
-          '
+      - type: TimestampType
+        $ref: '#/components/schemas/TimestampType'
         example: 1495127793000
+      - type: integer
+        example: 1495127793000
+      description: The nonce, as described in [Private API Invocation](/authentication/api-key#private-api-invocation)
+    FundingPaymentReportItem:
+      type: object
+      required:
+      - eventType
+      - timestamp
+      - assetCode
+      - action
+      - quantity
+      properties:
+        eventType:
+          type: string
+          enum:
+          - Hourly Funding Transfer
+          description: Event type
+        timestamp:
+          allOf:
+          - $ref: '#/components/schemas/TimestampType'
+          description: Time of the funding payment
+        assetCode:
+          type: string
+          description: Asset symbol
+        action:
+          type: string
+          enum:
+          - Credit
+          - Debit
+          description: Credit or Debit
+        quantity:
+          allOf:
+          - $ref: '#/components/schemas/Quantity'
+          description: A nested JSON object describing the transaction amount
+        instrumentSymbol:
+          type: string
+          description: Symbol of the underlying instrument. **Note** that this is only attached to requests from 16th April 2024 onwards.
     MarginResponse:
       type: object
       properties:
@@ -723,51 +659,6 @@ components:
           type: string
           format: decimal
           description: The amount of that product the account could sell based on current `initial_margin` and `margin_assets_value`.
-    FundingTransfer:
-      type: object
-      properties:
-        eventType:
-          type: string
-          description: Event type
-        timestamp:
-          allOf:
-          - $ref: '#/components/schemas/TimestampType'
-          description: Time of the funding payment
-        assetCode:
-          type: string
-          description: Asset symbol
-        action:
-          type: string
-          enum:
-          - Credit
-          - Debit
-          description: Credit or Debit
-        quantity:
-          allOf:
-          - $ref: '#/components/schemas/Quantity'
-          description: A nested JSON object describing the transaction amount
-        instrumentSymbol:
-          type: string
-          description: Symbol of the underlying instrument. **Note** that this is only attached to requests from 16th April 2024 onwards.
-      required:
-      - eventType
-      - timestamp
-      - assetCode
-      - action
-      - quantity
-    Quantity:
-      type: object
-      properties:
-        currency:
-          type: string
-          description: The currency code of the quantity.
-        value:
-          type: string
-          format: decimal
-          description: The value of the quantity.
-      required:
-      - currency
-      - value
     OpenPosition:
       type: object
       properties:
@@ -801,40 +692,6 @@ components:
           type: string
           format: decimal
           description: The current Mark Price for the Asset or the position.
-    FundingPaymentReportItem:
-      type: object
-      required:
-      - eventType
-      - timestamp
-      - assetCode
-      - action
-      - quantity
-      properties:
-        eventType:
-          type: string
-          enum:
-          - Hourly Funding Transfer
-          description: Event type
-        timestamp:
-          allOf:
-          - $ref: '#/components/schemas/TimestampType'
-          description: Time of the funding payment
-        assetCode:
-          type: string
-          description: Asset symbol
-        action:
-          type: string
-          enum:
-          - Credit
-          - Debit
-          description: Credit or Debit
-        quantity:
-          allOf:
-          - $ref: '#/components/schemas/Quantity'
-          description: A nested JSON object describing the transaction amount
-        instrumentSymbol:
-          type: string
-          description: Symbol of the underlying instrument. **Note** that this is only attached to requests from 16th April 2024 onwards.
     RiskStatsResponse:
       type: object
       properties:
@@ -859,6 +716,50 @@ components:
           type: string
           format: decimal
           description: string representation of decimal value of open interest notional
+    TimestampType:
+      description: timestamp
+      oneOf:
+      - type: string
+        description: 'Gemini strongly recommends using milliseconds instead of seconds for timestamps.
+
+
+          | Timestamp format      | Example               | Supported request type |
+
+          |-----------------------|-----------------------|------------------------|
+
+          | string (seconds)      | `1495127793`          | `POST` only            |
+
+          | string (milliseconds) | `1495127793000`       | `POST` only            |
+
+          '
+        example: '1495127793000'
+      - type: integer
+        format: int64
+        description: 'Gemini strongly recommends using milliseconds instead of seconds for timestamps.
+
+
+          | Timestamp format            | Example                   | Supported request type |
+
+          |-----------------------------|---------------------------|------------------------|
+
+          | whole number (seconds)      | `1495127793`              | `GET`, `POST`          |
+
+          | whole number (milliseconds) | `1495127793000`           | `GET`, `POST`          |
+
+          '
+        example: 1495127793000
+    ErrorResponse:
+      type: object
+      properties:
+        result:
+          type: string
+          description: Error
+        reason:
+          type: string
+          description: A short description
+        message:
+          type: string
+          description: Detailed error message
     FundingPayment:
       type: object
       required:
@@ -872,26 +773,125 @@ components:
           description: Event type
         hourlyFundingTransfer:
           $ref: '#/components/schemas/FundingTransfer'
-    Nonce:
-      oneOf:
-      - type: TimestampType
-        $ref: '#/components/schemas/TimestampType'
-        example: 1495127793000
-      - type: integer
-        example: 1495127793000
-      description: The nonce, as described in [Private API Invocation](/authentication/api-key#private-api-invocation)
-    ErrorResponse:
+    Quantity:
       type: object
       properties:
-        result:
+        currency:
           type: string
-          description: Error
-        reason:
+          description: The currency code of the quantity.
+        value:
           type: string
-          description: A short description
-        message:
-          type: string
-          description: Detailed error message
+          format: decimal
+          description: The value of the quantity.
+      required:
+      - currency
+      - value
+  responses:
+    Unauthorized:
+      description: Unauthorized - missing or invalid authentication
+      content:
+        application/json:
+          schema:
+            type: object
+            $ref: '#/components/schemas/ErrorResponse'
+          example:
+            result: error
+            reason: MissingApikeyHeader
+            message: Must provide 'X-GEMINI-APIKEY' header
+    BadRequest:
+      description: Bad request - malformed request or invalid parameters
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          example:
+            result: error
+            reason: InvalidSignature
+            message: Invalid signature for this request
+    InternalError:
+      description: Internal server error
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          example:
+            result: error
+            reason: Internal Server Error
+            message: Unexpected server error occurred.
+    NotFound:
+      description: Resource not found
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          example:
+            result: error
+            reason: EndpointNotFound
+            message: API entry point not found
+    ApiKeyIpFilteringFailure:
+      description: ApiKey fails IP Filtering Check
+      content:
+        application/json:
+          schema:
+            type: object
+            $ref: '#/components/schemas/ErrorResponse'
+          example:
+            result: error
+            reason: ApiKeyIpFilteringFailure
+            message: ApiKey fails IP Filtering Check for some accounts
+    TooManyRequests:
+      description: Too many requests - you have exceeded the rate limit
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          example:
+            result: error
+            reason: Too Many Requests
+            message: Too Many Requests
+  parameters:
+    signatureAuth:
+      name: X-GEMINI-SIGNATURE
+      in: header
+      required: true
+      description: HEX-encoded HMAC-SHA384 of payload signed with API secret
+      schema:
+        type: string
+    apiKeyAuth:
+      name: X-GEMINI-APIKEY
+      in: header
+      required: true
+      description: Your API key
+      schema:
+        type: string
+    contentType:
+      name: Content-Type
+      in: header
+      required: false
+      schema:
+        type: string
+        default: text/plain
+    payloadAuth:
+      name: X-GEMINI-PAYLOAD
+      in: header
+      required: true
+      description: Base64-encoded JSON payload
+      schema:
+        type: string
+    cacheControl:
+      name: Cache-Control
+      in: header
+      required: false
+      schema:
+        type: string
+        default: no-cache
+    contentLength:
+      name: Content-Length
+      in: header
+      required: false
+      schema:
+        type: string
+        default: '0'
   securitySchemes:
     apiKeyAuth:
       type: apiKey

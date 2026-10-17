@@ -169,36 +169,6 @@ paths:
                 message: Prediction market volume data is temporarily unavailable
 components:
   schemas:
-    PredictionMarketVolumeCategory:
-      type: object
-      required:
-      - categoryPath
-      - volume
-      properties:
-        categoryPath:
-          type: array
-          description: Display-name path from the top-level category to this category. It replaces recursive child nodes.
-          items:
-            type: string
-          example:
-          - Sports
-          - Football
-          - Pro Football
-        volume:
-          allOf:
-          - $ref: '#/components/schemas/PredictionMarketVolumeDecimal'
-          description: Total volume for this category, including all descendant categories.
-    Error:
-      type: object
-      properties:
-        error:
-          type: string
-          description: Error code
-          example: InvalidInput
-        message:
-          type: string
-          description: Human-readable error message
-          example: orderId is required
     PredictionMarketHourlyVolumeCategory:
       type: object
       required:
@@ -229,6 +199,36 @@ components:
       pattern: ^(?:0|[1-9][0-9]*)(?:\.[0-9]+)?$
       description: Non-negative decimal string. Preserve it as a string to avoid floating-point precision loss.
       example: '143567.25'
+    Error:
+      type: object
+      properties:
+        error:
+          type: string
+          description: Error code
+          example: InvalidInput
+        message:
+          type: string
+          description: Human-readable error message
+          example: orderId is required
+    PredictionMarketVolumeCategory:
+      type: object
+      required:
+      - categoryPath
+      - volume
+      properties:
+        categoryPath:
+          type: array
+          description: Display-name path from the top-level category to this category. It replaces recursive child nodes.
+          items:
+            type: string
+          example:
+          - Sports
+          - Football
+          - Pro Football
+        volume:
+          allOf:
+          - $ref: '#/components/schemas/PredictionMarketVolumeDecimal'
+          description: Total volume for this category, including all descendant categories.
   securitySchemes:
     apiKey:
       type: apiKey

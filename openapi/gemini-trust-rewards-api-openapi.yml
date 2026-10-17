@@ -604,6 +604,71 @@ paths:
                 message: Liquidity rewards program is not currently available
 components:
   schemas:
+    LiquidityDailySummary:
+      type: object
+      required:
+      - payout_date
+      - total_reward_usd
+      - payout_status
+      - paid_at
+      - events
+      properties:
+        payout_date:
+          type: string
+          format: date
+          description: Date the payout applies to (Eastern Time).
+          example: '2026-05-07'
+        total_reward_usd:
+          type: string
+          description: Total USD reward for the day across all events the account scored on.
+          example: '12.45'
+        payout_status:
+          type: string
+          description: Status of the day's payout (e.g. `PENDING`, `PAID`, `ZERO_AMOUNT`).
+          example: PAID
+        paid_at:
+          type:
+          - string
+          - 'null'
+          format: date-time
+          description: ISO-8601 timestamp the day's payout was credited. Always present; `null` if not yet paid.
+          example: '2026-05-08T21:00:00Z'
+        events:
+          type: array
+          description: Per-event score breakdown showing how the day's total was distributed.
+          items:
+            $ref: '#/components/schemas/LiquidityEventScore'
+    LiquidityRewardsLifetimeSummary:
+      type: object
+      required:
+      - total_earned_usd
+      - payout_count
+      - first_payout_date
+      - last_payout_date
+      properties:
+        total_earned_usd:
+          type: string
+          description: Sum of `total_reward_usd` across daily payouts in the window.
+          example: '84.20'
+        payout_count:
+          type: integer
+          format: int32
+          description: Number of daily payouts in the window. Always present; `0` when no payouts exist in the window.
+          example: 12
+        first_payout_date:
+          type:
+          - string
+          - 'null'
+          format: date
+          description: Date of the earliest payout in the window, or `null` if no payouts exist.
+          example: '2026-05-08'
+        last_payout_date:
+          type:
+          - string
+          - 'null'
+          format: date
+          description: Date of the most recent payout in the window, or `null` if no payouts exist.
+          example: '2026-05-20'
     LiquidityRewardEvent:
       type: object
       required:
@@ -655,53 +720,26 @@ components:
           type: string
           description: Optional URL for the event icon. Omitted when not configured.
           example: https://example.com/btc.png
-    MakerRebateRatesResponse:
+    LiquidityRewardsEventsResponse:
       type: object
       required:
-      - rate_rules
+      - events
+      - pagination
+      - last_score_date
       properties:
-        rate_rules:
+        events:
           type: array
           items:
-            $ref: '#/components/schemas/MakerRebateRateRule'
-    Error:
-      type: object
-      properties:
-        error:
-          type: string
-          description: Error code
-          example: InvalidInput
-        message:
-          type: string
-          description: Human-readable error message
-          example: orderId is required
-    LiquidityRewardsConfig:
-      type: object
-      required:
-      - enabled
-      properties:
-        max_spread_cents:
-          type: integer
-          format: int32
-          description: Quotes wider than this spread score zero in the scoring algorithm. Only present when `enabled` is `true`.
-          example: 10
-        min_payout_threshold_usd:
-          type: string
-          description: Daily reward amounts below this threshold are suppressed (sub-threshold accounts get no row at all). Only present when `enabled` is `true`.
-          example: '1.00'
-        enabled:
-          type: boolean
-          description: 'True when the program is fully configured upstream. When false, the response collapses to `{ "enabled": false }` only.'
-          example: true
-    MakerRebatePayoutsResponse:
-      type: object
-      required:
-      - payouts
-      properties:
-        payouts:
-          type: array
-          items:
-            $ref: '#/components/schemas/MakerRebatePayout'
+            $ref: '#/components/schemas/LiquidityRewardEvent'
+        pagination:
+          $ref: '#/components/schemas/Pagination'
+        last_score_date:
+          type:
+          - string
+          - 'null'
+          format: date
+          description: Most recent date for which scoring has been written. `null` when no scoring has run yet.
+          example: '2026-05-19'
     MakerRebateLifetimeSummary:
       type: object
       required:
@@ -744,48 +782,56 @@ components:
           format: date
           description: Date of the most recent payout in the window, or `null` if no payouts exist.
           example: '2026-05-20'
-    LiquidityEventScore:
+    LiquidityRewardsConfig:
       type: object
       required:
-      - event_id
-      - event_name
-      - category_name
-      - normalized_score
-      - snapshot_count
-      - total_snapshots
-      - event_reward_usd
+      - enabled
       properties:
-        event_id:
-          type: integer
-          format: int64
-          description: Stable event identifier.
-          example: 1234567890
-        event_name:
-          type: string
-          description: Event title.
-          example: BTC above $95,000?
-        category_name:
-          type: string
-          description: Market category.
-          example: Crypto
-        normalized_score:
-          type: string
-          description: This account's normalized score for the event on the scoring date (0-1 range as a decimal string).
-          example: '0.4521'
-        snapshot_count:
+        max_spread_cents:
           type: integer
           format: int32
-          description: Number of snapshots in which this account had a qualifying quote.
-          example: 1180
-        total_snapshots:
-          type: integer
-          format: int32
-          description: Total snapshots taken for the event on the scoring date.
-          example: 1440
-        event_reward_usd:
+          description: Quotes wider than this spread score zero in the scoring algorithm. Only present when `enabled` is `true`.
+          example: 10
+        min_payout_threshold_usd:
           type: string
-          description: Portion of the day's total reward attributed to this event.
-          example: '8.20'
+          description: Daily reward amounts below this threshold are suppressed (sub-threshold accounts get no row at all). Only present when `enabled` is `true`.
+          example: '1.00'
+        enabled:
+          type: boolean
+          description: 'True when the program is fully configured upstream. When false, the response collapses to `{ "enabled": false }` only.'
+          example: true
+    Pagination:
+      type: object
+      properties:
+        limit:
+          type: integer
+          example: 50
+        offset:
+          type: integer
+          example: 0
+        total:
+          type: integer
+          example: 100
+    MakerRebateRatesResponse:
+      type: object
+      required:
+      - rate_rules
+      properties:
+        rate_rules:
+          type: array
+          items:
+            $ref: '#/components/schemas/MakerRebateRateRule'
+    Error:
+      type: object
+      properties:
+        error:
+          type: string
+          description: Error code
+          example: InvalidInput
+        message:
+          type: string
+          description: Human-readable error message
+          example: orderId is required
     MakerRebatePayout:
       type: object
       required:
@@ -833,49 +879,6 @@ components:
           format: date-time
           description: ISO-8601 timestamp at which the payout row was created. Always present.
           example: '2026-05-20T20:55:12Z'
-    LiquidityDailySummary:
-      type: object
-      required:
-      - payout_date
-      - total_reward_usd
-      - payout_status
-      - paid_at
-      - events
-      properties:
-        payout_date:
-          type: string
-          format: date
-          description: Date the payout applies to (Eastern Time).
-          example: '2026-05-07'
-        total_reward_usd:
-          type: string
-          description: Total USD reward for the day across all events the account scored on.
-          example: '12.45'
-        payout_status:
-          type: string
-          description: Status of the day's payout (e.g. `PENDING`, `PAID`, `ZERO_AMOUNT`).
-          example: PAID
-        paid_at:
-          type:
-          - string
-          - 'null'
-          format: date-time
-          description: ISO-8601 timestamp the day's payout was credited. Always present; `null` if not yet paid.
-          example: '2026-05-08T21:00:00Z'
-        events:
-          type: array
-          description: Per-event score breakdown showing how the day's total was distributed.
-          items:
-            $ref: '#/components/schemas/LiquidityEventScore'
-    LiquidityRewardsDailySummaryResponse:
-      type: object
-      required:
-      - daily_summaries
-      properties:
-        daily_summaries:
-          type: array
-          items:
-            $ref: '#/components/schemas/LiquidityDailySummary'
     MakerRebateRateRule:
       type: object
       required:
@@ -909,69 +912,66 @@ components:
           format: date-time
           description: ISO-8601 timestamp after which this rule is superseded. Omitted when the rule is still current.
           example: '2026-04-19T00:00:00Z'
-    Pagination:
-      type: object
-      properties:
-        limit:
-          type: integer
-          example: 50
-        offset:
-          type: integer
-          example: 0
-        total:
-          type: integer
-          example: 100
-    LiquidityRewardsLifetimeSummary:
+    MakerRebatePayoutsResponse:
       type: object
       required:
-      - total_earned_usd
-      - payout_count
-      - first_payout_date
-      - last_payout_date
+      - payouts
       properties:
-        total_earned_usd:
-          type: string
-          description: Sum of `total_reward_usd` across daily payouts in the window.
-          example: '84.20'
-        payout_count:
-          type: integer
-          format: int32
-          description: Number of daily payouts in the window. Always present; `0` when no payouts exist in the window.
-          example: 12
-        first_payout_date:
-          type:
-          - string
-          - 'null'
-          format: date
-          description: Date of the earliest payout in the window, or `null` if no payouts exist.
-          example: '2026-05-08'
-        last_payout_date:
-          type:
-          - string
-          - 'null'
-          format: date
-          description: Date of the most recent payout in the window, or `null` if no payouts exist.
-          example: '2026-05-20'
-    LiquidityRewardsEventsResponse:
-      type: object
-      required:
-      - events
-      - pagination
-      - last_score_date
-      properties:
-        events:
+        payouts:
           type: array
           items:
-            $ref: '#/components/schemas/LiquidityRewardEvent'
-        pagination:
-          $ref: '#/components/schemas/Pagination'
-        last_score_date:
-          type:
-          - string
-          - 'null'
-          format: date
-          description: Most recent date for which scoring has been written. `null` when no scoring has run yet.
-          example: '2026-05-19'
+            $ref: '#/components/schemas/MakerRebatePayout'
+    LiquidityRewardsDailySummaryResponse:
+      type: object
+      required:
+      - daily_summaries
+      properties:
+        daily_summaries:
+          type: array
+          items:
+            $ref: '#/components/schemas/LiquidityDailySummary'
+    LiquidityEventScore:
+      type: object
+      required:
+      - event_id
+      - event_name
+      - category_name
+      - normalized_score
+      - snapshot_count
+      - total_snapshots
+      - event_reward_usd
+      properties:
+        event_id:
+          type: integer
+          format: int64
+          description: Stable event identifier.
+          example: 1234567890
+        event_name:
+          type: string
+          description: Event title.
+          example: BTC above $95,000?
+        category_name:
+          type: string
+          description: Market category.
+          example: Crypto
+        normalized_score:
+          type: string
+          description: This account's normalized score for the event on the scoring date (0-1 range as a decimal string).
+          example: '0.4521'
+        snapshot_count:
+          type: integer
+          format: int32
+          description: Number of snapshots in which this account had a qualifying quote.
+          example: 1180
+        total_snapshots:
+          type: integer
+          format: int32
+          description: Total snapshots taken for the event on the scoring date.
+          example: 1440
+        event_reward_usd:
+          type: string
+          description: Portion of the day's total reward attributed to this event.
+          example: '8.20'
   responses:
     Unauthorized:
       description: Authentication required or invalid credentials

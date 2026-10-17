@@ -119,26 +119,20 @@ paths:
         '500':
           $ref: '#/components/responses/InternalError'
 components:
+  responses:
+    Unauthorized:
+      description: Authentication required or invalid credentials
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+    InternalError:
+      description: Internal server error
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
   schemas:
-    AcceptPredictionMarketsTermsResponse:
-      type: object
-      required:
-      - success
-      properties:
-        success:
-          type: boolean
-          example: true
-    Error:
-      type: object
-      properties:
-        error:
-          type: string
-          description: Error code
-          example: InvalidInput
-        message:
-          type: string
-          description: Human-readable error message
-          example: orderId is required
     PredictionMarketsTerms:
       type: object
       required:
@@ -164,6 +158,25 @@ components:
           format: date-time
           description: UTC timestamp when the terms content was last updated
           example: '2026-05-18T17:00:00Z'
+    Error:
+      type: object
+      properties:
+        error:
+          type: string
+          description: Error code
+          example: InvalidInput
+        message:
+          type: string
+          description: Human-readable error message
+          example: orderId is required
+    AcceptPredictionMarketsTermsResponse:
+      type: object
+      required:
+      - success
+      properties:
+        success:
+          type: boolean
+          example: true
     PredictionMarketsTermsStatus:
       type: object
       required:
@@ -185,19 +198,6 @@ components:
           - 'null'
           description: Latest configured Prediction Markets terms version, if available
           example: 3
-  responses:
-    InternalError:
-      description: Internal server error
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/Error'
-    Unauthorized:
-      description: Authentication required or invalid credentials
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/Error'
   securitySchemes:
     apiKey:
       type: apiKey

@@ -1535,120 +1535,7 @@ paths:
         '500':
           $ref: '#/components/responses/InternalError'
 components:
-  responses:
-    ApiKeyIpFilteringFailure:
-      description: ApiKey fails IP Filtering Check
-      content:
-        application/json:
-          schema:
-            type: object
-            $ref: '#/components/schemas/ErrorResponse'
-          example:
-            result: error
-            reason: ApiKeyIpFilteringFailure
-            message: ApiKey fails IP Filtering Check for some accounts
-    BadRequest:
-      description: Bad request - malformed request or invalid parameters
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/ErrorResponse'
-          example:
-            result: error
-            reason: InvalidSignature
-            message: Invalid signature for this request
-    NotFound:
-      description: Resource not found
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/ErrorResponse'
-          example:
-            result: error
-            reason: EndpointNotFound
-            message: API entry point not found
-    InternalError:
-      description: Internal server error
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/ErrorResponse'
-          example:
-            result: error
-            reason: Internal Server Error
-            message: Unexpected server error occurred.
-    TooManyRequests:
-      description: Too many requests - you have exceeded the rate limit
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/ErrorResponse'
-          example:
-            result: error
-            reason: Too Many Requests
-            message: Too Many Requests
-    Unauthorized:
-      description: Unauthorized - missing or invalid authentication
-      content:
-        application/json:
-          schema:
-            type: object
-            $ref: '#/components/schemas/ErrorResponse'
-          example:
-            result: error
-            reason: MissingApikeyHeader
-            message: Must provide 'X-GEMINI-APIKEY' header
   schemas:
-    StopLimitOrderResponse:
-      type: object
-      title: Stop-Limit Order Response
-      properties:
-        order_id:
-          type: string
-        id:
-          type: string
-        symbol:
-          type: string
-        exchange:
-          type: string
-        avg_execution_price:
-          type: string
-        side:
-          type: string
-          enum:
-          - buy
-          - sell
-        type:
-          type: string
-          enum:
-          - exchange stop limit
-        timestamp:
-          $ref: '#/components/schemas/TimestampType'
-        timestampms:
-          $ref: '#/components/schemas/TimestampType'
-        is_live:
-          type: boolean
-        is_cancelled:
-          type: boolean
-        is_hidden:
-          type: boolean
-        was_forced:
-          type: boolean
-        executed_amount:
-          type: string
-        options:
-          type: array
-          items:
-            type: string
-        stop_price:
-          type: string
-          format: double
-        price:
-          type: string
-          format: double
-        original_amount:
-          type: string
-          format: double
     NewOrderRequest:
       type: object
       required:
@@ -1717,123 +1604,97 @@ components:
         account:
           type: string
           description: Required for Master API keys as described in [Private API Invocation](/authentication/api-key#private-api-invocation). The name of the account within the subaccount group. Specifies the account on which you intend to place the order. Only available for exchange accounts.
-    MyTradesRequest:
+    Nonce:
+      oneOf:
+      - type: TimestampType
+        $ref: '#/components/schemas/TimestampType'
+        example: 1495127793000
+      - type: integer
+        example: 1495127793000
+      description: The nonce, as described in [Private API Invocation](/authentication/api-key#private-api-invocation)
+    MyTrade:
       type: object
-      required:
-      - request
-      - nonce
       properties:
-        request:
+        price:
           type: string
-          description: The API endpoint path
-          example: /v1/mytrades
-        nonce:
-          type: TimestampType
-          $ref: '#/components/schemas/TimestampType'
-          title: The nonce, as described in [Private API Invocation](/authentication/api-key#private-api-invocation)
-        account:
+          example: 9100.0
+        amount:
           type: string
-          description: Required for Master API keys as described in [Private API Invocation](/authentication/api-key#private-api-invocation). The name of the account within the subaccount group. Specifies the account on which you intend to place the order. Only available for exchange accounts.
-          example: primary
-        symbol:
-          type: string
-          description: The [symbol](/market-data/symbols-and-minimums) to retrieve trades for
-          example: btcusd
-        limit_trades:
-          type: integer
-          description: The maximum number of trades to return. Default is 50, max is 500.
-          example: 50
+          example: 1.5
         timestamp:
           $ref: '#/components/schemas/TimestampType'
-          description: 'Only return trades on or after this timestamp. See [Data Types: Timestamps](/rest/~schemas#timestamp-type) for more information. If not present, will show the most recent orders.'
-          example: 1591084414000
-    LimitOrderResponse:
-      type: object
-      title: Limit Order Response
-      properties:
-        order_id:
-          type: string
-        id:
-          type: string
-        symbol:
-          type: string
-        exchange:
-          type: string
-        avg_execution_price:
-          type: string
-        side:
-          type: string
-          enum:
-          - buy
-          - sell
+          example: 1591084414
+        timestampms:
+          $ref: '#/components/schemas/TimestampType'
+          example: 1591084414622
         type:
           type: string
           enum:
-          - exchange limit
-          - exchange stop limit
-          - exchange market
-        timestamp:
-          type: TimestampType
-          $ref: '#/components/schemas/TimestampType'
-        timestampms:
-          type: TimestampType
-          $ref: '#/components/schemas/TimestampType'
-        is_live:
+          - Buy
+          - Sell
+          example: Buy
+        aggressor:
           type: boolean
-        is_cancelled:
-          type: boolean
-        is_hidden:
-          type: boolean
-        was_forced:
-          type: boolean
-        executed_amount:
+          example: true
+        fee_currency:
           type: string
-        remaining_amount:
+          example: USD
+        fee_amount:
           type: string
-          format: double
-        client_order_id:
-          type: string
-        options:
-          type: array
-          items:
-            type: string
-        price:
-          type: string
-          format: double
-        original_amount:
-          type: string
-          format: double
-    OrderStatusRequest:
-      type: object
-      required:
-      - request
-      - nonce
-      - order_id
-      properties:
-        request:
-          type: string
-          description: The API endpoint path
-          example: /v1/order/status
-        nonce:
-          type: TimestampType
-          $ref: '#/components/schemas/TimestampType'
-          title: The nonce, as described in [Private API Invocation](/authentication/api-key#private-api-invocation)
-        account:
-          type: string
-          description: Required for Master API keys as described in [Private API Invocation](/authentication/api-key#private-api-invocation). The name of the account within the subaccount group. Specifies the account on which you intend to place the order. Only available for exchange accounts.
-          example: primary
-        order_id:
+          example: 13.65
+        tid:
           type: integer
           format: int64
-          x-unsigned-int64: true
-          description: The order id to get information on. The `order_id` represents a whole number and is transmitted as an unsigned 64-bit integer in JSON format. `order_id` cannot be used in combination with `client_order_id`.
-          example: 123456789012345
+          example: 123456789
+        order_id:
+          type: string
+          example: 123456789
         client_order_id:
           type: string
-          description: The `client_order_id` used when placing the order. `client_order_id` cannot be used in combination with `order_id`
-        include_trades:
+        exchange:
+          type: string
+          example: gemini
+        is_auction_fill:
           type: boolean
-          description: Either `True` or `False`. If `True` the endpoint will return individual trade details of all fills from the order.
+          example: false
+        break:
+          type: string
+          enum:
+          - ''
+          - trade correct
+          example: ''
+    TimestampType:
+      description: timestamp
+      oneOf:
+      - type: string
+        description: 'Gemini strongly recommends using milliseconds instead of seconds for timestamps.
+
+
+          | Timestamp format      | Example               | Supported request type |
+
+          |-----------------------|-----------------------|------------------------|
+
+          | string (seconds)      | `1495127793`          | `POST` only            |
+
+          | string (milliseconds) | `1495127793000`       | `POST` only            |
+
+          '
+        example: '1495127793000'
+      - type: integer
+        format: int64
+        description: 'Gemini strongly recommends using milliseconds instead of seconds for timestamps.
+
+
+          | Timestamp format            | Example                   | Supported request type |
+
+          |-----------------------------|---------------------------|------------------------|
+
+          | whole number (seconds)      | `1495127793`              | `GET`, `POST`          |
+
+          | whole number (milliseconds) | `1495127793000`           | `GET`, `POST`          |
+
+          '
+        example: 1495127793000
     CancelAllOrdersRequest:
       type: object
       required:
@@ -1852,6 +1713,18 @@ components:
           type: string
           description: Required for Master API keys as described in [Private API Invocation](/authentication/api-key#private-api-invocation). The name of the account within the subaccount group. Specifies the account on which you intend to cancel the orders. Only available for exchange accounts.
           example: primary
+    ErrorResponse:
+      type: object
+      properties:
+        result:
+          type: string
+          description: Error
+        reason:
+          type: string
+          description: A short description
+        message:
+          type: string
+          description: Detailed error message
     CancelAllResult:
       type: object
       properties:
@@ -1936,192 +1809,56 @@ components:
         original_amount:
           type: string
           format: double
-    TimestampType:
-      description: timestamp
-      oneOf:
-      - type: string
-        description: 'Gemini strongly recommends using milliseconds instead of seconds for timestamps.
-
-
-          | Timestamp format      | Example               | Supported request type |
-
-          |-----------------------|-----------------------|------------------------|
-
-          | string (seconds)      | `1495127793`          | `POST` only            |
-
-          | string (milliseconds) | `1495127793000`       | `POST` only            |
-
-          '
-        example: '1495127793000'
-      - type: integer
-        format: int64
-        description: 'Gemini strongly recommends using milliseconds instead of seconds for timestamps.
-
-
-          | Timestamp format            | Example                   | Supported request type |
-
-          |-----------------------------|---------------------------|------------------------|
-
-          | whole number (seconds)      | `1495127793`              | `GET`, `POST`          |
-
-          | whole number (milliseconds) | `1495127793000`           | `GET`, `POST`          |
-
-          '
-        example: 1495127793000
-    CancelAllOrdersBySessionRequest:
+    StopLimitOrderResponse:
       type: object
-      required:
-      - request
-      - nonce
+      title: Stop-Limit Order Response
       properties:
-        request:
-          type: string
-          description: The literal string "/v1/order/cancel/session"
-          example: /v1/order/cancel/session
-        nonce:
-          type: TimestampType
-          $ref: '#/components/schemas/TimestampType'
-          title: The nonce, as described in [Private API Invocation](/authentication/api-key#private-api-invocation)
-        account:
-          type: string
-          description: Required for Master API keys as described in [Private API Invocation](/authentication/api-key#private-api-invocation). The name of the account within the subaccount group. Specifies the account on which you intend to cancel the orders. Only available for exchange accounts.
-          example: primary
-    MyTrade:
-      type: object
-      properties:
-        price:
-          type: string
-          example: 9100.0
-        amount:
-          type: string
-          example: 1.5
-        timestamp:
-          $ref: '#/components/schemas/TimestampType'
-          example: 1591084414
-        timestampms:
-          $ref: '#/components/schemas/TimestampType'
-          example: 1591084414622
-        type:
-          type: string
-          enum:
-          - Buy
-          - Sell
-          example: Buy
-        aggressor:
-          type: boolean
-          example: true
-        fee_currency:
-          type: string
-          example: USD
-        fee_amount:
-          type: string
-          example: 13.65
-        tid:
-          type: integer
-          format: int64
-          example: 123456789
         order_id:
           type: string
-          example: 123456789
-        client_order_id:
+        id:
+          type: string
+        symbol:
           type: string
         exchange:
           type: string
-          example: gemini
-        is_auction_fill:
-          type: boolean
-          example: false
-        break:
+        avg_execution_price:
+          type: string
+        side:
           type: string
           enum:
-          - ''
-          - trade correct
-          example: ''
-    TradeVolume:
-      type: object
-      properties:
-        symbol:
+          - buy
+          - sell
+        type:
           type: string
-          example: btcusd
-        base_currency:
-          type: string
-          example: BTC
-        quote_currency:
-          type: string
-          example: USD
-        notional_currency:
-          type: string
-          example: USD
-        data_date:
-          type: string
-          example: 2020-06-02
-        total_volume_base:
-          type: string
-          example: 10.5
-        maker_buy_sell_ratio:
-          type: string
-          example: 1.2
-        buy_maker_base:
-          type: string
-          example: 5.5
-        buy_maker_notional:
-          type: string
-          example: 50050.0
-        buy_maker_count:
-          type: integer
-          example: 10
-        sell_maker_base:
-          type: string
-          example: 5.0
-        sell_maker_notional:
-          type: string
-          example: 45500.0
-        sell_maker_count:
-          type: integer
-          example: 8
-        buy_taker_base:
-          type: string
-          example: 8.5
-        buy_taker_notional:
-          type: string
-          example: 77350.0
-        buy_taker_count:
-          type: integer
-          example: 15
-        sell_taker_base:
-          type: string
-          example: 7.5
-        sell_taker_notional:
-          type: string
-          example: 68250.0
-        sell_taker_count:
-          type: integer
-          example: 12
-    CancelOrderRequest:
-      type: object
-      required:
-      - request
-      - nonce
-      - order_id
-      properties:
-        request:
-          type: string
-          description: The literal string "/v1/order/cancel"
-          example: /v1/order/cancel
-        nonce:
-          type: TimestampType
+          enum:
+          - exchange stop limit
+        timestamp:
           $ref: '#/components/schemas/TimestampType'
-          title: The nonce, as described in [Private API Invocation](/authentication/api-key#private-api-invocation)
-        order_id:
-          type: integer
-          format: int64
-          x-unsigned-int64: true
-          description: The order ID given by `/order/new`
-          example: 106817811
-        account:
+        timestampms:
+          $ref: '#/components/schemas/TimestampType'
+        is_live:
+          type: boolean
+        is_cancelled:
+          type: boolean
+        is_hidden:
+          type: boolean
+        was_forced:
+          type: boolean
+        executed_amount:
           type: string
-          description: Required for Master API keys as described in [Private API Invocation](/authentication/api-key#private-api-invocation). The name of the account within the subaccount group. Specifies the account on which you intend to cancel the order. Only available for exchange accounts.
-          example: primary
+        options:
+          type: array
+          items:
+            type: string
+        stop_price:
+          type: string
+          format: double
+        price:
+          type: string
+          format: double
+        original_amount:
+          type: string
+          format: double
     Order:
       type: object
       properties:
@@ -2253,14 +1990,49 @@ components:
                 type: string
                 description: Will only be present if the trade is broken. See `Break Types` below for more information.
           description: Contains an array of JSON objects with trade details.
-    Nonce:
-      oneOf:
-      - type: TimestampType
-        $ref: '#/components/schemas/TimestampType'
-        example: 1495127793000
-      - type: integer
-        example: 1495127793000
-      description: The nonce, as described in [Private API Invocation](/authentication/api-key#private-api-invocation)
+    CancelAllOrdersBySessionRequest:
+      type: object
+      required:
+      - request
+      - nonce
+      properties:
+        request:
+          type: string
+          description: The literal string "/v1/order/cancel/session"
+          example: /v1/order/cancel/session
+        nonce:
+          type: TimestampType
+          $ref: '#/components/schemas/TimestampType'
+          title: The nonce, as described in [Private API Invocation](/authentication/api-key#private-api-invocation)
+        account:
+          type: string
+          description: Required for Master API keys as described in [Private API Invocation](/authentication/api-key#private-api-invocation). The name of the account within the subaccount group. Specifies the account on which you intend to cancel the orders. Only available for exchange accounts.
+          example: primary
+    CancelOrderRequest:
+      type: object
+      required:
+      - request
+      - nonce
+      - order_id
+      properties:
+        request:
+          type: string
+          description: The literal string "/v1/order/cancel"
+          example: /v1/order/cancel
+        nonce:
+          type: TimestampType
+          $ref: '#/components/schemas/TimestampType'
+          title: The nonce, as described in [Private API Invocation](/authentication/api-key#private-api-invocation)
+        order_id:
+          type: integer
+          format: int64
+          x-unsigned-int64: true
+          description: The order ID given by `/order/new`
+          example: 106817811
+        account:
+          type: string
+          description: Required for Master API keys as described in [Private API Invocation](/authentication/api-key#private-api-invocation). The name of the account within the subaccount group. Specifies the account on which you intend to cancel the order. Only available for exchange accounts.
+          example: primary
     NotionalVolume:
       type: object
       properties:
@@ -2328,52 +2100,252 @@ components:
             api_taker_fee_bps:
               type: integer
               example: 10
-    ErrorResponse:
+    OrderStatusRequest:
+      type: object
+      required:
+      - request
+      - nonce
+      - order_id
+      properties:
+        request:
+          type: string
+          description: The API endpoint path
+          example: /v1/order/status
+        nonce:
+          type: TimestampType
+          $ref: '#/components/schemas/TimestampType'
+          title: The nonce, as described in [Private API Invocation](/authentication/api-key#private-api-invocation)
+        account:
+          type: string
+          description: Required for Master API keys as described in [Private API Invocation](/authentication/api-key#private-api-invocation). The name of the account within the subaccount group. Specifies the account on which you intend to place the order. Only available for exchange accounts.
+          example: primary
+        order_id:
+          type: integer
+          format: int64
+          x-unsigned-int64: true
+          description: The order id to get information on. The `order_id` represents a whole number and is transmitted as an unsigned 64-bit integer in JSON format. `order_id` cannot be used in combination with `client_order_id`.
+          example: 123456789012345
+        client_order_id:
+          type: string
+          description: The `client_order_id` used when placing the order. `client_order_id` cannot be used in combination with `order_id`
+        include_trades:
+          type: boolean
+          description: Either `True` or `False`. If `True` the endpoint will return individual trade details of all fills from the order.
+    LimitOrderResponse:
+      type: object
+      title: Limit Order Response
+      properties:
+        order_id:
+          type: string
+        id:
+          type: string
+        symbol:
+          type: string
+        exchange:
+          type: string
+        avg_execution_price:
+          type: string
+        side:
+          type: string
+          enum:
+          - buy
+          - sell
+        type:
+          type: string
+          enum:
+          - exchange limit
+          - exchange stop limit
+          - exchange market
+        timestamp:
+          type: TimestampType
+          $ref: '#/components/schemas/TimestampType'
+        timestampms:
+          type: TimestampType
+          $ref: '#/components/schemas/TimestampType'
+        is_live:
+          type: boolean
+        is_cancelled:
+          type: boolean
+        is_hidden:
+          type: boolean
+        was_forced:
+          type: boolean
+        executed_amount:
+          type: string
+        remaining_amount:
+          type: string
+          format: double
+        client_order_id:
+          type: string
+        options:
+          type: array
+          items:
+            type: string
+        price:
+          type: string
+          format: double
+        original_amount:
+          type: string
+          format: double
+    MyTradesRequest:
+      type: object
+      required:
+      - request
+      - nonce
+      properties:
+        request:
+          type: string
+          description: The API endpoint path
+          example: /v1/mytrades
+        nonce:
+          type: TimestampType
+          $ref: '#/components/schemas/TimestampType'
+          title: The nonce, as described in [Private API Invocation](/authentication/api-key#private-api-invocation)
+        account:
+          type: string
+          description: Required for Master API keys as described in [Private API Invocation](/authentication/api-key#private-api-invocation). The name of the account within the subaccount group. Specifies the account on which you intend to place the order. Only available for exchange accounts.
+          example: primary
+        symbol:
+          type: string
+          description: The [symbol](/market-data/symbols-and-minimums) to retrieve trades for
+          example: btcusd
+        limit_trades:
+          type: integer
+          description: The maximum number of trades to return. Default is 50, max is 500.
+          example: 50
+        timestamp:
+          $ref: '#/components/schemas/TimestampType'
+          description: 'Only return trades on or after this timestamp. See [Data Types: Timestamps](/rest/~schemas#timestamp-type) for more information. If not present, will show the most recent orders.'
+          example: 1591084414000
+    TradeVolume:
       type: object
       properties:
-        result:
+        symbol:
           type: string
-          description: Error
-        reason:
+          example: btcusd
+        base_currency:
           type: string
-          description: A short description
-        message:
+          example: BTC
+        quote_currency:
           type: string
-          description: Detailed error message
+          example: USD
+        notional_currency:
+          type: string
+          example: USD
+        data_date:
+          type: string
+          example: 2020-06-02
+        total_volume_base:
+          type: string
+          example: 10.5
+        maker_buy_sell_ratio:
+          type: string
+          example: 1.2
+        buy_maker_base:
+          type: string
+          example: 5.5
+        buy_maker_notional:
+          type: string
+          example: 50050.0
+        buy_maker_count:
+          type: integer
+          example: 10
+        sell_maker_base:
+          type: string
+          example: 5.0
+        sell_maker_notional:
+          type: string
+          example: 45500.0
+        sell_maker_count:
+          type: integer
+          example: 8
+        buy_taker_base:
+          type: string
+          example: 8.5
+        buy_taker_notional:
+          type: string
+          example: 77350.0
+        buy_taker_count:
+          type: integer
+          example: 15
+        sell_taker_base:
+          type: string
+          example: 7.5
+        sell_taker_notional:
+          type: string
+          example: 68250.0
+        sell_taker_count:
+          type: integer
+          example: 12
+  responses:
+    Unauthorized:
+      description: Unauthorized - missing or invalid authentication
+      content:
+        application/json:
+          schema:
+            type: object
+            $ref: '#/components/schemas/ErrorResponse'
+          example:
+            result: error
+            reason: MissingApikeyHeader
+            message: Must provide 'X-GEMINI-APIKEY' header
+    BadRequest:
+      description: Bad request - malformed request or invalid parameters
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          example:
+            result: error
+            reason: InvalidSignature
+            message: Invalid signature for this request
+    InternalError:
+      description: Internal server error
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          example:
+            result: error
+            reason: Internal Server Error
+            message: Unexpected server error occurred.
+    NotFound:
+      description: Resource not found
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          example:
+            result: error
+            reason: EndpointNotFound
+            message: API entry point not found
+    ApiKeyIpFilteringFailure:
+      description: ApiKey fails IP Filtering Check
+      content:
+        application/json:
+          schema:
+            type: object
+            $ref: '#/components/schemas/ErrorResponse'
+          example:
+            result: error
+            reason: ApiKeyIpFilteringFailure
+            message: ApiKey fails IP Filtering Check for some accounts
+    TooManyRequests:
+      description: Too many requests - you have exceeded the rate limit
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          example:
+            result: error
+            reason: Too Many Requests
+            message: Too Many Requests
   parameters:
-    contentType:
-      name: Content-Type
-      in: header
-      required: false
-      schema:
-        type: string
-        default: text/plain
-    cacheControl:
-      name: Cache-Control
-      in: header
-      required: false
-      schema:
-        type: string
-        default: no-cache
     signatureAuth:
       name: X-GEMINI-SIGNATURE
       in: header
       required: true
       description: HEX-encoded HMAC-SHA384 of payload signed with API secret
-      schema:
-        type: string
-    contentLength:
-      name: Content-Length
-      in: header
-      required: false
-      schema:
-        type: string
-        default: '0'
-    payloadAuth:
-      name: X-GEMINI-PAYLOAD
-      in: header
-      required: true
-      description: Base64-encoded JSON payload
       schema:
         type: string
     apiKeyAuth:
@@ -2383,6 +2355,27 @@ components:
       description: Your API key
       schema:
         type: string
+    contentType:
+      name: Content-Type
+      in: header
+      required: false
+      schema:
+        type: string
+        default: text/plain
+    payloadAuth:
+      name: X-GEMINI-PAYLOAD
+      in: header
+      required: true
+      description: Base64-encoded JSON payload
+      schema:
+        type: string
+    cacheControl:
+      name: Cache-Control
+      in: header
+      required: false
+      schema:
+        type: string
+        default: no-cache
     symbolParam:
       name: symbol
       in: path
@@ -2395,6 +2388,13 @@ components:
         `BTCUSD`, etc. See [<u>**symbols and minimums**</u>](/market-data/symbols-and-minimums#all-supported-symbols).
 
         '
+    contentLength:
+      name: Content-Length
+      in: header
+      required: false
+      schema:
+        type: string
+        default: '0'
   securitySchemes:
     apiKeyAuth:
       type: apiKey

@@ -676,113 +676,47 @@ paths:
         '503':
           $ref: '#/components/responses/ServiceUnavailable'
 components:
+  responses:
+    Unauthorized:
+      description: Authentication required or invalid credentials
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+    BadRequest:
+      description: Invalid request parameters
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+    InternalError:
+      description: Internal server error
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+    ServiceUnavailable:
+      description: Prediction markets feature is temporarily unavailable
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
   schemas:
+    PaginationSimple:
+      type: object
+      properties:
+        limit:
+          type: integer
+        offset:
+          type: integer
+        count:
+          type: integer
+          description: Number of items in current response
     OrderSide:
       type: string
       enum:
       - buy
       - sell
-    Outcome:
-      type: string
-      enum:
-      - 'yes'
-      - 'no'
-      description: The outcome being traded (Yes or No)
-    ContractShareVolume:
-      type: object
-      properties:
-        symbol:
-          type: string
-          description: Contract instrument symbol
-          example: GEMI-FED260318-CUT25
-        totalQty:
-          type: string
-          description: Total taker volume across all participants (in shares)
-          example: '94625'
-        userAggressorQty:
-          type:
-          - string
-          - 'null'
-          description: The authenticated user's taker (aggressor) volume (in shares)
-          example: '1'
-        userRestingQty:
-          type:
-          - string
-          - 'null'
-          description: The authenticated user's maker (resting) volume (in shares)
-          example: '0'
-    PositionsResponse:
-      type: object
-      properties:
-        positions:
-          type: array
-          items:
-            $ref: '#/components/schemas/Position'
-        total:
-          type:
-          - integer
-          - 'null'
-          description: Total number of positions (for pagination)
-    OrderStatus:
-      type: string
-      enum:
-      - open
-      - filled
-      - cancelled
-    Error:
-      type: object
-      properties:
-        error:
-          type: string
-          description: Error code
-          example: InvalidInput
-        message:
-          type: string
-          description: Human-readable error message
-          example: orderId is required
-    PositionPrices:
-      type:
-      - object
-      - 'null'
-      description: Current bid/ask/last-trade prices for the contract
-      required:
-      - buy
-      - sell
-      properties:
-        buy:
-          type: object
-          properties:
-            'yes':
-              type:
-              - string
-              - 'null'
-            'no':
-              type:
-              - string
-              - 'null'
-        sell:
-          type: object
-          properties:
-            'yes':
-              type:
-              - string
-              - 'null'
-            'no':
-              type:
-              - string
-              - 'null'
-        bestBid:
-          type:
-          - string
-          - 'null'
-        bestAsk:
-          type:
-          - string
-          - 'null'
-        lastTradePrice:
-          type:
-          - string
-          - 'null'
     VolumeMetricsResponse:
       type: object
       properties:
@@ -853,6 +787,145 @@ components:
           example: '0.50'
         contractMetadata:
           $ref: '#/components/schemas/ContractMetadata'
+    PositionPrices:
+      type:
+      - object
+      - 'null'
+      description: Current bid/ask/last-trade prices for the contract
+      required:
+      - buy
+      - sell
+      properties:
+        buy:
+          type: object
+          properties:
+            'yes':
+              type:
+              - string
+              - 'null'
+            'no':
+              type:
+              - string
+              - 'null'
+        sell:
+          type: object
+          properties:
+            'yes':
+              type:
+              - string
+              - 'null'
+            'no':
+              type:
+              - string
+              - 'null'
+        bestBid:
+          type:
+          - string
+          - 'null'
+        bestAsk:
+          type:
+          - string
+          - 'null'
+        lastTradePrice:
+          type:
+          - string
+          - 'null'
+    ContractMetadata:
+      type: object
+      properties:
+        contractId:
+          type: string
+        contractName:
+          type: string
+        contractTicker:
+          type: string
+        eventTicker:
+          type: string
+        eventName:
+          type: string
+        category:
+          type: string
+        contractStatus:
+          type: string
+        eventType:
+          type: string
+          description: Event type ("binary" or "categorical")
+        expiryDate:
+          type:
+          - string
+          - 'null'
+          format: date-time
+        resolvedAt:
+          type:
+          - string
+          - 'null'
+          format: date-time
+        resolutionSide:
+          type:
+          - string
+          - 'null'
+          description: Winning outcome if resolved ("yes" or "no")
+        parentEventTicker:
+          type:
+          - string
+          - 'null'
+          description: Parent event ticker for sub-events
+        startTime:
+          type:
+          - string
+          - 'null'
+          format: date-time
+          description: Start datetime (ISO 8601)
+    OrderStatus:
+      type: string
+      enum:
+      - open
+      - filled
+      - cancelled
+    PositionsResponse:
+      type: object
+      properties:
+        positions:
+          type: array
+          items:
+            $ref: '#/components/schemas/Position'
+        total:
+          type:
+          - integer
+          - 'null'
+          description: Total number of positions (for pagination)
+    ContractShareVolume:
+      type: object
+      properties:
+        symbol:
+          type: string
+          description: Contract instrument symbol
+          example: GEMI-FED260318-CUT25
+        totalQty:
+          type: string
+          description: Total taker volume across all participants (in shares)
+          example: '94625'
+        userAggressorQty:
+          type:
+          - string
+          - 'null'
+          description: The authenticated user's taker (aggressor) volume (in shares)
+          example: '1'
+        userRestingQty:
+          type:
+          - string
+          - 'null'
+          description: The authenticated user's maker (resting) volume (in shares)
+          example: '0'
+    OrdersResponse:
+      type: object
+      properties:
+        orders:
+          type: array
+          items:
+            $ref: '#/components/schemas/OrderResponse'
+        pagination:
+          $ref: '#/components/schemas/PaginationSimple'
     SettledPosition:
       type: object
       description: A historically settled position in a resolved prediction market contract.
@@ -963,6 +1036,69 @@ components:
           format: double
           description: Unrealized P&L as a percentage of cost basis. Expressed as a percent (e.g. `12.5` represents 12.5%, **not** `0.125`); rounded to 4 decimal places. **Absent** when there is no live sell quote, or when cost basis is zero. Treat as `Optional<T>`.
           example: 23.81
+    Error:
+      type: object
+      properties:
+        error:
+          type: string
+          description: Error code
+          example: InvalidInput
+        message:
+          type: string
+          description: Human-readable error message
+          example: orderId is required
+    OrderType:
+      type: string
+      enum:
+      - limit
+      - stop-limit
+      description: Order type. `stop-limit` orders require a `stopPrice` that triggers a limit order at `price` when the market reaches the trigger.
+    Outcome:
+      type: string
+      enum:
+      - 'yes'
+      - 'no'
+      description: The outcome being traded (Yes or No)
+    SettledPositionsResponse:
+      type: object
+      properties:
+        positions:
+          type: array
+          items:
+            $ref: '#/components/schemas/SettledPosition'
+        total:
+          type:
+          - integer
+          - 'null'
+          description: Total number of settled positions across all pages for the current filter set.
+        totalPayout:
+          type: string
+          description: Sum of `payout` across all settled positions in the filter set. Retained for binary back-compat with the legacy response shape; **field is absent (not `null`) on the unified backend** because computing a roll-up over the full filtered set would require a separate aggregate query (deferred until a partner asks). Play's default `OptionHandlers` omits absent `Option` fields rather than emitting `null`.
+        totalCostBasis:
+          type: string
+          description: Sum of `costBasis` across all settled positions in the filter set. Retained for binary back-compat; **field is absent (not `null`) on the unified backend** (see `totalPayout`).
+        totalNetProfit:
+          type: string
+          description: Sum of `netProfit` across all settled positions in the filter set. Retained for binary back-compat; **field is absent (not `null`) on the unified backend** (see `totalPayout`).
+        cashOuts:
+          type: array
+          description: 'Cash-outs (early sells before contract resolution) in the same account-scoped time window as the returned page''s settled positions. Field is absent (not `null`) when `withCashOuts=true` is not passed on the request. `positions[]` pagination is unaffected — `limit`/`offset` continue to scope `positions[]` only.
+
+            '
+          items:
+            $ref: '#/components/schemas/CashedOutPosition'
+        totalCashOutProceeds:
+          type: string
+          description: Sum of `cashOuts[].proceeds` over the returned cash-outs. Field is absent (not `null`) when `withCashOuts=true` is not passed on the request.
+          example: '120.00'
+        totalCashOutCostBasis:
+          type: string
+          description: Sum of `cashOuts[].costBasis` over the returned cash-outs. Field is absent (not `null`) when `withCashOuts=true` is not passed on the request.
+          example: '100.00'
+        totalCashOutNetProfit:
+          type: string
+          description: Sum of `cashOuts[].netProfit` over the returned cash-outs. Field is absent (not `null`) when `withCashOuts=true` is not passed on the request.
+          example: '20.00'
     OrderResponse:
       type: object
       properties:
@@ -1027,142 +1163,6 @@ components:
           format: date-time
         contractMetadata:
           $ref: '#/components/schemas/ContractMetadata'
-    OrdersResponse:
-      type: object
-      properties:
-        orders:
-          type: array
-          items:
-            $ref: '#/components/schemas/OrderResponse'
-        pagination:
-          $ref: '#/components/schemas/PaginationSimple'
-    OrderType:
-      type: string
-      enum:
-      - limit
-      - stop-limit
-      description: Order type. `stop-limit` orders require a `stopPrice` that triggers a limit order at `price` when the market reaches the trigger.
-    SettledPositionsResponse:
-      type: object
-      properties:
-        positions:
-          type: array
-          items:
-            $ref: '#/components/schemas/SettledPosition'
-        total:
-          type:
-          - integer
-          - 'null'
-          description: Total number of settled positions across all pages for the current filter set.
-        totalPayout:
-          type: string
-          description: Sum of `payout` across all settled positions in the filter set. Retained for binary back-compat with the legacy response shape; **field is absent (not `null`) on the unified backend** because computing a roll-up over the full filtered set would require a separate aggregate query (deferred until a partner asks). Play's default `OptionHandlers` omits absent `Option` fields rather than emitting `null`.
-        totalCostBasis:
-          type: string
-          description: Sum of `costBasis` across all settled positions in the filter set. Retained for binary back-compat; **field is absent (not `null`) on the unified backend** (see `totalPayout`).
-        totalNetProfit:
-          type: string
-          description: Sum of `netProfit` across all settled positions in the filter set. Retained for binary back-compat; **field is absent (not `null`) on the unified backend** (see `totalPayout`).
-        cashOuts:
-          type: array
-          description: 'Cash-outs (early sells before contract resolution) in the same account-scoped time window as the returned page''s settled positions. Field is absent (not `null`) when `withCashOuts=true` is not passed on the request. `positions[]` pagination is unaffected — `limit`/`offset` continue to scope `positions[]` only.
-
-            '
-          items:
-            $ref: '#/components/schemas/CashedOutPosition'
-        totalCashOutProceeds:
-          type: string
-          description: Sum of `cashOuts[].proceeds` over the returned cash-outs. Field is absent (not `null`) when `withCashOuts=true` is not passed on the request.
-          example: '120.00'
-        totalCashOutCostBasis:
-          type: string
-          description: Sum of `cashOuts[].costBasis` over the returned cash-outs. Field is absent (not `null`) when `withCashOuts=true` is not passed on the request.
-          example: '100.00'
-        totalCashOutNetProfit:
-          type: string
-          description: Sum of `cashOuts[].netProfit` over the returned cash-outs. Field is absent (not `null`) when `withCashOuts=true` is not passed on the request.
-          example: '20.00'
-    PaginationSimple:
-      type: object
-      properties:
-        limit:
-          type: integer
-        offset:
-          type: integer
-        count:
-          type: integer
-          description: Number of items in current response
-    ContractMetadata:
-      type: object
-      properties:
-        contractId:
-          type: string
-        contractName:
-          type: string
-        contractTicker:
-          type: string
-        eventTicker:
-          type: string
-        eventName:
-          type: string
-        category:
-          type: string
-        contractStatus:
-          type: string
-        eventType:
-          type: string
-          description: Event type ("binary" or "categorical")
-        expiryDate:
-          type:
-          - string
-          - 'null'
-          format: date-time
-        resolvedAt:
-          type:
-          - string
-          - 'null'
-          format: date-time
-        resolutionSide:
-          type:
-          - string
-          - 'null'
-          description: Winning outcome if resolved ("yes" or "no")
-        parentEventTicker:
-          type:
-          - string
-          - 'null'
-          description: Parent event ticker for sub-events
-        startTime:
-          type:
-          - string
-          - 'null'
-          format: date-time
-          description: Start datetime (ISO 8601)
-  responses:
-    ServiceUnavailable:
-      description: Prediction markets feature is temporarily unavailable
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/Error'
-    BadRequest:
-      description: Invalid request parameters
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/Error'
-    InternalError:
-      description: Internal server error
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/Error'
-    Unauthorized:
-      description: Authentication required or invalid credentials
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/Error'
   securitySchemes:
     apiKey:
       type: apiKey

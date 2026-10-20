@@ -75,28 +75,6 @@
     detected: '2026-10-14'
   status: not-a-workflow
   arazzo: null
-- slug: gemini-trust-a2a-protocol-own-agent-card
-  label: A2A protocol (own Agent Card)
-  partner_name: A2A protocol (own Agent Card)
-  category: A2A agent
-  type: register
-  channel: provider-built
-  evidence: https://developer.gemini.com/.well-known/agent-card.json
-  source: edge
-  relationship: compatible
-  contract_reference:
-    register: provider's own /.well-known/agent-card.json
-    spec_file: null
-    standard: A2A
-    role: a2a-agent-card
-    registered_name: Gemini Developer Platform Agent
-    organization: Gemini
-    matched_domain: gemini.com
-    matched_by: own-domain
-    detected_by: sweep-ai-agents.py
-    detected: '2026-10-15'
-  status: not-a-workflow
-  arazzo: null
 - slug: gemini-trust-fincen-msb-registration
   label: FinCEN (MSB registration)
   partner_name: FinCEN (MSB registration)
@@ -127,5 +105,80 @@
       are context, never counted'
     detected_by: sweep-regtech-aml.py
     detected: '2026-10-15'
+  status: not-a-workflow
+  arazzo: null
+- slug: gemini-trust-a2a-protocol-own-agent-card
+  label: A2A protocol (own Agent Card)
+  partner_name: A2A protocol (own Agent Card)
+  category: A2A agent
+  type: register
+  channel: provider-built
+  evidence: https://developer.gemini.com/.well-known/agent-card.json
+  source: edge
+  relationship: compatible
+  contract_reference:
+    register: provider's own /.well-known/agent-card.json
+    spec_file: null
+    standard: A2A
+    role: a2a-agent-card
+    registered_name: Gemini Developer Platform Agent
+    organization: Gemini
+    matched_domain: gemini.com
+    matched_by: own-domain
+    detected_by: sweep-ai-agents.py
+    detected: '2026-10-19'
+  status: not-a-workflow
+  arazzo: null
+- slug: gemini-trust-defillama
+  label: DefiLlama
+  partner: defillama
+  partner_name: DefiLlama
+  category: stablecoin data coverage
+  type: coverage
+  channel: partner-built
+  evidence: https://stablecoins.llama.fi/stablecoin/19
+  source: edge
+  relationship: connector-coverage
+  contract_reference:
+    register: DefiLlama stablecoins (stablecoins.llama.fi)
+    standard: null
+    spec_file: null
+    role: stablecoin-issuer
+    registered_name: Gemini Dollar
+    register_id: https://stablecoins.llama.fi/stablecoin/19
+    matched_domain: gemini.com
+    matched_by: domain+verified
+    stablecoins:
+    - symbol: GUSD
+      name: Gemini Dollar
+      peg: peggedUSD
+      mechanism: fiat-backed
+      defillama: https://stablecoins.llama.fi/stablecoin/19
+    peg_mechanisms:
+    - fiat-backed
+    signal_note: 'coverage: DefiLlama tracks the issuer''s stablecoin(s); coins, pegs and circulation are context,
+      never counted'
+    detected_by: sweep-stablecoins-tokenization.py
+    detected: '2026-10-20'
+  status: not-a-workflow
+  arazzo: null
+- slug: gemini-trust-agent-skills-own-github-org
+  label: Agent Skills (own GitHub org)
+  partner_name: Agent Skills (own GitHub org)
+  category: Agent Skills package
+  type: register
+  channel: provider-built
+  evidence: https://github.com/gemini/developer-platform
+  source: edge
+  relationship: compatible
+  contract_reference:
+    register: 'provider''s own GitHub org (GitHub REST API: repo + git tree holds SKILL.md)'
+    spec_file: null
+    standard: Agent Skills (agentskills.io)
+    role: agent-skills-repo
+    matched_org: gemini
+    matched_by: org-profile-domain:gemini.com
+    detected_by: sweep-agent-skills.py
+    detected: '2026-10-20'
   status: not-a-workflow
   arazzo: null

@@ -76,39 +76,6 @@ edges:
     detected: '2026-10-14'
   detected_by: sweep-crypto.py
   first_seen: '2026-10-14'
-- partner_name: A2A protocol (own Agent Card)
-  partner: null
-  partner_match: register
-  type: register
-  direction: provider-built
-  category: A2A agent
-  evidence: https://developer.gemini.com/.well-known/agent-card.json
-  channel: provider-built
-  relationship: compatible
-  shape: a2a
-  evidence_kind: own-wellknown
-  degree: flavored
-  report_only: true
-  a2a_card:
-    grade: flavored
-    verdict: flavored
-    protocol_version: null
-    deviations:
-    - no-protocolVersion
-    card_subject: unknown
-  contract_reference:
-    register: provider's own /.well-known/agent-card.json
-    spec_file: null
-    standard: A2A
-    role: a2a-agent-card
-    registered_name: Gemini Developer Platform Agent
-    organization: Gemini
-    matched_domain: gemini.com
-    matched_by: own-domain
-    detected_by: sweep-ai-agents.py
-    detected: '2026-10-15'
-  detected_by: sweep-ai-agents.py
-  first_seen: '2026-10-15'
 - partner_name: FinCEN (MSB registration)
   partner: null
   partner_match: register
@@ -141,6 +108,103 @@ edges:
     detected: '2026-10-15'
   detected_by: sweep-regtech-aml.py
   first_seen: '2026-10-15'
+- partner_name: A2A protocol (own Agent Card)
+  partner: null
+  partner_match: register
+  type: register
+  direction: provider-built
+  category: A2A agent
+  evidence: https://developer.gemini.com/.well-known/agent-card.json
+  channel: provider-built
+  relationship: compatible
+  shape: a2a
+  evidence_kind: own-wellknown
+  degree: flavored
+  report_only: true
+  a2a_card:
+    grade: flavored
+    verdict: flavored
+    protocol_version: null
+    deviations:
+    - no-protocolVersion
+    card_subject: unknown
+  contract_reference:
+    register: provider's own /.well-known/agent-card.json
+    spec_file: null
+    standard: A2A
+    role: a2a-agent-card
+    registered_name: Gemini Developer Platform Agent
+    organization: Gemini
+    matched_domain: gemini.com
+    matched_by: own-domain
+    detected_by: sweep-ai-agents.py
+    detected: '2026-10-19'
+  detected_by: sweep-ai-agents.py
+  first_seen: '2026-10-15'
+- partner_name: DefiLlama
+  partner: defillama
+  partner_match: aggregator
+  type: coverage
+  channel: partner-built
+  relationship: connector-coverage
+  direction: partner-built
+  evidence: https://stablecoins.llama.fi/stablecoin/19
+  category: stablecoin data coverage
+  contract_reference:
+    register: DefiLlama stablecoins (stablecoins.llama.fi)
+    standard: null
+    spec_file: null
+    role: stablecoin-issuer
+    registered_name: Gemini Dollar
+    register_id: https://stablecoins.llama.fi/stablecoin/19
+    matched_domain: gemini.com
+    matched_by: domain+verified
+    stablecoins:
+    - symbol: GUSD
+      name: Gemini Dollar
+      peg: peggedUSD
+      mechanism: fiat-backed
+      defillama: https://stablecoins.llama.fi/stablecoin/19
+    peg_mechanisms:
+    - fiat-backed
+    signal_note: 'coverage: DefiLlama tracks the issuer''s stablecoin(s); coins, pegs and circulation are context,
+      never counted'
+    detected_by: sweep-stablecoins-tokenization.py
+    detected: '2026-10-20'
+  detected_by: sweep-stablecoins-tokenization.py
+  first_seen: '2026-10-20'
+- partner_name: Agent Skills (own GitHub org)
+  partner: null
+  partner_match: register
+  type: register
+  direction: provider-built
+  category: Agent Skills package
+  evidence: https://github.com/gemini/developer-platform
+  channel: provider-built
+  relationship: compatible
+  shape: agent-skills
+  evidence_kind: own-repo
+  degree: skill-repo
+  report_only: true
+  agent_skills:
+    org: gemini
+    current: true
+    repos:
+    - repo: gemini/developer-platform
+      archived: false
+      lapsed: false
+      pushed: '2026-10-05'
+  contract_reference:
+    register: 'provider''s own GitHub org (GitHub REST API: repo + git tree holds SKILL.md)'
+    spec_file: null
+    standard: Agent Skills (agentskills.io)
+    role: agent-skills-repo
+    matched_org: gemini
+    matched_by: org-profile-domain:gemini.com
+    detected_by: sweep-agent-skills.py
+    detected: '2026-10-20'
+  detected_by: sweep-agent-skills.py
+  first_seen: '2026-10-20'
 generated: '2026-10-13'
 method: searched
 checked:
@@ -152,5 +216,16 @@ checked:
 - https://www.access-dvs-register.service.gov.uk/register/download-register
 - https://www.dfs.ny.gov/apps_and_licensing/virtual_currency_businesses
 - https://www.esma.europa.eu/sites/default/files/2024-12/CASPS.csv
+- https://stablecoins.llama.fi/stablecoins
+- https://www.esma.europa.eu/sites/default/files/2024-12/ARTZZ.csv
+- https://www.esma.europa.eu/sites/default/files/2024-12/EMTWP.csv
+- https://www.esma.europa.eu/sites/default/files/2024-12/OTHER.csv
+- https://www.hkma.gov.hk/eng/regulatory-resources/registers/register-of-licensed-stablecoin-issuers/
+- https://api.github.com
+- https://claude-plugins.dev/sitemap.xml
+- https://github.com/VoltAgent/awesome-agent-skills
+- https://officialskills.sh/sitemap.xml
+- https://skillsmp.com/sitemap.xml
+- https://www.skills.sh/sitemap.xml
 source:
 - https://a2aregistry.org/api/agents
